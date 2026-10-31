@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Kuberain Industry</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        industrial: {
+                            900: '#0B192C',
+                            800: '#1E3E62',
+                            700: '#111827',
+                            accent: '#2563EB'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Flash Alert Banner -->
+    {{if .Submitted}}
+    <div id="alertBanner" class="bg-emerald-600 text-white px-4 py-3 text-center text-sm font-bold shadow-md sticky top-0 z-50 flex items-center justify-between max-w-7xl mx-auto w-full mt-2 rounded-xl">
+        <span class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+            Official Enterprise RFQ submitted successfully! Our procurement desk will contact you within 24 hours.
+        </span>
+        <button onclick="document.getElementById('alertBanner').remove()" class="text-white hover:text-emerald-200">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
+    {{end}}
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="bg-industrial-900 text-white shadow-xl sticky top-0 z-50 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo & Mobile Toggle -->
+            <div class="flex items-center space-x-3">
+                <button id="sidebarToggle" class="text-slate-300 hover:text-white lg:hidden focus:outline-none p-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shadow-md">
+                    <img src="/static/images/logo-header.svg" alt="Kuberain Industry - Engineering & AI" class="h-12 w-auto">
+                </div>
+                <a href="/" class="block">
+                    <span class="text-xl font-black tracking-wider text-white">KUBERAIN <span class="text-blue-400">INDUSTRY</span></span>
+                    <p class="text-[10px] uppercase tracking-widest text-slate-400">Enterprise Valve & Pipe Solutions</p>
+                </a>
+            </div>
+
+            <!-- Header Navigation -->
+            <nav class="hidden lg:flex items-center space-x-8 font-semibold text-sm tracking-wide">
+                <a href="/" class="nav-link {{if eq .CurrentPage "home"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Home</a>
+                <a href="/products" class="nav-link {{if eq .CurrentPage "products"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Products</a>
+                <a href="/services" class="nav-link {{if eq .CurrentPage "services"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Services & Network</a>
+                 <a href="/smes-onboarding" class="nav-link {{if eq .CurrentPage "smes-onboarding"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Work with us </a>
+            
+            </nav>
+
+             <!-- Action CTA -->
+            <div>
+                <a href="/rfq" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg transition hidden sm:inline-block">
+                    Request RFQ
+                </a>
+            </div>
+           
+
+        </div>
+    </header>
+
+    <!-- ==================== MAIN BODY ==================== -->
+    <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-8">
+
+        <!-- ==================== SIDEBAR ==================== -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-2xl transform -translate-x-full lg:translate-x-0 lg:static lg:w-1/4 transition-transform duration-300 ease-in-out p-6 rounded-2xl flex flex-col justify-between border border-slate-200">
+            <div>
+                <div class="flex items-center justify-between mb-6 lg:hidden">
+                    <span class="font-bold text-lg text-slate-900">Navigation Menu</span>
+                    <button id="closeSidebar" class="text-slate-500 hover:text-black">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-4">Technical Categories</h3>
+                <ul class="space-y-2 text-sm font-semibold text-slate-600">
+                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-ring text-blue-600"></i> Industrial Valves</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
+                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-lines-leaning text-blue-600"></i> Seamless Pipes</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
+                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-notch text-blue-600"></i> Heavy Fittings</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
+                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-gear text-blue-600"></i> CNC Machining</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
+                </ul>
+
+                <hr class="my-6 border-slate-200">
+
+                <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-4">Enterprise Standards</h3>
+                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm space-y-3 border border-slate-800">
+                    <p class="font-bold flex items-center text-sm text-blue-400">
+                        <i class="fa-solid fa-certificate text-emerald-400 mr-2 text-base"></i> ISO 9001:2015 Compliant
+                    </p>
+                    <p class="text-xs text-slate-300 leading-relaxed">Strict stage-gate QC inspections & Hydro-testing certificates included with every shipment.</p>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <div class="bg-blue-600 text-white p-5 rounded-2xl text-center shadow-lg">
+                    <p class="text-xs text-blue-100 uppercase tracking-widest font-bold">Direct Desk Inquiry</p>
+                    <a href="mailto:rfq@kuberainindustry.com" class="text-sm font-extrabold text-white mt-1 hover:underline block break-all">rfq@kuberainindustry.com</a>
+                </div>
+            </div>
+          
+        </aside>
+
+        <!-- Dynamic Page Content Insertion -->
+        <main class="flex-1 bg-white p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200">
+            {{block "content" .}}{{end}}
+        </main>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-industrial-900 text-slate-400 mt-16 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <span class="text-white font-black tracking-wider text-lg">KUBERAIN INDUSTRY</span>
+                <p class="text-xs text-slate-400 mt-3 leading-relaxed">Connecting large enterprise corporate demand with small SME manufacturing excellence across India.</p>
+            </div>
+            <div>
+                <p class="text-white font-bold text-sm mb-3">Quick Links</p>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="/" class="hover:text-white transition">Home</a></li>
+                    <li><a href="/products" class="hover:text-white transition">Product Catalog</a></li>
+                    <li><a href="/services" class="hover:text-white transition">Services & Network</a></li>
+                    <li><a href="/rfq" class="hover:text-white transition">Request RFQ</a></li>
+                    <li><a href="/smes-onboarding" class="hover:text-white transition">Work with us (SMEs Onboarding form)</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="text-white font-bold text-sm mb-3">SME Industrial Hubs</p>
+                <ul class="space-y-2 text-xs">
+                    <li>Rajkot & Ahmedabad Casting Belt</li>
+                    <li>Thane & Kalyan Machining Cluster</li>
+                    <li>Pune Precision Engineering Corridor</li>
+                </ul>
+            </div>
+            <div>
+                <p class="text-white font-bold text-sm mb-3">Direct Procurement Desk</p>
+                <p class="text-xs text-slate-400">Thane, Maharashtra, India</p>
+                <p class="text-xs text-blue-400 font-semibold mt-1">rfq@kuberainindustry.com</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+            &copy; 2026 Kuberain Industry. All rights reserved. Powered by 500+ SME Engineering Partners across India.
+        </div>
+    </footer>
+
+
+    <!-- Mobile Drawer JS -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+        document.getElementById('closeSidebar')?.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+        });
+    </script>
+</body>
+</html>

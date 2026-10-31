@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ai-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="ai-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+  </defs>
+
+  <!-- ROUNDED SQUARE CONTAINER -->
+  <rect x="10" y="10" width="180" height="180" rx="44" fill="url(#ai-bg)" stroke="#1e293b" stroke-width="4" />
+
+  <!-- AI & ENGINEERING "K" ICON -->
+  <g transform="translate(42, 42)">
+    <!-- IT Circuit Grid Lines -->
+    <line x1="16" y1="16" x2="16" y2="100" stroke="#1e40af" stroke-width="4" stroke-linecap="round" />
+    <line x1="16" y1="58" x2="92" y2="16" stroke="#1e40af" stroke-width="4" stroke-linecap="round" />
+    <line x1="16" y1="58" x2="92" y2="100" stroke="#1e40af" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Main Engineering Structural Pillars -->
+    <rect x="10" y="10" width="12" height="96" rx="6" fill="#ffffff" />
+    <path d="M22,58 L82,18 C86,15 92,16 95,20 L98,24 C101,28 100,34 96,37 L38,72 Z" fill="url(#ai-blue)" />
+    <path d="M28,62 L96,101 C100,103 101,109 98,113 L95,117 C92,121 86,122 82,119 L22,68 Z" fill="#2563eb" />
+
+    <!-- AI Neural Connection Nodes -->
+    <circle cx="16" cy="16" r="6" fill="#38bdf8" />
+    <circle cx="16" cy="100" r="6" fill="#38bdf8" />
+    <circle cx="92" cy="16" r="7" fill="#60a5fa" stroke="#ffffff" stroke-width="2" />
+    <circle cx="92" cy="100" r="7" fill="#60a5fa" stroke="#ffffff" stroke-width="2" />
+    <circle cx="16" cy="58" r="8" fill="#38bdf8" stroke="#ffffff" stroke-width="2" />
+  </g>
+</svg>

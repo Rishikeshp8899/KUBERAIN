@@ -1,0 +1,172 @@
+{{define "content"}}
+
+{{if .Submitted}}
+<!-- SUCCESS BANNER -->
+<div class="bg-emerald-50 border-2 border-emerald-500 text-emerald-900 p-6 rounded-2xl mb-8 flex items-center space-x-4 shadow-md">
+    <div class="bg-emerald-500 text-white     sp-3 rounded-xl flex-shrink-0">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+    </div>
+    <div>
+        <h3 class="text-lg font-black tracking-tight">RFQ Submitted Successfully!</h3>
+        <p class="text-xs font-medium text-emerald-700 mt-0.5">Your procurement request has been logged. Our engineering estimation team will review your specifications and issue a formal quote within 24 hours.</p>
+    </div>
+</div>
+{{end}}
+
+<div class="bg-industrial-900 text-white p-8 rounded-2xl mb-8 border border-slate-800 text-center">
+    <span class="bg-blue-600 text-xs font-bold uppercase px-3 py-1 rounded-full">Direct Procurement Portal</span>
+    <h2 class="text-3xl font-black text-white mt-3 mb-2 tracking-tight">Submit Your Official Enterprise RFQ</h2>
+    <p class="text-slate-300 text-sm">Submit technical specs, drawings, or BOQ for an official 24-hour engineering response.</p>
+</div>
+
+<!-- Updated Form with File Upload Support (enctype="multipart/form-data") -->
+<form action="/submit-rfq" method="POST" enctype="multipart/form-data" class="space-y-5 bg-slate-50 p-6 sm:p-8 rounded-2xl border border-slate-200">
+    
+    <!-- Hidden Inputs for Geolocation & Auto-Generated Code -->
+    <input type="hidden" id="user_ip" name="ip_address" value="">
+
+    <!-- CONTACT & COMPANY INFORMATION -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Company Name</label>
+            <input type="text" name="company_name" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Larsen & Toubro">
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Contact Person</label>
+            <input type="text" name="contact_person" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Rahul Sharma">
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Official Email</label>
+            <input type="email" name="email" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="rahul@company.com">
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Phone Number</label>
+            <input type="tel" name="phone" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+91 98765 43210">
+        </div>
+    </div>
+
+    <!-- LOCATION FIELDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 bg-blue-50/60 p-4 rounded-xl border border-blue-100">
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-2">
+                Form Submission Country
+            </label>
+            <select id="user_country" name="country" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="India">India</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+                <option value="Saudi Arabia">Saudi Arabia</option>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Singapore">Singapore</option>
+                <option value="Germany">Germany</option>
+                <option value="Other">Other Country</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-2">
+                Submission City / Location
+            </label>
+            <input type="text" id="user_city" name="city" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Mumbai, Thane, Dubai">
+        </div>
+    </div>
+
+    <!-- TECHNICAL & SPECIFICATION DETAILS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Component Category</label>
+            <select name="category" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="Industrial Valves">Industrial Valves</option>
+                <option value="Seamless & Welded Pipes">Seamless Pipes</option>
+                <option value="Flanges & Fittings">Flanges & Fittings</option>
+                <option value="Custom CNC Machining">CNC Machining</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Material Specification</label>
+            <input type="text" name="material" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. SS316, ASTM A216 WCB">
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Quantity</label>
+            <input type="text" name="quantity" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 500 Units / 50 Tons">
+        </div>
+    </div>
+
+    <!-- COMMERCIAL TERMS & DEADLINES -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Target Price (USD / Unit)</label>
+            <input type="number" step="0.01" name="target_price_usd" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 150.00">
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Delivery Deadline</label>
+            <input type="date" name="delivery_deadline" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Incoterms</label>
+            <select name="incobooking_terms" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="FOB">FOB (Free on Board)</option>
+                <option value="EXW">EXW (Ex Works)</option>
+                <option value="CIF">CIF (Cost, Insurance & Freight)</option>
+                <option value="DDP">DDP (Delivered Duty Paid)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- CAD / BLUEPRINT FILE UPLOAD -->
+   <div>
+    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+        Attach Drawings / CAD Specs (Select Multiple Files)
+    </label>
+    <input 
+        type="file" 
+        name="drawings" 
+        multiple 
+        accept=".pdf,.dwg,.dxf,.step,.stp,.zip,.png,.jpg" 
+        class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+    >
+</div>
+
+<!-- REQUIREMENTS TEXTAREA -->
+<div>
+    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Technical Requirements / BOQ Details</label>
+    <textarea name="requirements" rows="4" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Specify size dimensions, pressure ratings, wall schedule, testing standards (Hydro, Radiography)..."></textarea>
+</div>
+
+<div class="flex justify-center pt-2">
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-10 py-3.5 rounded-xl text-sm uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2">
+        Submit Enterprise RFQ
+    </button>
+</div>
+
+
+</form>
+
+<!-- Auto-Detect Location JS -->
+<script>
+    fetch('https://ipapi.co/json/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.country_name) {
+                const countrySelect = document.getElementById('user_country');
+                for (let option of countrySelect.options) {
+                    if (option.value.toLowerCase() === data.country_name.toLowerCase()) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+            if (data.city) {
+                document.getElementById('user_city').value = data.city;
+            }
+            if (data.ip) {
+                document.getElementById('user_ip').value = data.ip;
+            }
+        })
+        .catch(() => console.log("Automatic location detection fallback applied."));
+</script>
+{{end}}

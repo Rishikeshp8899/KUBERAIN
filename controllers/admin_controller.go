@@ -1,0 +1,657 @@
+package controllers
+
+import (
+	// "bytes"
+
+	"encoding/json"
+	"go-mvc-app/config"
+	"go-mvc-app/middleware"
+	"go-mvc-app/models"
+	"html/template"
+	"log"
+	"net/http"
+	"path/filepath"
+	"strconv"
+)
+
+func renderAdminView(w http.ResponseWriter, pageFile string, data interface{}) {
+
+	layoutPath := filepath.Join("views", "layouts", "admin.html")
+	pagePath := filepath.Join("views", "pages", pageFile)
+
+	tmpl, err := template.ParseFiles(layoutPath, pagePath)
+	if err != nil {
+		log.Printf("[ERROR] Template parsing failed (%s): %v", pageFile, err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Printf("[ERROR] Template execution failed (%s): %v", pageFile, err)
+	}
+
+}
+
+// AdminRFQsHandler handles GET /admin/rfqs
+func AdminRFQsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+	rfqs, err := models.GetAllRFQs()
+	if err != nil {
+		rfqs = []models.RFQ{}
+	}
+
+	data := map[string]interface{}{
+		"Title":      "RFQ Monitoring Desk",
+		"AdminEmail": adminEmail,
+		"Page":       "rfqs",
+		"RFQs":       rfqs,
+	}
+
+	renderAdminView(w, "admin_rfqs.html", data)
+}
+
+// AdminSMEHandler handles GET /admin/sme
+func AdminSMEHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse Query Parameters
+	filter := r.URL.Query().Get("filter") // "all", "approved", "pending"
+	if filter == "" {
+		filter = "all"
+	}
+
+	search := r.URL.Query().Get("search")
+
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	pageSize := 6 // Number of suppliers per page
+
+	// Fetch Paginated & Filtered Data
+	paginatedData, err := models.GetPaginatedSuppliers(filter, search, page, pageSize)
+	if err != nil {
+		log.Printf("[ERROR] [AdminSMEPaginatedHandler] Failed to load paginated suppliers: %v", err)
+		paginatedData = models.PaginatedResult{
+			Suppliers:   []models.Supplier{},
+			TotalPages:  1,
+			CurrentPage: 1,
+			Filter:      filter,
+			Search:      search,
+		}
+	}
+
+	// Construct View Data Context
+	data := map[string]interface{}{
+		"Title":      "SME Supplier Directory",
+		"Page":       "sme",
+		"Suppliers":  paginatedData.Suppliers,
+		"Pagination": paginatedData,
+		"Filter":     filter,
+		"Search":     search,
+	}
+
+	// Render View (Assuming renderAdminView uses your admin layout)
+	renderAdminView(w, "admin_sme.html", data)
+
+}
+
+// AdminAddSMEHandler handles POST /admin/add-sme (Form submission from sme_modal.html)
+func AdminAddSMEHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	workerCount, _ := strconv.Atoi(r.FormValue("worker_count"))
+	isVerified := r.FormValue("is_verified") == "true" || r.FormValue("is_verified") == "on"
+
+	supplier := models.Supplier{
+		CompanyName:         r.FormValue("company_name"),
+		ContactEmail:        r.FormValue("contact_email"),
+		Phone:               r.FormValue("phone"),
+		City:                r.FormValue("city"),
+		State:               r.FormValue("state"),
+		GSTNumber:           r.FormValue("gst_number"),
+		MSMERegNumber:       r.FormValue("msme_reg_number"),
+		ISOStandard:         r.FormValue("iso_standard"),
+		IsVerified:          isVerified,
+		WorkerCount:         workerCount,
+		CapabilitiesSummary: r.FormValue("capabilities_summary"),
+	}
+
+	err := models.CreateSMESupplier(supplier)
+	if err != nil {
+		log.Printf("[ERROR] Failed to create SME supplier: %v", err)
+	}
+
+	// Redirect back to the SME directory so the user sees the newly added supplier
+	http.Redirect(w, r, "/admin/sme", http.StatusSeeOther)
+}
+
+// AdminUpdateSMEStatusHandler handles POST /admin/update-sme-status
+func AdminUpdateSMEStatusHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	smeIDStr := r.FormValue("sme_id")
+	isVerifiedStr := r.FormValue("is_verified")
+
+	smeID, err := strconv.ParseInt(smeIDStr, 10, 64)
+	if err == nil && smeID > 0 {
+		isVerified := isVerifiedStr == "true" || isVerifiedStr == "1"
+		_ = models.UpdateSMEVerificationStatus(smeID, isVerified)
+	}
+
+	http.Redirect(w, r, "/admin/rfqs", http.StatusSeeOther)
+}
+
+// AdminPaymentsHandler handles GET /admin/payments
+func AdminPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+	payments, err := models.GetPaymentLedger()
+	if err != nil {
+		payments = []models.PaymentTracker{}
+	}
+
+	data := map[string]interface{}{
+		"Title":      "Double-Entry Payment Ledger",
+		"AdminEmail": adminEmail,
+		"Page":       "payments",
+		"Payments":   payments,
+	}
+
+	renderAdminView(w, "admin_payment.html", data)
+}
+
+// AdminUpdatePaymentStatusHandler handles POST /admin/update-payment-status
+func AdminUpdatePaymentStatusHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	paymentIDStr := r.FormValue("payment_id")
+	clientStatus := r.FormValue("client_paid_status")
+	supplierStatus := r.FormValue("supplier_paid_status")
+
+	paymentID, err := strconv.ParseInt(paymentIDStr, 10, 64)
+	if err == nil && paymentID > 0 {
+		_ = models.UpdatePaymentStatus(int(paymentID), clientStatus, supplierStatus)
+	}
+
+	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
+}
+
+// AdminDispatchHandler handles GET /admin/dispatch
+func AdminDispatchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Retrieve authenticated email from context
+	adminEmail := config.GetAdminEmail(r)
+
+	// Fetch active work packages from database
+	packages, err := models.GetWorkPackages()
+	if err != nil {
+		packages = []models.WorkPackage{}
+	}
+
+	data := map[string]interface{}{
+		"Title":        "Work Package Dispatch & Bidding",
+		"AdminEmail":   adminEmail,
+		"Page":         "dispatch",
+		"WorkPackages": packages,
+	}
+
+	// Render page using layout views/layouts/admin.html and view views/pages/admin_dispatch.html
+	renderAdminView(w, "admin_dispatch.html", data)
+}
+
+// -----------------------------------------------------------------------------
+// MODULE 5: QUALITY & SHIELD COMPLIANCE HANDLER
+// -----------------------------------------------------------------------------
+
+// AdminComplianceHandler handles GET /admin/compliance
+func AdminComplianceHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Retrieve authenticated email from context
+	adminEmail := config.GetAdminEmail(r)
+
+	// Fetch flagged off-platform messages and Material Test Certificates
+	flaggedLogs, err := models.GetFlaggedCommunicationLogs()
+	if err != nil {
+		flaggedLogs = []models.CommunicationLog{}
+	}
+
+	mtcCerts, err := models.GetMaterialCertificates()
+	if err != nil {
+		mtcCerts = []models.MaterialCertificate{}
+	}
+
+	data := map[string]interface{}{
+		"Title":           "Quality & Shield Compliance",
+		"AdminEmail":      adminEmail,
+		"Page":            "compliance",
+		"FlaggedLogs":     flaggedLogs,
+		"MTCCertificates": mtcCerts,
+	}
+
+	// Render page using layout views/layouts/admin.html and view views/pages/admin_compliance.html
+	renderAdminView(w, "admin_compliance.html", data)
+}
+
+// AdminLoginHandler processes GET (render) and POST (submit) requests
+func AdminLoginHandler(w http.ResponseWriter, r *http.Request) {
+	// GET: Render Login Screen
+	if r.Method == http.MethodGet {
+		// Redirect if already logged in
+		cookie, err := r.Cookie(middleware.SessionCookieName)
+		if err == nil && cookie.Value != "" {
+			http.Redirect(w, r, "/admin/rfqs", http.StatusSeeOther)
+			return
+		}
+
+		tmpl, err := template.ParseFiles("views/pages/admin_login.html")
+		if err != nil {
+			http.Error(w, "Login Template Error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := map[string]interface{}{
+			"Error": r.URL.Query().Get("error"),
+		}
+		tmpl.Execute(w, data)
+		return
+	}
+
+	// POST: Handle Login Form Submission
+	if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		if email == "" || password == "" {
+			http.Redirect(w, r, "/admin/login?error=missing_fields", http.StatusSeeOther)
+			return
+		}
+
+		// Verify credentials against database
+		admin, err := models.AuthenticateAdmin(email, password)
+		if err != nil {
+			http.Redirect(w, r, "/admin/login?error=invalid_credentials", http.StatusSeeOther)
+			return
+		}
+
+		// Set HTTP-only auth cookie
+		middleware.SetAuthCookie(w, admin.Email)
+
+		// Redirect to protected dashboard
+		http.Redirect(w, r, "/admin/rfqs", http.StatusSeeOther)
+		return
+	}
+
+	http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+}
+
+// AdminLogoutHandler clears user session and redirects to login
+func AdminLogoutHandler(w http.ResponseWriter, r *http.Request) {
+	middleware.ClearAuthCookie(w)
+	http.Redirect(w, r, "/admin/login?status=logged_out", http.StatusSeeOther)
+}
+
+// AdminRFQDetailAndMatchHandler handles GET /admin/rfqs/update-status
+// Protected endpoint to view specific RFQ status, audit details, and filter capable SMEs.
+func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
+
+	// Step 1: Authentication / Session Check
+	adminEmail := config.GetAdminEmail(r)
+	if adminEmail == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Unauthorized access attempt detected.")
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+
+	// Step 2: Parse Query Parameters for RFQ ID
+	rfqIDStr := r.FormValue("rfq_id")
+	if rfqIDStr == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Missing 'id' query parameter.")
+		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
+		return
+	}
+
+	rfqID, err := strconv.Atoi(rfqIDStr)
+	if err != nil || rfqID <= 0 {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Invalid RFQ ID format: '%s'", rfqIDStr)
+		http.Error(w, "Invalid RFQ ID", http.StatusBadRequest)
+		return
+	}
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Target RFQ ID parsed successfully: %d", rfqID)
+
+	// Step 3: Fetch Target RFQ Record
+	rfq, err := models.GetRFQByID(rfqID)
+	if err != nil {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] RFQ record not found for ID %d: %v", rfqID, err)
+		http.Error(w, "RFQ Not Found", http.StatusNotFound)
+		return
+	}
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Fetched RFQ Code: %s, Category: %s, Material: %s, Current Status: %s",
+		rfq.RFQCode, rfq.Category, rfq.Material, rfq.Status)
+
+	// Step 4: Filter Capable SMEs Based on RFQ Specifications
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Filtering capable SMEs for Category='%s', Material='%s'...", rfq.Category, rfq.Material)
+	capableSuppliers, err := models.GetCapableSuppliersForRFQ(rfq.Category, rfq.Material)
+	if err != nil {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Failed to query capable suppliers: %v", err)
+		capableSuppliers = []models.Supplier{}
+	}
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Found %d matching capable SME suppliers.", len(capableSuppliers))
+
+	// Step 5: Construct View Data Context
+	data := map[string]interface{}{
+		"Title":            "RFQ Review & SME Matching Desk",
+		"AdminEmail":       adminEmail,
+		"Page":             "rfq_detail",
+		"RFQ":              rfq,
+		"CapableSuppliers": capableSuppliers,
+	}
+
+	// Step 6: Render View
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Rendering template 'admin_rfq_detail.html'...")
+	renderAdminView(w, "admin_rfq_detail.html", data)
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Request completed successfully for RFQ ID=%d", rfqID)
+}
+
+// AdminSMEPaginatedHandler handles GET /admin/sme-directory
+func AdminSMEPaginatedHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse Query Parameters
+	filter := r.URL.Query().Get("filter") // "all", "approved", "pending"
+	if filter == "" {
+		filter = "all"
+	}
+
+	search := r.URL.Query().Get("search")
+
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	pageSize := 6 // Number of suppliers per page
+
+	// Fetch Paginated & Filtered Data
+	paginatedData, err := models.GetPaginatedSuppliers(filter, search, page, pageSize)
+	if err != nil {
+		log.Printf("[ERROR] [AdminSMEPaginatedHandler] Failed to load paginated suppliers: %v", err)
+		paginatedData = models.PaginatedResult{
+			Suppliers:   []models.Supplier{},
+			TotalPages:  1,
+			CurrentPage: 1,
+			Filter:      filter,
+			Search:      search,
+		}
+	}
+
+	// Construct View Data Context
+	data := map[string]interface{}{
+		"Title":      "SME Supplier Directory",
+		"Page":       "sme",
+		"Suppliers":  paginatedData.Suppliers,
+		"Pagination": paginatedData,
+		"Filter":     filter,
+		"Search":     search,
+	}
+
+	// Render View (Assuming renderAdminView uses your admin layout)
+	renderAdminView(w, "admin_rfq_detail.html", data)
+}
+
+// AdminWorkPackageDetailsHandler handles GET /admin/work-packages/details?id=X
+func AdminWorkPackageDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.URL.Query().Get("id")
+	wpID, err := strconv.Atoi(idStr)
+	if err != nil || wpID < 1 {
+		http.Redirect(w, r, "/admin/work-packages", http.StatusSeeOther)
+		return
+	}
+
+	details, err := models.GetWorkPackageCompleteDetails(wpID)
+	if err != nil {
+		log.Printf("[ERROR] [AdminWorkPackageDetailsHandler] Failed to load details: %v", err)
+		http.Redirect(w, r, "/admin/work-packages", http.StatusSeeOther)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":   "Work Package Execution Hub - WP-#" + strconv.Itoa(wpID),
+		"Details": details,
+	}
+
+	renderAdminView(w, "admin_work_package_details.html", data)
+}
+
+// AdminSendCommunicationHandler handles POST /admin/work-packages/messages/add
+func AdminSendCommunicationHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	wpID, _ := strconv.Atoi(r.FormValue("work_package_id"))
+	senderRole := r.FormValue("sender_role") // Admin, Client, Supplier
+	message := r.FormValue("message")
+
+	if wpID > 0 && message != "" {
+		if err := models.AddSecureMessage(wpID, senderRole, 1, message); err != nil {
+			log.Printf("[ERROR] Failed to save secure message: %v", err)
+		}
+	}
+
+	http.Redirect(w, r, "/admin/work-packages/details?id="+strconv.Itoa(wpID), http.StatusSeeOther)
+}
+
+// AdminPaymentLedgerHandler handles GET /admin/payments with project filtering
+func AdminPaymentLedgerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse optional project/work package filter query param
+	packageIDStr := r.URL.Query().Get("work_package_id")
+	selectedPackageID, _ := strconv.Atoi(packageIDStr)
+
+	var payments []models.PaymentTracker
+	var err error
+
+	if selectedPackageID > 0 {
+		payments, err = models.GetPaymentsByWorkPackageID(selectedPackageID)
+	} else {
+		payments, err = models.GetPaymentLedger()
+	}
+
+	if err != nil {
+		log.Printf("[ERROR] [AdminPaymentLedgerHandler] Failed to fetch payments: %v", err)
+	}
+
+	// Fetch all work packages for the dropdown filter and modal selector
+	workPackages, err := models.GetAllWorkPackagesForDropdown()
+	if err != nil {
+		log.Printf("[WARN] [AdminPaymentLedgerHandler] Failed to load work packages dropdown: %v", err)
+	}
+
+	data := map[string]interface{}{
+		"Title":             "Double-Entry Payment Ledger",
+		"Payments":          payments,
+		"WorkPackages":      workPackages,
+		"SelectedPackageID": selectedPackageID,
+	}
+
+	renderAdminView(w, "admin_payment.html", data)
+}
+
+// AdminAddPaymentHandler handles POST /admin/payments/add to store new ledger entries
+func AdminAddPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	wpID, _ := strconv.Atoi(r.FormValue("work_package_id"))
+	clientAmt, _ := strconv.ParseFloat(r.FormValue("client_amount_usd"), 64)
+	clientStatus := r.FormValue("client_paid_status")
+	clientDate := r.FormValue("client_paid_date")
+
+	supplierAmt, _ := strconv.ParseFloat(r.FormValue("supplier_amount_usd"), 64)
+	supplierStatus := r.FormValue("supplier_paid_status")
+	supplierDate := r.FormValue("supplier_paid_date")
+	notes := r.FormValue("notes")
+
+	if wpID > 0 {
+		err := models.InsertPaymentRecord(
+			wpID, clientAmt, clientStatus, clientDate,
+			supplierAmt, supplierStatus, supplierDate, notes,
+		)
+		if err != nil {
+			log.Printf("[ERROR] [AdminAddPaymentHandler] Failed to insert payment: %v", err)
+		}
+	}
+
+	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
+}
+
+// APISuppliersHandler returns all verified SME suppliers as JSON for multi-vendor payout splitting
+func APISuppliersHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	suppliers, err := models.GetAllSuppliersForDropdown() // Or your existing supplier query
+	if err != nil {
+		http.Error(w, `{"error":"failed to fetch suppliers"}`, http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(suppliers)
+}
+
+func APIWorkPackagesHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[DEBUG] [APIWorkPackagesHandler] Request received from %s", r.RemoteAddr)
+	w.Header().Set("Content-Type", "application/json")
+
+	workPackages, err := models.GetAllWorkPackagesForDropdown()
+	if err != nil {
+		log.Printf("[ERROR] [APIWorkPackagesHandler] Failed to fetch work packages: %v", err)
+		http.Error(w, `{"error":"failed to fetch work packages"}`, http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("[SUCCESS] [APIWorkPackagesHandler] Successfully encoding %d work packages to JSON", len(workPackages), workPackages)
+	json.NewEncoder(w).Encode(workPackages)
+}
+
+// AdminUpdateRFQStatusHandler handles POST /admin/update-rfq-status
+func AdminUpdateRFQStatusHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Incoming request: Method=%s, RemoteAddr=%s, Path=%s", r.Method, r.RemoteAddr, r.URL.Path)
+
+	// Step 1: Validate HTTP Method
+	if r.Method != http.MethodPost {
+		log.Printf("[WARN] [AdminUpdateRFQStatusHandler] Method Not Allowed: Received %s", r.Method)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Step 2: Parse Form Values
+	rfqIDStr := r.FormValue("rfq_id")
+	status := r.FormValue("status")
+	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Form payload extracted: rfq_id='%s', status='%s'", rfqIDStr, status)
+
+	// Step 3: Validate & Update RFQ Status in DB
+	rfqID, err := strconv.ParseInt(rfqIDStr, 10, 64)
+	if err != nil || rfqID <= 0 || status == "" {
+		log.Printf("[ERROR] [AdminUpdateRFQStatusHandler] Invalid inputs: parsed_rfq_id=%d, parse_err=%v, status='%s'", rfqID, err, status)
+	} else {
+		log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Executing DB update for RFQ ID=%d with new status='%s'", rfqID, status)
+		if updateErr := models.UpdateRFQStatus(int(rfqID), status); updateErr != nil {
+			log.Printf("[ERROR] [AdminUpdateRFQStatusHandler] Failed to update RFQ status in DB: %v", updateErr)
+		} else {
+			log.Printf("[SUCCESS] [AdminUpdateRFQStatusHandler] Successfully updated RFQ ID=%d to status='%s'", rfqID, status)
+
+			// Auto-create Work Package when RFQ is Approved
+			if status == "Approved" {
+				log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Status is 'Approved'. Triggering Work Package creation for RFQ ID=%d...", rfqID)
+				if wpErr := models.CreateWorkPackageFromRFQ(int(rfqID)); wpErr != nil {
+					log.Printf("[ERROR] [AdminUpdateRFQStatusHandler] Failed to create Work Package from RFQ ID=%d: %v", rfqID, wpErr)
+				} else {
+					log.Printf("[SUCCESS] [AdminUpdateRFQStatusHandler] Work Package successfully created for RFQ ID=%d", rfqID)
+				}
+			}
+		}
+	}
+
+	// Step 4: Retrieve updated list of RFQs
+	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Fetching updated list of all RFQs from DB...")
+	rfqs, err := models.GetAllRFQs()
+	if err != nil {
+		log.Printf("[ERROR] [AdminUpdateRFQStatusHandler] Failed to fetch RFQs from DB: %v", err)
+		rfqs = []models.RFQ{}
+	} else {
+		log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Successfully retrieved %d RFQs from DB", len(rfqs))
+	}
+
+	// Step 5: Extract Admin Session Data
+	adminEmail := config.GetAdminEmail(r)
+	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Admin session identified: email='%s'", adminEmail)
+
+	// Step 6: Construct View Data Map
+	data := map[string]interface{}{
+		"Title":      "RFQ Monitoring Desk",
+		"AdminEmail": adminEmail,
+		"Page":       "rfqs",
+		"RFQs":       rfqs,
+	}
+
+	// Step 7: Render Admin View
+	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Rendering view 'admin_rfqs.html'...")
+	renderAdminView(w, "admin_rfqs.html", data)
+	log.Printf("[SUCCESS] [AdminUpdateRFQStatusHandler] Completed processing request for RFQ ID=%s", rfqIDStr)
+}

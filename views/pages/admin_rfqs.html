@@ -1,0 +1,201 @@
+{{define "admin"}}
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+    <!-- PAGE HEADER -->
+    <div class="flex items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 shadow-xl">
+        <div>
+            <h2 class="text-xl font-black text-white tracking-tight">Enterprise RFQ & Inquiry Monitor</h2>
+            <p class="text-xs text-slate-400 mt-1">Review buyer submissions, inspect blueprint folders, and manage lifecycle status.</p>
+        </div>
+        <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3 py-1.5 rounded-xl font-mono">Table: rfqs</span>
+    </div>
+
+    <!-- SECTION 1: NEW & PENDING REVIEW RFQs -->
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-sm font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left"></i> New & Pending Submissions
+            </h3>
+            <span class="text-xs text-slate-400">Awaiting engineering review & action</span>
+        </div>
+
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-4">RFQ Code / Date</th>
+                            <th class="p-4">Buyer Company</th>
+                            <th class="p-4">Specs</th>
+                            <th class="p-4">Blueprints Path</th>
+                            <th class="p-4 text-right">Status Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        {{$hasNew := false}}
+                        {{range .RFQs}}
+                        {{if or (eq .Status "New") (eq .Status "Under Review") (eq .Status "review") (eq .Status "")}}
+                        {{$hasNew = true}}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-4">
+                                <a href="/admin/rfqs/update-status?id={{.ID}}" class="font-bold text-blue-400 hover:underline font-mono">{{.RFQCode}}</a>
+                                <div class="text-[10px] text-slate-500">{{.CreatedAt}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-200">{{.CompanyName}}</div>
+                                <div class="text-[10px] text-slate-400">{{.City}}, {{.Country}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-blue-400 font-bold">{{.Category}}</div>
+                                <div>{{.Material}} • {{.Quantity}}</div>
+                            </td>
+                            <td class="p-4 font-mono text-[11px] text-slate-400">
+                                {{if .DrawingFilePath}}{{.DrawingFilePath}}{{else}}<span class="text-slate-600">No Drawing</span>{{end}}
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex items-center justify-end space-x-2">
+                                     <form action="/admin/rfqs/update-status" method="POST" class="inline">
+                                        <input type="hidden" name="rfq_id" value="{{.ID}}">
+                                        <button type="submit" class="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all">Inspect</button>
+                                    </form>
+                                    <form action="/admin/rfqs/update-rfq-status" method="POST" class="inline">
+                                        <input type="hidden" name="rfq_id" value="{{.ID}}">
+                                        <input type="hidden" name="status" value="accept">
+                                        <button type="submit" class="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all">Accept</button>
+                                    </form>
+                                    <form action="/admin/rfqs/update-rfq-status" method="POST" class="inline">
+                                        <input type="hidden" name="rfq_id" value="{{.ID}}">
+                                        <input type="hidden" name="status" value="reject">
+                                        <button type="submit" class="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{else}}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-slate-500">No pending RFQs awaiting review.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: APPROVED & ACCEPTED RFQs -->
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-sm font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                <i class="fa-solid fa-circle-check"></i> Accepted & Dispatched RFQs
+            </h3>
+            <span class="text-xs text-slate-400">Approved for vendor work package dispatch</span>
+        </div>
+
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-4">RFQ Code / Date</th>
+                            <th class="p-4">Buyer Company</th>
+                            <th class="p-4">Specs</th>
+                            <th class="p-4">Blueprints Path</th>
+                            <th class="p-4 text-right">Status Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        {{range .RFQs}}
+                        {{if or (eq .Status "Dispatched") (eq .Status "accept") (eq .Status "Accepted")}}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-4">
+                                <a href="/admin/rfqs/update-status?id={{.ID}}" class="font-bold text-emerald-400 hover:underline font-mono">{{.RFQCode}}</a>
+                                <div class="text-[10px] text-slate-500">{{.CreatedAt}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-200">{{.CompanyName}}</div>
+                                <div class="text-[10px] text-slate-400">{{.City}}, {{.Country}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-blue-400 font-bold">{{.Category}}</div>
+                                <div>{{.Material}} • {{.Quantity}}</div>
+                            </td>
+                            <td class="p-4 font-mono text-[11px] text-slate-400">
+                                {{if .DrawingFilePath}}{{.DrawingFilePath}}{{else}}<span class="text-slate-600">No Drawing</span>{{end}}
+                            </td>
+                            <td class="p-4 text-right">
+                                <a href="/admin/rfqs/update-status?id={{.ID}}" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] uppercase transition-all inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-industry"></i> Match SMEs
+                                </a>
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{else}}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-slate-500">No accepted RFQs currently active.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: REJECTED & CLOSED RFQs -->
+    <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-sm font-black uppercase tracking-wider text-rose-400 flex items-center gap-2">
+                <i class="fa-solid fa-circle-xmark"></i> Rejected & Closed RFQs
+            </h3>
+            <span class="text-xs text-slate-400">Archived buyer requests</span>
+        </div>
+
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-4">RFQ Code / Date</th>
+                            <th class="p-4">Buyer Company</th>
+                            <th class="p-4">Specs</th>
+                            <th class="p-4">Blueprints Path</th>
+                            <th class="p-4 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        {{range .RFQs}}
+                        {{if or (eq .Status "Closed") (eq .Status "reject") (eq .Status "Rejected")}}
+                        <tr class="hover:bg-slate-800/40 transition-colors opacity-75">
+                            <td class="p-4">
+                                <div class="font-bold text-slate-400 font-mono line-through">{{.RFQCode}}</div>
+                                <div class="text-[10px] text-slate-500">{{.CreatedAt}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-300">{{.CompanyName}}</div>
+                                <div class="text-[10px] text-slate-500">{{.City}}, {{.Country}}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-slate-400 font-bold">{{.Category}}</div>
+                                <div class="text-slate-500">{{.Material}} • {{.Quantity}}</div>
+                            </td>
+                            <td class="p-4 font-mono text-[11px] text-slate-500">
+                                {{if .DrawingFilePath}}{{.DrawingFilePath}}{{else}}<span class="text-slate-600">No Drawing</span>{{end}}
+                            </td>
+                            <td class="p-4 text-right">
+                                <span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase">Closed</span>
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{else}}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-slate-500">No rejected or closed RFQs in record.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</div>
+{{end}}

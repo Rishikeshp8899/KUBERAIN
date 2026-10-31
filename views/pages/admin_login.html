@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Kuberain Industry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        industrial: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full text-slate-100 flex items-center justify-center font-sans antialiased bg-industrial-950 p-4">
+
+    <div class="w-full max-w-md bg-industrial-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        
+        <!-- Header -->
+        <div class="text-center space-y-3">
+            <div class="inline-flex bg-blue-600 text-white p-3 rounded-2xl shadow-xl shadow-blue-600/30">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black tracking-wider text-white">KUBERAIN <span class="text-blue-400">INDUSTRY</span></h1>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Enterprise Operations Portal</p>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        {{if .Error}}
+        <div class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs p-3 rounded-xl font-medium text-center">
+            <i class="fa-solid fa-circle-exclamation mr-1.5"></i>
+            {{if eq .Error "invalid_credentials"}}Invalid email address or access key.{{else if eq .Error "missing_fields"}}Please provide both email and key.{{else}}Authentication required to access admin panel.{{end}}
+        </div>
+        {{end}}
+
+        <!-- Login Form -->
+        <form action="/admin/login" method="POST" class="space-y-4 text-xs">
+            <div>
+                <label class="block text-slate-400 font-bold mb-1.5 uppercase tracking-wider">Admin Work Email</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-500"></i>
+                    <input type="text" name="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 outline-none focus:border-blue-500 transition-all font-medium" placeholder="username">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-slate-400 font-bold mb-1.5 uppercase tracking-wider">Access Secret Key</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-500"></i>
+                    <input type="password" name="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 outline-none focus:border-blue-500 transition-all font-medium" placeholder="••••••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl uppercase text-xs tracking-widest shadow-lg shadow-blue-600/30 transition-all">
+                Authorize & Authenticate <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+            </button>
+        </form>
+
+        <div class="text-center border-t border-slate-800/80 pt-4">
+            <span class="text-[10px] text-slate-500 font-mono">Protected by HTTP-Only Cookie Session & SQLite Security</span>
+        </div>
+    </div>
+
+</body>
+</html>

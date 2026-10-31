@@ -1,0 +1,231 @@
+{{define "admin"}}
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+
+    <!-- TOP NAVIGATION & BACK BUTTON -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl gap-4">
+        <div class="flex items-center gap-3">
+            <a href="/admin/work-packages" class="bg-industrial-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left text-xs"></i> Back to Packages
+            </a>
+            <div>
+                <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded border border-blue-500/20">WP-ID #{{.Details.WorkPackage.ID}}</span>
+                <h2 class="text-xl font-black text-white tracking-tight mt-1">{{.Details.WorkPackage.Title}}</h2>
+            </div>
+        </div>
+        <div class="flex items-center gap-2.5">
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3.5 py-1.5 rounded-full font-mono font-bold">${{.Details.WorkPackage.BudgetUSD}} USD</span>
+            <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3.5 py-1.5 rounded-full font-bold uppercase tracking-wider">Status: {{.Details.WorkPackage.Status}}</span>
+        </div>
+    </div>
+
+    <!-- GRID SECTION 1: WHO IS DOING THE WORK (SME VENDOR PROFILE) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl md:col-span-1">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-purple-400 border-b border-slate-800 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-industry"></i> Assigned SME Vendor
+            </h3>
+            {{if .Details.Supplier.CompanyName}}
+            <div class="space-y-3 text-xs">
+                <div>
+                    <h4 class="font-bold text-white text-sm">{{.Details.Supplier.CompanyName}}</h4>
+                    <p class="text-slate-400"><i class="fa-solid fa-location-dot mr-1 text-slate-500"></i> {{.Details.Supplier.City}}, {{.Details.Supplier.State}}</p>
+                </div>
+                <div class="bg-industrial-800 p-3 rounded-xl border border-slate-700/60 space-y-1.5 font-mono">
+                    <div>ISO Certification: <strong class="text-emerald-400">{{.Details.Supplier.ISOStandard}}</strong></div>
+                    <div>Shop Floor: <strong class="text-slate-200">{{.Details.Supplier.PlantAreaSqFt}} sq.ft</strong></div>
+                    <div>Workforce: <strong class="text-slate-200">{{.Details.Supplier.WorkerCount}} operators</strong></div>
+                    <div>Rating: <strong class="text-amber-400">{{.Details.Supplier.Rating}} / 5.0 ⭐</strong></div>
+                </div>
+                {{if .Details.Capability.Category}}
+                <div class="space-y-1 text-slate-300">
+                    <div>Machining: <strong class="text-white">{{.Details.Capability.MachiningType}}</strong></div>
+                    <div>Tolerance: <strong class="text-blue-400 font-mono">{{.Details.Capability.MaxTolerance}}</strong></div>
+                    <div>Materials: <strong class="text-white">{{.Details.Capability.MaterialsHandled}}</strong></div>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <p class="text-xs text-slate-500 italic">No SME vendor assigned to this work package yet.</p>
+            {{end}}
+        </div>
+
+        <!-- GRID SECTION 2: HOW THE WORK IS PROGRESSING (MILESTONE PROGRESS) -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl md:col-span-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-bars-progress"></i> Work Progress & Milestones
+            </h3>
+            <div class="space-y-4">
+                {{range .Details.Progress}}
+                <div class="bg-industrial-800/80 p-4 rounded-xl border border-slate-700/60 space-y-2 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-white uppercase tracking-wider">{{.Stage}}</span>
+                        <span class="font-mono font-bold text-blue-400">{{.PercentComplete}}% Complete</span>
+                    </div>
+                  
+                  
+                    <div class="flex justify-between items-center text-slate-400 text-[11px]">
+                        <span>Shop Floor Note: <strong class="text-slate-200">{{.MilestoneNote}}</strong></span>
+                        <span class="font-mono">Inspector: {{.InspectorName}} ({{.UpdatedAt}})</span>
+                    </div>
+                </div>
+                {{else}}
+                <div class="p-8 text-center text-slate-500 space-y-1">
+                    <i class="fa-solid fa-clock-rotate-left text-2xl text-slate-600"></i>
+                    <p class="text-xs font-bold text-slate-400">Milestone execution progress pending.</p>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: HOW THE WORK WAS DONE (DRAWINGS, ECN, MTC, QA) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- CAD Drawings & ECN History -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> CAD Drawings & ECN Revisions
+            </h3>
+            <div class="space-y-3">
+                {{range .Details.DrawingRevisions}}
+                <div class="bg-industrial-800/80 p-3.5 rounded-xl border border-slate-700/60 flex justify-between items-center text-xs">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white font-mono">{{.RevisionCode}}</span>
+                            {{if .IsActive}}<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Active</span>{{end}}
+                        </div>
+                        <p class="text-slate-300 mt-1"><strong>ECN Note:</strong> {{.ChangeLogNotes}}</p>
+                    </div>
+                    <a href="/{{.RedactedPath}}" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all text-[11px]">
+                        <i class="fa-solid fa-download"></i> CAD
+                    </a>
+                </div>
+                {{else}}
+                <p class="text-xs text-slate-500 italic">No drawing revisions logged.</p>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Material Test Certificates & Quality Inspections -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-certificate"></i> MTC & Quality Inspection Reports
+            </h3>
+            <div class="space-y-3">
+                {{range .Details.Certificates}}
+                <div class="bg-industrial-800/80 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1">
+                    <div class="flex justify-between font-mono">
+                        <span class="font-bold text-emerald-400">Heat: {{.HeatNumber}}</span>
+                        <span class="text-slate-300">{{.MaterialGrade}}</span>
+                    </div>
+                    <p class="text-slate-400">Foundry: {{.MillName}} | Metallurgist: {{.VerifiedBy}}</p>
+                    <a href="/{{.CertFilePath}}" target="_blank" class="text-blue-400 hover:underline font-bold text-[11px]">View MTC PDF →</a>
+                </div>
+                {{end}}
+                {{range .Details.Inspections}}
+                <div class="bg-industrial-800/80 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1">
+                    <div class="flex justify-between">
+                        <span class="font-bold text-white uppercase">{{.InspectionType}} Inspection</span>
+                        <span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">PASSED</span>
+                    </div>
+                    <p class="text-slate-300 font-mono">Values: {{.MeasuredValues}}</p>
+                </div>
+                {{else}}
+                {{if not .Details.Certificates}}
+                <p class="text-xs text-slate-500 italic">No certificates or inspection reports uploaded yet.</p>
+                {{end}}
+                {{end}}
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: FINANCIAL ESCROW & DISBURSEMENT LEDGER -->
+    <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-3 flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Double-Entry Financial Ledger
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="p-3">Client Escrow ($)</th>
+                        <th class="p-3">Client Status</th>
+                        <th class="p-3">SME Payout ($)</th>
+                        <th class="p-3">Payout Status</th>
+                        <th class="p-3">Audit Notes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {{range .Details.Payments}}
+                    <tr>
+                        <td class="p-3 font-bold text-emerald-400 font-mono">${{.ClientAmountUSD}}</td>
+                        <td class="p-3"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">{{.ClientPaidStatus}}</span></td>
+                        <td class="p-3 font-bold text-blue-400 font-mono">${{.SupplierAmountUSD}}</td>
+                        <td class="p-3"><span class="bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold">{{.SupplierPaidStatus}}</span></td>
+                        <td class="p-3 text-slate-300">{{.Notes}}</td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="5" class="p-6 text-center text-slate-500 italic">No payment records logged.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 5: HOW TO COMMUNICATE (SECURE SANDBOX & ANTI-LEAK AUDIT LOG) -->
+    <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved"></i> Secure Communication Hub (Anti-Leak Enforced)
+            </h3>
+            <span class="text-[11px] text-slate-400">Direct exchange of phone numbers or emails is automatically blocked to secure platform escrow.</span>
+        </div>
+
+        <!-- Secure Message Input Form -->
+        <form action="/admin/work-packages/messages/add" method="POST" class="bg-industrial-800 p-4 rounded-xl border border-slate-700/80 space-y-3">
+            <input type="hidden" name="work_package_id" value="{{.Details.WorkPackage.ID}}">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-1">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Sender Role</label>
+                    <select name="sender_role" class="w-full bg-industrial-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <option value="Admin">Platform Admin</option>
+                        <option value="Client">Client Buyer</option>
+                        <option value="Supplier">SME Vendor</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1">Secure Message</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="message" required placeholder="Type instructions, milestone updates, or inquiries..." class="w-full bg-industrial-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-medium">
+                        <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition-all shadow-lg shadow-amber-600/30 flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-paper-plane text-[10px]"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Communication Audit Log -->
+        <div class="space-y-3 pt-2">
+            {{range .Details.Communications}}
+            <div class="bg-industrial-800/60 p-4 rounded-xl border {{if .IsFlagged}}border-rose-500/50 bg-rose-500/5{{else}}border-slate-700/60{{end}} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-white uppercase bg-slate-900 px-2 py-0.5 rounded text-[10px]">{{.SenderRole}}</span>
+                        {{if .IsFlagged}}
+                        <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Blocked: {{.FlagReason}}
+                        </span>
+                        {{end}}
+                    </div>
+                    <p class="text-slate-200 font-medium">{{.Message}}</p>
+                </div>
+                <span class="text-[10px] text-slate-500 font-mono">{{.CreatedAt}}</span>
+            </div>
+            {{else}}
+            <p class="text-xs text-slate-500 italic text-center py-4">No communication logs recorded yet. Use the form above to start a secure conversation.</p>
+            {{end}}
+        </div>
+    </div>
+
+</div>
+{{end}}

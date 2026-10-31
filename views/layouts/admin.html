@@ -1,0 +1,103 @@
+<!-- In views/layouts/header.html / admin.html -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    industrial: {
+                        700: '#334155',
+                        800: '#1e293b',
+                        900: '#0f172a',
+                        950: '#020617',
+                    }
+                }
+            }
+        }
+    }
+</script>
+
+<!-- PAGE BACKGROUND WRAPPER WITH INDUSTRIAL THEME COLOR -->
+<body class="bg-industrial-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- MAIN CONTROL LAYOUT CONTAINER (Matches max-w-7xl width and padding) -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+    <!-- RESPONSIVE HEADER NAVIGATION WITH LOGOUT -->
+<nav class="w-full bg-industrial-800 border border-slate-800/80 rounded-2xl p-2 md:p-3 shadow-xl backdrop-blur-md mb-6">
+    <div class="flex items-center justify-between overflow-x-auto space-x-2 scrollbar-none py-1">
+        
+        <!-- Left: Navigation Links Container -->
+        <div class="flex items-center space-x-2 overflow-x-auto scrollbar-none">
+            <!-- 1. RFQ Desk -->
+            <a href="/admin/rfqs" class="nav-btn {{if or (eq .Page "rfqs") (eq .Page "")}}active bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500/50{{else}}text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent{{end}} flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-layer-group text-sm"></i>
+                <span>1. RFQ Desk</span>
+            </a>
+
+            <!-- 2. SME Onboarding -->
+            <a href="/admin/sme" class="nav-btn {{if eq .Page "sme"}}active bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500/50{{else}}text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent{{end}} flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-industry text-sm"></i>
+                <span>2. SME Onboarding</span>
+            </a>
+
+            <!-- 3. Work Packages -->
+            <a href="/admin/dispatch" class="nav-btn {{if eq .Page "dispatch"}}active bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500/50{{else}}text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent{{end}} flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-diagram-project text-sm"></i>
+                <span>3. Work Packages</span>
+            </a> 
+
+            <!-- 4. Payment Ledger -->
+            <a href="/admin/payments" class="nav-btn {{if eq .Page "payments"}}active bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500/50{{else}}text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent{{end}} flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-vault text-sm"></i>
+                <span>4. Payment Ledger</span>
+            </a>
+
+            <!-- 5. Quality & Shield -->
+            <a href="/admin/compliance" class="nav-btn {{if eq .Page "compliance"}}active bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-blue-500/50{{else}}text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent{{end}} flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap flex-shrink-0">
+                <i class="fa-solid fa-shield-halved text-sm"></i>
+                <span>5. Quality & Shield</span>
+            </a>
+        </div>
+
+        <!-- Right: Admin User Email & Logout Action -->
+        <div class="flex items-center space-x-3 pl-4 border-l border-slate-700/60 flex-shrink-0">
+            {{if .AdminEmail}}
+            <span class="text-xs font-mono text-slate-400 hidden lg:inline">{{.AdminEmail}}</span>
+            {{end}}
+            <a href="/admin/logout" class="bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/30 px-3.5 py-2 rounded-xl text-xs font-bold uppercase transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-rose-600/10">
+                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </div>
+</nav>
+
+        <!-- DYNAMIC MAIN CONTENT VIEW -->
+        <main class="flex-1 min-w-0">
+            {{block "admin" .}}{{end}}
+        </main>
+
+    </div>
+
+    <!-- UTILITY JAVASCRIPT HANDLERS -->
+    <script>
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+    </script>
+</body>
+</html>
