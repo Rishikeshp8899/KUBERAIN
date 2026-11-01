@@ -1,0 +1,136 @@
+{{define "admin"}}
+
+<div class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <!-- PAGE HEADER BANNER -->
+    <div class="flex items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800">
+        <div>
+            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                <i class="fa-solid fa-file-shield text-rose-500"></i> KUBERAIN INDUSTRY : Record Quality & Compliance Audit
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Submit new metallurgical, structural, or non-destructive test audits mapped to active work packages.</p>
+        </div>
+        <a href="/admin/compliance" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-700">
+            <i class="fa-solid fa-arrow-left"></i> Back to Compliance
+        </a>
+    </div>
+
+    <!-- AUDIT FORM CARD -->
+    <div class="bg-industrial-800 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <form action="/admin/audit/create" method="POST" class="space-y-4 text-xs">
+            
+            <!-- ROW 1: WORK PACKAGE & SUPPLIER -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Target Work Package <span class="text-rose-500">*</span></label>
+                    <select name="work_package_id" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-mono focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                        <option value="">-- Select Work Package --</option>
+                        {{range .WorkPackages}}
+                        <option value="{{.ID}}">WP-#{{.ID}} - {{.Title}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Assigned Supplier / SME <span class="text-rose-500">*</span></label>
+                    <select name="supplier_id" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                        <option value="">-- Select Supplier --</option>
+                        {{range .Suppliers}}
+                        <option value="{{.ID}}">{{.CompanyName}} ({{.City}}, {{.State}})</option>
+                        {{end}}
+                    </select>
+                </div>
+            </div>
+
+            <!-- ROW 2: INSPECTION TYPE & CUSTOM MANUAL INPUT -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Audit / Inspection Type <span class="text-rose-500">*</span></label>
+                    <select id="inspectionTypeSelect" name="inspection_type_select" onchange="handleAuditTypeChange(this.value)" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                        <option value="Blueprint & Geometry Review">Blueprint & Geometry Review</option>
+                        <option value="Hydrogen Embrittlement Test">Hydrogen Embrittlement Test</option>
+                        <option value="Ultrasonic Testing (UT)">Ultrasonic Testing (UT)</option>
+                        <option value="X-Ray / Radiographic Inspection (RT)">X-Ray / Radiographic Inspection (RT)</option>
+                        <option value="Brinell / Rockwell Hardness Test">Brinell / Rockwell Hardness Test</option>
+                        <option value="Hydrostatic Pressure Leak Test">Hydrostatic Pressure Leak Test</option>
+                        <option value="Spectrometry & MTC Heat Check">Spectrometry & MTC Heat Check</option>
+                        <option value="custom">-- Manual / Custom Entry --</option>
+                    </select>
+                </div>
+                <div id="customAuditTypeWrapper" class="hidden">
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Custom Audit Name <span class="text-rose-500">*</span></label>
+                    <input type="text" id="customInspectionType" name="inspection_type" placeholder="e.g. Magnetic Particle Inspection" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- ROW 3: MEASURED VALUES & TOLERANCE ALLOWED -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Measured Values</label>
+                    <input type="text" name="measured_values" placeholder="e.g. 12.42 mm / 240 HBW" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-mono focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                </div>
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Tolerance Allowed</label>
+                    <input type="text" name="tolerance_allowed" placeholder="e.g. ±0.05 mm" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-mono focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- ROW 4: INSPECTION STATUS & REPORT FILE PATH -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Inspection Status (Pass / Fail) <span class="text-rose-500">*</span></label>
+                    <select name="passed" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-bold focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                        <option value="1" class="text-emerald-400">PASSED (Compliant)</option>
+                        <option value="0" class="text-rose-400">FAILED (Violation / Defect)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Report File Path / MTC Doc</label>
+                    <input type="text" name="report_file_path" placeholder="/storage/reports/mtc_batch_09.pdf" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-mono text-[11px] focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- AUDITOR ATTRIBUTION -->
+            <div>
+                <label class="block font-bold uppercase text-slate-400 mb-1.5">Verified By (Lead Auditor)</label>
+                <input type="text" name="inspector_name" value="Rishikesh Patil" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+            </div>
+
+            <!-- COMMENTS & OBSERVATIONS -->
+            <div>
+                <label class="block font-bold uppercase text-slate-400 mb-1.5">Audit Comments / Shield Notes</label>
+                <textarea name="comments" rows="3" placeholder="Enter metallurgical observations, defect notes, or compliance details..." class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+            </div>
+
+            <!-- FORM ACTIONS -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <a href="/admin/compliance" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-950/40 transition flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle"></i> Save Quality Audit Record
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Toggle custom audit input box if manual/custom style is selected
+function handleAuditTypeChange(val) {
+    const customWrapper = document.getElementById('customAuditTypeWrapper');
+    const customInput = document.getElementById('customInspectionType');
+    const selectElem = document.getElementById('inspectionTypeSelect');
+
+    if (val === 'custom') {
+        customWrapper.classList.remove('hidden');
+        customInput.required = true;
+        selectElem.name = ""; // Remove name so it doesn't conflict
+    } else {
+        customWrapper.classList.add('hidden');
+        customInput.required = false;
+        selectElem.name = "inspection_type"; // Keep name active for standard dropdown selections
+    }
+}
+</script>
+
+{{end}}

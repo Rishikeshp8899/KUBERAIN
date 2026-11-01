@@ -296,6 +296,7 @@ func InitTables() {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (work_package_id) REFERENCES work_packages(id) ON DELETE CASCADE,
 			FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE);`,
+
 		// 3. Table: communication_logs
 		`CREATE TABLE IF NOT EXISTS communication_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

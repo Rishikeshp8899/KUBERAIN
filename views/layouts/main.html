@@ -44,39 +44,67 @@
     <header class="bg-industrial-900 text-white shadow-xl sticky top-0 z-50 border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
-            <!-- Logo & Mobile Toggle -->
-            <div class="flex items-center space-x-3">
-                <button id="sidebarToggle" class="text-slate-300 hover:text-white lg:hidden focus:outline-none p-2">
-                    <i class="fa-solid fa-bars text-xl"></i>
+            <!-- Logo & Responsive Mobile Toggles -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                
+                <!-- 1. SIDEBAR TOGGLE BUTTON (Opens Left Technical Categories Sidebar) -->
+                <button id="sidebarToggle" class="text-slate-300 hover:text-white lg:hidden focus:outline-none p-2 border border-slate-700 rounded-lg bg-slate-800/60" title="Toggle Categories Sidebar">
+                    <i class="fa-solid fa-filter text-base text-blue-400"></i>
                 </button>
+
+                <!-- 2. MOBILE HEADER NAV TOGGLE BUTTON (Opens Top Navigation Menu) -->
+                <button id="mobileHeaderToggle" class="text-slate-300 hover:text-white lg:hidden focus:outline-none p-2 border border-slate-700 rounded-lg bg-slate-800/60" title="Toggle Main Menu">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+
+                <!-- Brand Logo -->
                 <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shadow-md">
                     <img src="/static/images/logo-header.svg" alt="Kuberain Industry - Engineering & AI" class="h-12 w-auto">
                 </div>
                 <a href="/" class="block">
-                    <span class="text-xl font-black tracking-wider text-white">KUBERAIN <span class="text-blue-400">INDUSTRY</span></span>
-                    <p class="text-[10px] uppercase tracking-widest text-slate-400">Enterprise Valve & Pipe Solutions</p>
+                    <span class="text-lg sm:text-xl font-black tracking-wider text-white">KUBERAIN <span class="text-blue-400">INDUSTRY</span></span>
+                    <p class="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-400">Enterprise Valve & Pipe Solutions</p>
                 </a>
             </div>
 
-            <!-- Header Navigation -->
-            <nav class="hidden lg:flex items-center space-x-8 font-semibold text-sm tracking-wide">
+            <!-- Header Navigation (Desktop view) -->
+            <nav class="hidden lg:flex items-center space-x-6 font-semibold text-xs xl:text-sm tracking-wide">
                 <a href="/" class="nav-link {{if eq .CurrentPage "home"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Home</a>
                 <a href="/products" class="nav-link {{if eq .CurrentPage "products"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Products</a>
-                <a href="/services" class="nav-link {{if eq .CurrentPage "services"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Services & Network</a>
-                 <a href="/smes-onboarding" class="nav-link {{if eq .CurrentPage "smes-onboarding"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Work with us </a>
-            
+                <a href="/services" class="nav-link {{if eq .CurrentPage "services"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Services</a>
+                <a href="/about" class="nav-link {{if eq .CurrentPage "about"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">About Us</a>
+                <a href="/compliance" class="nav-link {{if eq .CurrentPage "compliance"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Quality & Compliance</a>
+                <a href="/sme-network" class="nav-link {{if eq .CurrentPage "sme-network"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">SME Hubs</a>
+                <a href="/smes-onboarding" class="nav-link {{if eq .CurrentPage "smes-onboarding"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Work with us</a>
             </nav>
 
-             <!-- Action CTA -->
+            <!-- Action CTA -->
             <div>
-                <a href="/rfq" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg transition hidden sm:inline-block">
+                <a href="/rfq" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg transition hidden sm:inline-block">
                     Request RFQ
                 </a>
             </div>
-           
+        </div>
 
+        <!-- MOBILE HEADER NAVIGATION DRAWER (Slide-Down for Mobile Screens) -->
+        <div id="mobileHeaderNav" class="hidden lg:hidden bg-industrial-800 border-t border-slate-800 px-4 pt-3 pb-6 space-y-3">
+            <a href="/" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Home</a>
+            <a href="/products" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Products</a>
+            <a href="/services" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Services & Network</a>
+            <a href="/about" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">About Us</a>
+            <a href="/compliance" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Quality & Compliance</a>
+            <a href="/sme-network" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">SME Network / Hubs</a>
+            <a href="/smes-onboarding" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Work with us (SME Onboarding)</a>
+            <div class="pt-2">
+                <a href="/rfq" class="w-full text-center block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow transition">
+                    Request RFQ
+                </a>
+            </div>
         </div>
     </header>
+
+    <!-- BACKDROP OVERLAY FOR MOBILE SIDEBAR -->
+    <div id="mobileBackdrop" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden backdrop-blur-sm transition-opacity"></div>
 
     <!-- ==================== MAIN BODY ==================== -->
     <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-8">
@@ -85,7 +113,9 @@
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-2xl transform -translate-x-full lg:translate-x-0 lg:static lg:w-1/4 transition-transform duration-300 ease-in-out p-6 rounded-2xl flex flex-col justify-between border border-slate-200">
             <div>
                 <div class="flex items-center justify-between mb-6 lg:hidden">
-                    <span class="font-bold text-lg text-slate-900">Navigation Menu</span>
+                    <span class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-blue-600"></i> Technical Categories
+                    </span>
                     <button id="closeSidebar" class="text-slate-500 hover:text-black">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
@@ -93,11 +123,39 @@
 
                 <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-4">Technical Categories</h3>
                 <ul class="space-y-2 text-sm font-semibold text-slate-600">
-                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-ring text-blue-600"></i> Industrial Valves</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
-                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-lines-leaning text-blue-600"></i> Seamless Pipes</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
-                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-notch text-blue-600"></i> Heavy Fittings</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
-                    <li><a href="/products" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"><span class="flex items-center gap-2"><i class="fa-solid fa-gear text-blue-600"></i> CNC Machining</span><i class="fa-solid fa-chevron-right text-xs"></i></a></li>
-                </ul>
+    <li>
+        <a href="/products?cat=valves" onclick="filterCategory('valves')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
+            <span class="flex items-center gap-2">
+                <i class="fa-solid fa-ring text-blue-600"></i> Industrial Valves
+            </span>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </li>
+    <li>
+        <a href="/products?cat=pipes" onclick="filterCategory('pipes')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
+            <span class="flex items-center gap-2">
+                <i class="fa-solid fa-lines-leaning text-blue-600"></i> Seamless Pipes
+            </span>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </li>
+    <li>
+        <a href="/products?cat=fittings" onclick="filterCategory('fittings')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
+            <span class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-notch text-blue-600"></i> Heavy Fittings
+            </span>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </li>
+    <li>
+        <a href="/products?cat=cnc" onclick="filterCategory('cnc')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
+            <span class="flex items-center gap-2">
+                <i class="fa-solid fa-gear text-blue-600"></i> CNC Machining
+            </span>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+    </li>
+</ul>
 
                 <hr class="my-6 border-slate-200">
 
@@ -116,7 +174,6 @@
                     <a href="mailto:rfq@kuberainindustry.com" class="text-sm font-extrabold text-white mt-1 hover:underline block break-all">rfq@kuberainindustry.com</a>
                 </div>
             </div>
-          
         </aside>
 
         <!-- Dynamic Page Content Insertion -->
@@ -138,8 +195,10 @@
                     <li><a href="/" class="hover:text-white transition">Home</a></li>
                     <li><a href="/products" class="hover:text-white transition">Product Catalog</a></li>
                     <li><a href="/services" class="hover:text-white transition">Services & Network</a></li>
+                    <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="/compliance" class="hover:text-white transition">Quality & Compliance</a></li>
+                    <li><a href="/sme-network" class="hover:text-white transition">SME Network Hubs</a></li>
                     <li><a href="/rfq" class="hover:text-white transition">Request RFQ</a></li>
-                    <li><a href="/smes-onboarding" class="hover:text-white transition">Work with us (SMEs Onboarding form)</a></li>
                 </ul>
             </div>
             <div>
@@ -161,15 +220,34 @@
         </div>
     </footer>
 
-
-    <!-- Mobile Drawer JS -->
+    <!-- Mobile Drawer & Sidebar Navigation JS -->
     <script>
         const sidebar = document.getElementById('sidebar');
+        const mobileBackdrop = document.getElementById('mobileBackdrop');
+        const mobileHeaderNav = document.getElementById('mobileHeaderNav');
+
+        // Toggle Sidebar (Left Slide Drawer)
         document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.remove('-translate-x-full');
+            mobileBackdrop.classList.remove('hidden');
+            // Close header nav if open
+            mobileHeaderNav.classList.add('hidden');
         });
-        document.getElementById('closeSidebar')?.addEventListener('click', () => {
+
+        // Close Sidebar
+        const closeSidebarFn = () => {
             sidebar.classList.add('-translate-x-full');
+            mobileBackdrop.classList.add('hidden');
+        };
+        document.getElementById('closeSidebar')?.addEventListener('click', closeSidebarFn);
+        mobileBackdrop?.addEventListener('click', closeSidebarFn);
+
+        // Toggle Mobile Header Navigation Drawer (Top Dropdown)
+        document.getElementById('mobileHeaderToggle')?.addEventListener('click', () => {
+            mobileHeaderNav.classList.toggle('hidden');
+            // Close sidebar if open
+            sidebar.classList.add('-translate-x-full');
+            mobileBackdrop.classList.add('hidden');
         });
     </script>
 </body>

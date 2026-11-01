@@ -1,23 +1,86 @@
 {{define "admin"}}
 
 <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
-    <!-- PAGE 5 CONTENT -->
+    <!-- PAGE 5 CONTENT: COMPLIANCE & DISINTERMEDIATION SHIELD -->
     <main class="flex-1 min-w-0 space-y-6">
-        <div class="flex items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800">
+        
+        <!-- HEADER BANNER (Removed 'See Previous Audits' button) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 gap-4">
             <div>
-                <h2 class="text-xl font-black text-white tracking-tight">Compliance & Disintermediation Shield</h2>
+                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-rose-500"></i> Compliance & Disintermediation Shield
+                </h2>
                 <p class="text-xs text-slate-400 mt-1">Audit Material Test Certificates (MTC) and inspect flagged communication logs.</p>
             </div>
-            <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs px-3 py-1.5 rounded-xl font-mono">Tables: communication_logs, leak_detection_rules</span>
+            <div class="flex items-center gap-3">
+                <!-- ADD AUDIT BUTTON (Redirects to Audit Form Page) -->
+                <a href="/admin/audit-form/add" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40">
+                    <i class="fa-solid fa-plus-circle"></i> Add Audit
+                </a>
+            </div>
         </div>
 
+        <!-- WORK PACKAGE & PROJECT FILTER CONTROL BAR -->
+        <div class="bg-industrial-800 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
+                
+                <!-- STATUS FILTER -->
+                <label for="statusFilter" class="text-xs font-bold text-slate-300 uppercase tracking-wider whitespace-nowrap">Status:</label>
+                <select id="statusFilter" onchange="handleStatusChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none font-mono">
+                    <option value="current" selected>Current</option>
+                    <option value="completed">Completed</option>
+                </select>
+
+                <!-- SEARCH INPUT -->
+                <div class="relative flex-1 sm:w-64">
+                    <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Search projects / work packages..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                    <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
+                </div>
+            </div>
+            <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[11px] px-3 py-1 rounded-xl font-mono">
+                Tables: work_packages, communication_logs, mtc_certificates
+            </span>
+        </div>
+
+        <!-- DYNAMIC WORK PACKAGES / PROJECTS TABLE WITH "SEE ALL PREVIOUS AUDITS" -->
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-4">
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
+                <i class="fa-solid fa-list-check text-sm"></i> Project Work Packages & Audit Management
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">WP ID</th>
+                            <th class="p-3">Project / Title</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Created At</th>
+                            <th class="p-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300" id="workPackagesTableBody">
+                        <tr>
+                            <td colspan="5" class="p-8 text-center text-slate-500">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2"></i>
+                                <p class="text-xs font-bold text-slate-400">Loading work packages...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- PAGINATION -->
+            <div id="paginationContainer" class="flex justify-center items-center gap-2 pt-2"></div>
+        </div>
+
+        <!-- INTERCEPTED DIRECT CONTACT LOG (FLAGGED LOGS) -->
         <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 space-y-4">
             <h3 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-triangle-exclamation text-sm"></i> Intercepted Direct Contact Log
             </h3>
-            <div class="space-y-3">
+            <div class="space-y-3" id="flaggedLogsContainer">
                 {{range .FlaggedLogs}}
-                <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl space-y-2">
+                <div class="flagged-log-card bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl space-y-2" data-wp-id="{{.WorkPackageID}}">
                     <div class="flex justify-between items-center text-xs">
                         <span class="font-bold text-rose-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-circle text-[8px]"></i> Flag Reason: {{.FlagReason}}
@@ -38,6 +101,7 @@
             </div>
         </div>
 
+        <!-- MTC CERTIFICATES TABLE -->
         <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-3">
             <h3 class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-file-circle-check text-sm"></i> Material Test Certificates (MTC)
@@ -47,6 +111,7 @@
                     <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
                         <tr>
                             <th class="p-3">Work Package</th>
+                            <th class="p-3">Supplier</th>
                             <th class="p-3">Heat Number</th>
                             <th class="p-3">Material Grade</th>
                             <th class="p-3">Mill Name</th>
@@ -54,10 +119,11 @@
                             <th class="p-3">Verification</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300" id="mtcTableBody">
                         {{range .MTCCertificates}}
-                        <tr class="hover:bg-slate-800/40">
+                        <tr class="mtc-row hover:bg-slate-800/40" data-wp-id="{{.WorkPackageID}}">
                             <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
+                            <td class="p-3 font-semibold text-slate-300">{{.SupplierName}}</td>
                             <td class="p-3 font-mono text-amber-400">{{.HeatNumber}}</td>
                             <td class="p-3 font-bold text-slate-200">{{.MaterialGrade}}</td>
                             <td class="p-3">{{.MillName}}</td>
@@ -68,14 +134,194 @@
                         </tr>
                         {{else}}
                         <tr>
-                            <td colspan="6" class="p-4 text-center text-slate-500">No MTC quality certificates uploaded.</td>
+                            <td colspan="7" class="p-4 text-center text-slate-500">No MTC quality certificates uploaded.</td>
                         </tr>
                         {{end}}
                     </tbody>
                 </table>
             </div>
         </div>
+
     </main>
 </div>
+
+<!-- MODAL: SEE PREVIOUS AUDITS LOG -->
+<div id="previousAuditsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Project Audit History Log
+            </h3>
+            <button onclick="closePreviousAuditsModal()" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark text-base"></i></button>
+        </div>
+        <div class="max-h-96 overflow-y-auto space-y-2 pr-1" id="previousAuditsListContainer">
+            <p class="text-xs text-slate-500 text-center py-6">Select a work package to view audit history.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStatus = 'current';
+let currentSearch = '';
+
+// Fetch work packages via API with status, search, and pagination
+async function fetchWorkPackages(page = 1) {
+    const tbody = document.getElementById('workPackagesTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5" class="p-8 text-center text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2"></i>
+                <p class="text-xs font-bold text-slate-400">Loading data...</p>
+            </td>
+        </tr>
+    `;
+
+    try {
+        const response = await fetch(`/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`);
+        const data = await response.json();
+        console.log("API data", data);
+        renderWorkPackagesTable(data.work_packages || data || []);
+        renderPagination(data);
+    } catch (error) {
+        console.error("API Error:", error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-8 text-center text-rose-500">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl mb-1"></i>
+                    <p class="text-xs font-bold">Failed to load work packages from API.</p>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Render work packages into table rows with "See All Previous Audits" button
+function renderWorkPackagesTable(packages) {
+    const tbody = document.getElementById('workPackagesTableBody');
+    
+    if (!packages || packages.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-6 text-center text-slate-500 text-xs">No work packages found matching status "${currentStatus}".</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = packages.map(pkg => {
+        const wpId = pkg.id || pkg.ID;
+        const title = pkg.title || pkg.Title || 'Untitled Project';
+        const status = pkg.status || pkg.Status || currentStatus;
+        const createdAt = pkg.created_at || pkg.CreatedAt || 'N/A';
+
+        return `
+            <tr class="hover:bg-slate-800/40 transition">
+                <td class="p-3 font-mono font-bold text-rose-400">WP-#${wpId}</td>
+                <td class="p-3 font-semibold text-white">${title}</td>
+                <td class="p-3">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${status.toLowerCase() === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                        ${status}
+                    </span>
+                </td>
+                <td class="p-3 font-mono text-[11px] text-slate-400">${createdAt}</td>
+                <td class="p-3 text-right">
+                    <button type="button" onclick="viewPreviousAuditsForPackage(${wpId})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] px-3 py-1.5 rounded-xl transition inline-flex items-center gap-1.5 border border-slate-600 shadow">
+                        <i class="fa-solid fa-history"></i> See All Previous Audits
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Render pagination
+function renderPagination(data) {
+    const pagination = document.getElementById('paginationContainer');
+    if (!data || !data.total_pages || data.total_pages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let buttons = '';
+    for (let i = 1; i <= data.total_pages; i++) {
+        buttons += `
+            <button onclick="fetchWorkPackages(${i})" class="px-3 py-1.5 rounded-xl text-xs font-mono font-bold ${data.current_page === i ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+                ${i}
+            </button>
+        `;
+    }
+    pagination.innerHTML = buttons;
+}
+
+// Status dropdown change handler
+function handleStatusChange(status) {
+    currentStatus = status;
+    fetchWorkPackages(1);
+}
+
+// Search input handler
+function handleSearchInput(event) {
+    currentSearch = event.target.value;
+    if (event.key === 'Enter' || currentSearch === '') {
+        fetchWorkPackages(1);
+    }
+}
+
+// Modal controls
+function openPreviousAuditsModal() {
+    document.getElementById('previousAuditsModal').classList.remove('hidden');
+}
+
+function closePreviousAuditsModal() {
+    document.getElementById('previousAuditsModal').classList.add('hidden');
+}
+
+// Fetch and display audits for a specific work package when button is clicked
+async function viewPreviousAuditsForPackage(wpId) {
+    openPreviousAuditsModal();
+    const container = document.getElementById('previousAuditsListContainer');
+    container.innerHTML = `
+        <div class="text-center py-6 text-slate-500">
+            <i class="fa-solid fa-spinner fa-spin text-xl text-rose-500 mb-2"></i>
+            <p class="text-xs">Loading audit history for WP-#${wpId}...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/api/v1/audits?work_package_id=${wpId}`);
+        const data = await response.json();
+        const audits = data.audits || data || [];
+
+        if (audits.length === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No historical audit records found for Work Package #${wpId}.</p>`;
+            return;
+        }
+
+        container.innerHTML = audits.map(audit => `
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                <div>
+                    <span class="font-mono text-rose-400 font-bold">WP-#${audit.work_package_id || audit.WorkPackageID}</span>
+                    <span class="text-slate-200 font-bold ml-2">${audit.inspection_type || audit.InspectionType}</span>
+                    <p class="text-[10px] text-slate-400 font-mono mt-1">Measured: ${audit.measured_values || 'N/A'} | Tolerance: ${audit.tolerance_allowed || 'N/A'}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${audit.passed ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">
+                        ${audit.passed ? 'PASSED' : 'FAILED'}
+                    </span>
+                    <p class="text-[9px] text-slate-500 font-mono mt-1">${audit.inspected_at || audit.InspectedAt || ''}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("Error fetching audit history:", err);
+        container.innerHTML = `<p class="text-xs text-rose-500 text-center py-6">Failed to load audit history records.</p>`;
+    }
+}
+
+// Initial load on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    fetchWorkPackages(1);
+});
+</script>
 
 {{end}}

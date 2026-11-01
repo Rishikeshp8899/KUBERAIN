@@ -20,6 +20,9 @@ func main() {
 	mux.HandleFunc("/rfq", controllers.RFQPageHandler)
 	mux.HandleFunc("/submit-rfq", controllers.SubmitRFQHandler)
 	mux.HandleFunc("/smes-onboarding", controllers.PublicSMEOnboarding)
+	mux.HandleFunc("/about", controllers.AboutUsPageHandler)
+	mux.HandleFunc("/compliance", controllers.ComplianceHandler)
+	mux.HandleFunc("/sme-network", controllers.SmeNwtworkHandler)
 	mux.HandleFunc("/api/suppliers/register", controllers.SMESubmitHandler)
 
 	// Admin Authentication
@@ -41,7 +44,9 @@ func main() {
 	mux.HandleFunc("/admin/work-packages/details", middleware.RequireAdminAuth(controllers.AdminWorkPackageDetailsHandler))
 	mux.HandleFunc("/admin/work-packages/messages/add", middleware.RequireAdminAuth(controllers.AdminSendCommunicationHandler))
 	mux.HandleFunc("/admin/work-packages", middleware.RequireAdminAuth(controllers.APIWorkPackagesHandler))
-	mux.HandleFunc("/admin/quality-audit", controllers.AdminQualityAuditHandler)
+	mux.HandleFunc("/admin/quality-audit", middleware.RequireAdminAuth(controllers.AdminQualityAuditHandler))
+	mux.HandleFunc("/admin/audit/create", middleware.RequireAdminAuth(controllers.HandleCreateAudit))
+	mux.HandleFunc("/admin/audit-form/add", middleware.RequireAdminAuth(controllers.GetAddAuditFormHandler))
 
 	// Static Assets
 	fs := http.FileServer(http.Dir("./static"))

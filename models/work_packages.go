@@ -41,8 +41,8 @@ func CreateWorkPackage(wp WorkPackage) (int64, error) {
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ FUNCTION       : GetWorkPackageByID                                                           ║
 ║ 👨‍💻 DEVELOPER      : Rishikesh Patil (KUBERAIN INDUSTRY)                                          ║
-║ 🎯 WHAT IT DOES   : Fetches a single work package record by its unique primary key ID.             ║
-║ 🏛️ ARCHITECTURE   : Single-record point lookup query using COALESCE fallbacks for safe null        ║
+║ 🎯 WHAT IT DOES   : Fetches a single work package record by its unique primary key ID.           ║
+║ 🏛️ ARCHITECTURE   : Single-record point lookup query using COALESCE fallbacks for safe null      ║
 ║                     handling on optional supplier assignments and drawing paths.                 ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
@@ -245,7 +245,7 @@ func GetWorkPackageFullDetails(wpID int) (WorkPackageDetailView, error) {
 ║                     "completed"), multi-table search joins, total count execution, and pagination. ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
-func GetFilteredWorkPackages(statusFilter string, search string, page int, pageSize int) (WorkPackagePaginatedResult, error) {
+func GetFilteredWorkPackages(statusFilter string, search string, page int, pageSize int) (WorkPackagePaginatedResult, int, error) {
 
 	var list []WorkPackage
 	offset := (page - 1) * pageSize
@@ -277,7 +277,7 @@ func GetFilteredWorkPackages(statusFilter string, search string, page int, pageS
 	err := database.DB.QueryRow(countQuery, args...).Scan(&totalRows)
 	if err != nil {
 		log.Printf("[ERROR] [GetFilteredWorkPackages] Count query failed: %v", err)
-		return WorkPackagePaginatedResult{}, err
+		return WorkPackagePaginatedResult{}, 0, err
 	}
 
 	totalPages := (totalRows + pageSize - 1) / pageSize
@@ -303,7 +303,7 @@ func GetFilteredWorkPackages(statusFilter string, search string, page int, pageS
 	rows, err := database.DB.Query(dataQuery, dataArgs...)
 	if err != nil {
 		log.Printf("[ERROR] [GetFilteredWorkPackages] Data query failed: %v", err)
-		return WorkPackagePaginatedResult{}, err
+		return WorkPackagePaginatedResult{}, 0, err
 	}
 	defer rows.Close()
 
@@ -341,7 +341,7 @@ func GetFilteredWorkPackages(statusFilter string, search string, page int, pageS
 		NextPage:     nextPage,
 		StatusFilter: statusFilter,
 		Search:       search,
-	}, nil
+	}, totalPages, nil
 
 }
 

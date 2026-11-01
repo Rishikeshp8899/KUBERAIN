@@ -1,31 +1,45 @@
 {{define "content"}}
 <div class="flex justify-between items-center mb-8">
     <div>
-        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Industrial Product Catalog</h2>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight" id="catalogHeading">Industrial Product Catalog</h2>
         <p class="text-slate-500 text-sm mt-1">Detailed technical specifications & parameters across core engineering categories.</p>
     </div>
-    <span class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold border border-blue-100">ISO 9001 Compliant</span>
+    <div class="flex items-center gap-3">
+        <!-- RESET FILTER BUTTON -->
+        <button id="showAllBtn" onclick="filterCategory('all')" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group"></i> Show All Categories
+        </button>
+        <span class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold border border-blue-100">ISO 9001 Compliant</span>
+    </div>
 </div>
 
-<div class="space-y-6">
-    <!-- Item 1 -->
-    <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50">
-        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold">Category 01</span>
+<!-- TECHNICAL CATEGORIES WRAPPER -->
+<div class="space-y-6" id="productCategoriesContainer">
+
+    <!-- SUB DIV 1: INDUSTRIAL VALVES -->
+    <div class="category-block border border-slate-200 rounded-2xl p-6 bg-slate-50 transition" data-category="valves" id="cat-valves">
+        <div class="flex justify-between items-center">
+            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold">Category 01</span>
+            <span class="text-xs text-slate-400 font-mono">CODE: CAT-VALVES-01</span>
+        </div>
         <h3 class="font-extrabold text-2xl mt-2 text-slate-900">Industrial Ball, Gate & Globe Valves</h3>
-        <p class="text-sm text-slate-600 mt-2 mb-4">Engineered for extreme pressure, abrasive media, and high-temperature service.</p>
+        <p class="text-sm text-slate-600 mt-2 mb-4">Engineered for extreme pressure, abrasive media, and high-temperature industrial service.</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-200 text-xs">
             <div><span class="font-bold text-slate-400 block uppercase">Size Range</span><span class="font-extrabold text-slate-800">1/2" to 36"</span></div>
             <div><span class="font-bold text-slate-400 block uppercase">Pressure</span><span class="font-extrabold text-slate-800">Class 150# to 2500#</span></div>
-            <div><span class="font-bold text-slate-400 block uppercase">Materials</span><span class="font-extrabold text-slate-800">WCB, CF8, CF8M</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Materials</span><span class="font-extrabold text-slate-800">WCB, CF8, CF8M, Titanium</span></div>
             <div><span class="font-bold text-slate-400 block uppercase">Standards</span><span class="font-extrabold text-slate-800">API 598, BS 6755</span></div>
         </div>
     </div>
 
-    <!-- Item 2 -->
-    <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50">
-        <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold">Category 02</span>
+    <!-- SUB DIV 2: SEAMLESS PIPES -->
+    <div class="category-block border border-slate-200 rounded-2xl p-6 bg-slate-50 transition" data-category="pipes" id="cat-pipes">
+        <div class="flex justify-between items-center">
+            <span class="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold">Category 02</span>
+            <span class="text-xs text-slate-400 font-mono">CODE: CAT-PIPES-02</span>
+        </div>
         <h3 class="font-extrabold text-2xl mt-2 text-slate-900">Seamless & Welded Pipes</h3>
-        <p class="text-sm text-slate-600 mt-2 mb-4">High-tensile carbon steel, stainless steel, and alloy seamless piping.</p>
+        <p class="text-sm text-slate-600 mt-2 mb-4">High-tensile carbon steel, stainless steel, and alloy seamless piping for energy & chemical transport.</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-200 text-xs">
             <div><span class="font-bold text-slate-400 block uppercase">OD Size</span><span class="font-extrabold text-slate-800">1/2" to 48"</span></div>
             <div><span class="font-bold text-slate-400 block uppercase">Schedule</span><span class="font-extrabold text-slate-800">SCH 10 to SCH XXS</span></div>
@@ -33,5 +47,83 @@
             <div><span class="font-bold text-slate-400 block uppercase">Ends</span><span class="font-extrabold text-slate-800">Beveled / Plain Ends</span></div>
         </div>
     </div>
+
+    <!-- SUB DIV 3: HEAVY FITTINGS -->
+    <div class="category-block border border-slate-200 rounded-2xl p-6 bg-slate-50 transition" data-category="fittings" id="cat-fittings">
+        <div class="flex justify-between items-center">
+            <span class="bg-amber-100 text-amber-800 text-xs px-3 py-1 rounded-full font-bold">Category 03</span>
+            <span class="text-xs text-slate-400 font-mono">CODE: CAT-FITTINGS-03</span>
+        </div>
+        <h3 class="font-extrabold text-2xl mt-2 text-slate-900">Heavy Forged & Buttweld Fittings</h3>
+        <p class="text-sm text-slate-600 mt-2 mb-4">Elbows, tees, reducers, and high-pressure forged socket-weld industrial pipe fittings.</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-200 text-xs">
+            <div><span class="font-bold text-slate-400 block uppercase">Rating</span><span class="font-extrabold text-slate-800">3000# / 6000# / 9000#</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Types</span><span class="font-extrabold text-slate-800">Elbow 90/45, Tee, Reducer</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Grades</span><span class="font-extrabold text-slate-800">A105, SS304L, SS316L</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Standard</span><span class="font-extrabold text-slate-800">ASME B16.11 / B16.9</span></div>
+        </div>
+    </div>
+
+    <!-- SUB DIV 4: CNC MACHINING -->
+    <div class="category-block border border-slate-200 rounded-2xl p-6 bg-slate-50 transition" data-category="cnc" id="cat-cnc">
+        <div class="flex justify-between items-center">
+            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-bold">Category 04</span>
+            <span class="text-xs text-slate-400 font-mono">CODE: CAT-CNC-04</span>
+        </div>
+        <h3 class="font-extrabold text-2xl mt-2 text-slate-900">Custom CNC Precision Machining</h3>
+        <p class="text-sm text-slate-600 mt-2 mb-4">Multi-axis CNC turning, milling, and precision component fabrication for complex industrial geometry.</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-slate-200 text-xs">
+            <div><span class="font-bold text-slate-400 block uppercase">Tolerance</span><span class="font-extrabold text-slate-800">±0.005 mm</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Axis Setup</span><span class="font-extrabold text-slate-800">3-Axis / 5-Axis VMC</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">Materials</span><span class="font-extrabold text-slate-800">Inconel, Monel, SS, Alloy</span></div>
+            <div><span class="font-bold text-slate-400 block uppercase">QC Check</span><span class="font-extrabold text-slate-800">CMM Inspected + MTC</span></div>
+        </div>
+    </div>
+
 </div>
+
+<!-- JAVASCRIPT CATEGORY ROUTING & FILTERING -->
+<script>
+function filterCategory(catKey) {
+    const blocks = document.querySelectorAll('.category-block');
+    const showAllBtn = document.getElementById('showAllBtn');
+    const heading = document.getElementById('catalogHeading');
+
+    if (!catKey || catKey === 'all') {
+        // Show all category blocks
+        blocks.forEach(block => block.classList.remove('hidden'));
+        if (showAllBtn) showAllBtn.classList.add('hidden');
+        if (heading) heading.innerText = 'Industrial Product Catalog';
+    } else {
+        // Show only the selected category block
+        let found = false;
+        blocks.forEach(block => {
+            if (block.getAttribute('data-category') === catKey) {
+                block.classList.remove('hidden');
+                found = true;
+            } else {
+                block.classList.add('hidden');
+            }
+        });
+
+        if (found) {
+            if (showAllBtn) showAllBtn.classList.remove('hidden');
+            if (heading) heading.innerText = 'Category Specification Detail';
+        } else {
+            // Fallback if category key is not found
+            blocks.forEach(block => block.classList.remove('hidden'));
+            if (showAllBtn) showAllBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Automatically filter based on URL parameter (e.g. /products?cat=valves)
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('cat');
+    if (categoryParam) {
+        filterCategory(categoryParam);
+    }
+});
+</script>
 {{end}}

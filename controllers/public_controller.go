@@ -35,19 +35,6 @@ var customFuncs = template.FuncMap{
 
 // renderTemplate loads views/layouts/main.html + the targeted page view
 func renderTemplate(w http.ResponseWriter, pageFile string, data PageData) {
-	// layoutPath := filepath.Join("views", "layouts", "main.html")
-	// pagePath := filepath.Join("views", "pages", pageFile)
-
-	// tmpl, err := template.ParseFiles(layoutPath, pagePath)
-	// if err != nil {
-	// 	log.Printf("[ERROR] Template parsing failed (%s): %v", pageFile, err)
-	// 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// if err := tmpl.Execute(w, data); err != nil {
-	// 	log.Printf("[ERROR] Template execution failed (%s): %v", pageFile, err)
-	// }
 
 	layoutPath := filepath.Join("views", "layouts", "main.html")
 	pagePath := filepath.Join("views", "pages", pageFile)
@@ -367,4 +354,43 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Supplier registered and saved successfully",
 	})
 
+}
+
+// AboutUsPageHandler handles GET /
+func AboutUsPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/about" {
+		http.NotFound(w, r)
+		return
+	}
+	data := PageData{
+		Title:       "About Us",
+		CurrentPage: "about",
+	}
+	renderTemplate(w, "about_us.html", data)
+}
+
+// CompliancePageHandler handles GET /
+func ComplianceHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/compliance" {
+		http.NotFound(w, r)
+		return
+	}
+	data := PageData{
+		Title:       "Compliance",
+		CurrentPage: "compliance",
+	}
+	renderTemplate(w, "compliance.html", data)
+}
+
+// SmeNetworkPageHandler handles GET /
+func SmeNwtworkHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/sme-network" {
+		http.NotFound(w, r)
+		return
+	}
+	data := PageData{
+		Title:       "Sme Network",
+		CurrentPage: "sme-network",
+	}
+	renderTemplate(w, "sme-network.html", data)
 }

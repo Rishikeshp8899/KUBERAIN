@@ -701,3 +701,111 @@ func AdminQualityAuditHandler(w http.ResponseWriter, r *http.Request) {
 	renderAdminView(w, "admin_quality_audit.html", data)
 	log.Printf("[SUCCESS] [AdminQualityAuditHandler] Request completed successfully")
 }
+
+// HandleCreateAudit processes POST requests to log a new quality or compliance audit
+func HandleCreateAudit(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid form submission", http.StatusBadRequest)
+		return
+	}
+
+	wpID, _ := strconv.Atoi(r.FormValue("work_package_id"))
+	supplierID, _ := strconv.Atoi(r.FormValue("supplier_id"))
+	passed := r.FormValue("passed") == "1"
+
+	inspectionType := r.FormValue("inspection_type")
+	if inspectionType == "" {
+		inspectionType = r.FormValue("inspection_type_select")
+	}
+
+	qi := models.QualityInspection{
+		WorkPackageID:    wpID,
+		SupplierID:       supplierID,
+		InspectionType:   inspectionType,
+		Passed:           passed,
+		Comments:         r.FormValue("comments"),
+		MeasuredValues:   r.FormValue("measured_values"),
+		ToleranceAllowed: r.FormValue("tolerance_allowed"),
+		ReportFilePath:   r.FormValue("report_file_path"),
+	}
+
+	_, err := models.CreateQualityInspection(qi)
+	if err != nil {
+		log.Printf("[ERROR] [HandleCreateAudit] Failed to save audit: %v", err)
+		http.Error(w, "Database insertion error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin/compliance", http.StatusSeeOther)
+}
+
+// HandleGetWorkPackagesAPI returns filtered work packages (current/completed) with search and pagination
+func HandleGetWorkPackagesAPI(w http.ResponseWriter, r *http.Request) {
+	status := r.URL.Query().Get("status") // 'current' or 'completed'
+	search := r.URL.Query().Get("search")
+	pageStr := r.URL.Query().Get("page")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Fetch filtered packages from model layer
+	packages, totalPages, err := models.GetFilteredWorkPackages(status, search, page, 10)
+	if err != nil {
+		log.Printf("[ERROR] [HandleGetWorkPackagesAPI] Query failed: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"work_packages": packages,
+		"current_page":  page,
+		"total_pages":   totalPages,
+		"status":        status,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func GetAddAuditFormHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+
+	// 1. Fetch work packages for the dropdown selection
+	// (Using GetFilteredWorkPackages with empty filters to retrieve all active records)
+	wpResult, _, err := models.GetFilteredWorkPackages("", "", 1, 100)
+	if err != nil {
+		log.Printf("[ERROR] [GetAddAuditFormHandler] Failed to fetch work packages: %v", err)
+	}
+
+	// 2. Fetch suppliers list for the dropdown selection
+	suppliers, err := models.GetAllSuppliers() // Ensure you have this DAO method or adapt as needed
+	if err != nil {
+		log.Printf("[ERROR] [GetAddAuditFormHandler] Failed to fetch suppliers: %v", err)
+	}
+
+	// 3. Populate template data map
+	data := map[string]interface{}{
+		"Title":        "Quality Audit & Compliance Shield Form",
+		"AdminEmail":   adminEmail,
+		"Page":         "audit form",
+		"WorkPackages": wpResult.WorkPackages,
+		"Suppliers":    suppliers,
+	}
+
+	log.Printf("[INFO] [AdminQualityAuditHandler] Rendering template 'admin_quality_audit_form.html'...")
+	renderAdminView(w, "admin_quality_audit_form.html", data)
+
+}

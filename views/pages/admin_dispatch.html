@@ -1,196 +1,166 @@
+
 {{define "admin"}}
-<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
-    <!-- PAGE 3 CONTENT -->
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+    <!-- MAIN CONTENT AREA -->
     <main class="flex-1 min-w-0 space-y-6">
-        <div class="flex items-center justify-between bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-            <div>
-                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5">
-                    <i class="fa-solid fa-boxes-stacked text-blue-500"></i> Dispatched Work Packages
-                </h2>
-                <p class="text-xs text-slate-400 mt-1">Bundle scrubbed RFQs into vendor work orders, track execution milestones, and review completed deliverables.</p>
-            </div>
-            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3.5 py-2 rounded-xl font-mono">Table: work_packages</span>
-        </div>
-
-        <!-- STATUS FILTER TABS & SEARCH BAR -->
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-industrial-900 p-4 rounded-2xl border border-slate-800">
-            <!-- STATUS FILTER TABS -->
-            <div class="flex items-center space-x-2 w-full md:w-auto">
-                <button onclick="setFilter('all')" id="tab-all" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/30">
-                    All Packages
-                </button>
-                <button onclick="setFilter('current')" id="tab-current" class="px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800">
-                    Current / Active
-                </button>
-                <button onclick="setFilter('completed')" id="tab-completed" class="px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800">
-                    Completed
-                </button>
-            </div>
-
-            <!-- SEARCH BAR -->
-            <div class="flex items-center gap-2 w-full md:w-80">
-                <input type="text" id="searchInput" oninput="debounceSearch()" placeholder="Search task name or SME..." class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-medium">
-                <button onclick="fetchWorkPackages(1)" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all">
-                    <i class="fa-solid fa-search"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- WORK PACKAGES DYNAMIC CONTAINER -->
-        <div id="workPackagesContainer" class="space-y-4">
-            <!-- Dynamically injected via JavaScript API call -->
-            <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
-                <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
-                <p class="text-sm font-bold text-slate-400">Loading work packages from API...</p>
-            </div>
-        </div>
-
-        <!-- PAGINATION CONTROLS CONTAINER -->
-        <div id="paginationContainer"></div>
-    </main>
-</div>
-
-<!-- CLIENT-SIDE API FETCH & DOM RENDERING SCRIPT -->
-<script>
-    let currentStatus = 'all';
-    let currentSearch = '';
-    let searchTimer = null;
-
-    function setFilter(status) {
-        currentStatus = status;
         
-        // Update tab styles
-        ['all', 'current', 'completed'].forEach(s => {
-            const btn = document.getElementById(`tab-${s}`);
-            if (s === status) {
-                btn.className = `px-4 py-2 rounded-xl text-xs font-bold transition-all text-white shadow-md shadow-${s === 'all' ? 'blue' : s === 'current' ? 'amber' : 'emerald'}-600/30 bg-${s === 'all' ? 'blue' : s === 'current' ? 'amber' : 'emerald'}-600`;
-            } else {
-                btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800";
-            }
-        });
+        <!-- HEADER BANNER -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 gap-4">
+            <div>
+                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-rose-500"></i> Compliance & Disintermediation Shield
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Audit Material Test Certificates (MTC) and inspect flagged communication logs.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- ADD AUDIT BUTTON -->
+                <button type="button" onclick="openAddAuditModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40">
+                    <i class="fa-solid fa-plus-circle"></i> Add Audit
+                </button>
+                <!-- VIEW PREVIOUS AUDITS BUTTON -->
+                <button type="button" onclick="openPreviousAuditsModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-600">
+                    <i class="fa-solid fa-history"></i> See Previous Audits
+                </button>
+            </div>
+        </div>
 
-        fetchWorkPackages(1);
-    }
+        <!-- DYNAMIC STATUS & PROJECT FILTER CONTROL BAR -->
+        <div class="bg-industrial-800 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
+                
+                <!-- STATUS FILTER DROPDOWN -->
+                <label for="statusFilter" class="text-xs font-bold text-slate-300 uppercase tracking-wider whitespace-nowrap">Status:</label>
+                <select id="statusFilter" onchange="handleStatusChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none font-mono">
+                    <option value="current" selected>Current Work Packages</option>
+                    <option value="completed">Completed Work Packages</option>
+                </select>
 
-    function debounceSearch() {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
-            currentSearch = document.getElementById('searchInput').value;
-            fetchWorkPackages(1);
-        }, 300);
-    }
+                <!-- SEARCH INPUT -->
+                <div class="relative flex-1 sm:w-64">
+                    <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Search work packages..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                    <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
+                </div>
+            </div>
 
-    async function fetchWorkPackages(page = 1) {
-        const container = document.getElementById('workPackagesContainer');
-        const pagination = document.getElementById('paginationContainer');
+            <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[11px] px-3 py-1 rounded-xl font-mono">
+                Tables: work_packages, communication_logs, mtc_certificates
+            </span>
+        </div>
 
-        container.innerHTML = `
+        <!-- DYNAMIC WORK PACKAGES CONTAINER -->
+        <div id="workPackagesContainer" class="space-y-4">
             <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
                 <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
                 <p class="text-sm font-bold text-slate-400">Loading data...</p>
             </div>
-        `;
+        </div>
 
-        try {
-            const response = await fetch(`/admin/work-packages?status=${currentStatus}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`);
-            const data = await response.json();
-            console.log("API data", data);
-            console.log("Fetched work packages data.work_packages:", data.work_packages);
-            renderWorkPackages(data || []);
-            renderPagination(data);
-        } catch (error) {
-            console.error("API Error:", error);
-            container.innerHTML = `
-                <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-rose-500 space-y-2">
-                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
-                    <p class="text-sm font-bold">Failed to load work packages from API.</p>
-                </div>
-            `;
-        }
-    }
+        <!-- DYNAMIC PAGINATION CONTAINER -->
+        <div id="paginationContainer" class="flex justify-center items-center gap-2 pt-2"></div>
 
-    function renderWorkPackages(packages) {
-        console.log("Rendering work packages:", packages);
-        const container = document.getElementById('workPackagesContainer');
-        if (!packages || packages.length === 0) {
-            container.innerHTML = `
-                <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
-                    <i class="fa-solid fa-folder-open text-3xl text-slate-600"></i>
-                    <p class="text-sm font-bold text-slate-400">No active work packages found.</p>
-                    <p class="text-xs">Try switching between current and completed filter views or clear search keywords.</p>
-                </div>
-            `;
-            return;
-        }
+    </main>
+</div>
 
-        container.innerHTML = packages.map(wp => `
-            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3.5">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">WP-ID #${wp.id}</span>
-                            ${wp.supplier_name ? `<span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20"><i class="fa-solid fa-industry text-[9px] mr-1"></i> SME: ${wp.supplier_name}</span>` : ''}
-                        </div>
-                        <h3 class="font-bold text-white text-base mt-1.5">${wp.title}</h3>
-                    </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-mono font-bold">$${wp.budget_usd} USD</span>
-                        <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">Status: ${wp.status}</span>
-                    </div>
-                </div>
-                
-                <p class="text-xs text-slate-400 font-mono bg-industrial-800/80 p-3.5 rounded-xl border border-slate-800">${wp.redacted_spec}</p>
-                
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-[11px] text-slate-400 border-t border-slate-800 pt-3 gap-3">
-                    <div class="flex items-center gap-4">
-                        <span>Escrow Status: <strong class="text-blue-400 font-mono">${wp.escrow_status}</strong></span>
-                        <span>Target Date: <strong class="text-slate-200 font-mono">${wp.target_date}</strong></span>
-                    </div>
-                    <div>
-                        <a href="/admin/work-packages/details?id=${wp.id}" class="bg-industrial-800 hover:bg-blue-600 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-eye text-[10px]"></i> See Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
+<script>
+let currentStatus = 'current';
+let currentSearch = '';
 
-    function renderPagination(meta) {
-        const pagination = document.getElementById('paginationContainer');
-        if (!meta.total_pages || meta.total_pages <= 1) {
-            pagination.innerHTML = '';
-            return;
-        }
+// Fetch work packages dynamically from backend REST API
+async function fetchWorkPackages(page = 1) {
+    const container = document.getElementById('workPackagesContainer');
+    const pagination = document.getElementById('paginationContainer');
 
-        pagination.innerHTML = `
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800 bg-industrial-900 p-4 rounded-2xl border border-slate-800">
-                <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                    <i class="fa-solid fa-list-ol text-blue-500"></i> Showing 10 work packages per page
-                </div>
+    container.innerHTML = `
+        <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
+            <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
+            <p class="text-sm font-bold text-slate-400">Loading data...</p>
+        </div>
+    `;
 
-                <div class="flex items-center space-x-2">
-                    ${meta.current_page > 1 ? `
-                        <button onclick="fetchWorkPackages(1)" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">First</button>
-                        <button onclick="fetchWorkPackages(${meta.prev_page})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5"><i class="fa-solid fa-chevron-left text-[10px]"></i> Previous</button>
-                    ` : ''}
-
-                    <span class="text-xs font-mono text-slate-400 px-4">
-                        Page <strong class="text-white">${meta.current_page}</strong> of <strong class="text-white">${meta.total_pages}</strong>
-                    </span>
-
-                    ${meta.current_page < meta.total_pages ? `
-                        <button onclick="fetchWorkPackages(${meta.next_page})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5">Next <i class="fa-solid fa-chevron-right text-[10px]"></i></button>
-                        <button onclick="fetchWorkPackages(${meta.total_pages})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">Last</button>
-                    ` : ''}
-                </div>
+    try {
+        const response = await fetch(`/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`);
+        const data = await response.json();
+        console.log("API data", data);
+        console.log("Fetched work packages data.work_packages:", data.work_packages);
+        renderWorkPackages(data.work_packages || data || []);
+        renderPagination(data);
+    } catch (error) {
+        console.error("API Error:", error);
+        container.innerHTML = `
+            <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-rose-500 space-y-2">
+                <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                <p class="text-sm font-bold">Failed to load work packages from API.</p>
             </div>
         `;
     }
+}
 
-    // Initial load on page mount
-    document.addEventListener('DOMContentLoaded', () => {
+// Render work package list dynamically
+function renderWorkPackages(packages) {
+    const container = document.getElementById('workPackagesContainer');
+    
+    if (!packages || packages.length === 0) {
+        container.innerHTML = `
+            <div class="bg-industrial-800 p-8 rounded-2xl border border-slate-800 text-center text-slate-500">
+                <p class="text-xs font-bold">No work packages found matching status "${currentStatus}".</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = packages.map(pkg => `
+        <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition space-y-3">
+            <div class="flex justify-between items-center text-xs">
+                <span class="font-mono font-bold text-blue-400">WP-#${pkg.id || pkg.ID}</span>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${currentStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                    ${pkg.status || currentStatus}
+                </span>
+            </div>
+            <h4 class="text-sm font-bold text-white">${pkg.title || pkg.Title || 'Work Package Title'}</h4>
+            <p class="text-xs text-slate-400">${pkg.description || pkg.Description || 'No description provided.'}</p>
+        </div>
+    `).join('');
+}
+
+// Render pagination buttons
+function renderPagination(data) {
+    const pagination = document.getElementById('paginationContainer');
+    if (!data || !data.total_pages || data.total_pages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let buttons = '';
+    for (let i = 1; i <= data.total_pages; i++) {
+        buttons += `
+            <button onclick="fetchWorkPackages(${i})" class="px-3 py-1.5 rounded-xl text-xs font-mono font-bold ${data.current_page === i ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+                ${i}
+            </button>
+        `;
+    }
+    pagination.innerHTML = buttons;
+}
+
+// Dropdown change handler for "current" vs "completed"
+function handleStatusChange(status) {
+    currentStatus = status;
+    fetchWorkPackages(1);
+}
+
+// Search input debounce handler
+function handleSearchInput(event) {
+    currentSearch = event.target.value;
+    if (event.key === 'Enter') {
         fetchWorkPackages(1);
-    });
+    }
+}
+
+// Initial load on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetchWorkPackages(1);
+});
 </script>
+
 {{end}}
