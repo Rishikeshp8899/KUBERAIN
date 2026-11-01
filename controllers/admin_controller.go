@@ -244,7 +244,7 @@ func AdminComplianceHandler(w http.ResponseWriter, r *http.Request) {
 	// Fetch flagged off-platform messages and Material Test Certificates
 	flaggedLogs, err := models.GetFlaggedCommunicationLogs()
 	if err != nil {
-		flaggedLogs = []models.CommunicationLog{}
+		flaggedLogs = []models.FlaggedLog{}
 	}
 
 	mtcCerts, err := models.GetMaterialCertificates()
@@ -654,4 +654,50 @@ func AdminUpdateRFQStatusHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Rendering view 'admin_rfqs.html'...")
 	renderAdminView(w, "admin_rfqs.html", data)
 	log.Printf("[SUCCESS] [AdminUpdateRFQStatusHandler] Completed processing request for RFQ ID=%s", rfqIDStr)
+}
+
+// AdminQualityAuditHandler renders the Multi-SME Quality Audit & Compliance Shield view
+func AdminQualityAuditHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [AdminQualityAuditHandler] Incoming request: Method=%s, Path=%s", r.Method, r.URL.Path)
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// 1. Fetch Multi-SME Quality Inspections
+	inspections, err := models.GetQualityInspections()
+	if err != nil {
+		log.Printf("[ERROR] [AdminQualityAuditHandler] Failed to load inspections: %v", err)
+		inspections = []models.QualityInspection{}
+	}
+
+	// 2. Fetch MTC Certificates
+	mtcs, err := models.GetMTCCertificates()
+	if err != nil {
+		log.Printf("[ERROR] [AdminQualityAuditHandler] Failed to load MTCs: %v", err)
+		mtcs = []models.MaterialCertificate{}
+	}
+
+	// 3. Fetch Flagged Communication Logs
+	flaggedLogs, err := models.GetFlaggedCommunicationLogs()
+	if err != nil {
+		log.Printf("[ERROR] [AdminQualityAuditHandler] Failed to load flagged logs: %v", err)
+		flaggedLogs = []models.FlaggedLog{}
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+
+	data := map[string]interface{}{
+		"Title":              "Quality Audit & Compliance Shield",
+		"AdminEmail":         adminEmail,
+		"Page":               "quality",
+		"QualityInspections": inspections,
+		"MTCCertificates":    mtcs,
+		"FlaggedLogs":        flaggedLogs,
+	}
+
+	log.Printf("[INFO] [AdminQualityAuditHandler] Rendering template 'admin_quality_audit.html'...")
+	renderAdminView(w, "admin_quality_audit.html", data)
+	log.Printf("[SUCCESS] [AdminQualityAuditHandler] Request completed successfully")
 }

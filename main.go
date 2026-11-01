@@ -41,6 +41,7 @@ func main() {
 	mux.HandleFunc("/admin/work-packages/details", middleware.RequireAdminAuth(controllers.AdminWorkPackageDetailsHandler))
 	mux.HandleFunc("/admin/work-packages/messages/add", middleware.RequireAdminAuth(controllers.AdminSendCommunicationHandler))
 	mux.HandleFunc("/admin/work-packages", middleware.RequireAdminAuth(controllers.APIWorkPackagesHandler))
+	mux.HandleFunc("/admin/quality-audit", controllers.AdminQualityAuditHandler)
 
 	// Static Assets
 	fs := http.FileServer(http.Dir("./static"))

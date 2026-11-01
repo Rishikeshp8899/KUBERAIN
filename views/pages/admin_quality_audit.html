@@ -1,0 +1,146 @@
+{{define "admin"}}
+
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+    <!-- PAGE 5 CONTENT -->
+    <main class="flex-1 min-w-0 space-y-6">
+        <div class="flex items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800">
+            <div>
+                <h2 class="text-xl font-black text-white tracking-tight">Compliance, Multi-SME Quality Audit & Payout Shield</h2>
+                <p class="text-xs text-slate-400 mt-1">Audit Material Test Certificates (MTC) and verify per-SME inspection pass/fail status before payout release.</p>
+            </div>
+            <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs px-3 py-1.5 rounded-xl font-mono">Tables: quality_inspections, mtc_certificates, communication_logs</span>
+        </div>
+
+        <!-- MULTI-SME QUALITY AUDIT & INSPECTION SHIELD -->
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                <h3 class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-sm"></i> Per-SME Quality Audits & Defect Comments
+                </h3>
+                <span class="text-[11px] text-slate-400 font-mono">Required before SME Escrow Payout</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Work Package</th>
+                            <th class="p-3">Assigned SME Vendor</th>
+                            <th class="p-3">Inspection Type</th>
+                            <th class="p-3">Status / Audit Result</th>
+                            <th class="p-3">Failure Comments / Remarks</th>
+                            <th class="p-3 text-center">Action / Payout Gate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        {{range .QualityInspections}}
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
+                            <td class="p-3">
+                                <span class="text-purple-400 font-bold">#{{.SupplierID}}</span> - <span class="text-slate-200">{{.SupplierName}}</span>
+                            </td>
+                            <td class="p-3 font-mono text-blue-400">{{.InspectionType}}</td>
+                            <td class="p-3">
+                                {{if .Passed}}
+                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Passed</span>
+                                {{else}}
+                                <span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Failed</span>
+                                {{end}}
+                            </td>
+                            <td class="p-3">
+                                {{if .Passed}}
+                                <span class="text-slate-500 italic">No defects recorded.</span>
+                                {{else}}
+                                <div class="bg-rose-950/30 border border-rose-800/50 p-2 rounded-lg text-rose-300 font-mono text-[11px]">
+                                    <i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> {{.Comments}}
+                                </div>
+                                {{end}}
+                            </td>
+                            <td class="p-3 text-center">
+                                {{if .Passed}}
+                                <span class="text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-check-circle"></i> Cleared for Payout</span>
+                                {{else}}
+                                <span class="text-rose-400 font-bold text-[11px]"><i class="fa-solid.fa-ban"></i> Payout Blocked</span>
+                                {{end}}
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-slate-500">No multi-SME quality inspections recorded yet.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MATERIAL TEST CERTIFICATES (MTC) BY SME -->
+        <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-3">
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
+                <i class="fa-solid fa-file-circle-check text-sm"></i> Material Test Certificates (MTC) per SME
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Work Package</th>
+                            <th class="p-3">SME Vendor</th>
+                            <th class="p-3">Heat Number</th>
+                            <th class="p-3">Material Grade</th>
+                            <th class="p-3">Mill Name</th>
+                            <th class="p-3">Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        {{range .MTCCertificates}}
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
+                            <td class="p-3 text-purple-300">#{{.SupplierID}} - {{.SupplierName}}</td>
+                            <td class="p-3 font-mono text-amber-400">{{.HeatNumber}}</td>
+                            <td class="p-3 font-bold text-slate-200">{{.MaterialGrade}}</td>
+                            <td class="p-3">{{.MillName}}</td>
+                            <td class="p-3">
+                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Verified: {{.VerifiedBy}}</span>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="6" class="p-4 text-center text-slate-500">No MTC quality certificates uploaded.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- INTERCEPTED DIRECT CONTACT LOG -->
+        <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
+                <i class="fa-solid fa-triangle-exclamation text-sm"></i> Intercepted Direct Contact Log (Disintermediation Shield)
+            </h3>
+            <div class="space-y-3">
+                {{range .FlaggedLogs}}
+                <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-rose-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Flag Reason: {{.FlagReason}}
+                        </span>
+                        <span class="text-slate-500 font-mono text-[11px]">Package ID: #{{.WorkPackageID}}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 font-mono bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                        "{{.Message}}"
+                    </p>
+                    <div class="text-[10px] text-slate-400 flex justify-between items-center pt-1">
+                        <span>Sender: <strong class="text-slate-200">{{.SenderRole}} (#{{.SenderID}})</strong></span>
+                        <span class="text-slate-500 font-mono">{{.CreatedAt}}</span>
+                    </div>
+                </div>
+                {{else}}
+                <p class="text-xs text-slate-500 text-center py-4">No direct contact violations detected.</p>
+                {{end}}
+            </div>
+        </div>
+    </main>
+</div>
+
+{{end}}
