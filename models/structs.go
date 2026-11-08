@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type EnterpriseClient struct {
 	ID             int     `json:"id"`
 	Name           string  `json:"name"`
@@ -140,28 +142,6 @@ type ProjectProgress struct {
 	UpdatedAt       string `json:"updated_at"`       // Timestamp of last milestone update
 }
 
-// type MaterialCertificate struct {
-// 	ID            int    `json:"id"`
-// 	WorkPackageID int    `json:"work_package_id"`
-// 	HeatNumber    string `json:"heat_number"`    // Unique heat code stamped on steel/casting
-// 	MaterialGrade string `json:"material_grade"` // e.g., SS316L, ASTM A216 WCB
-// 	MillName      string `json:"mill_name"`      // Billet/Ingot producer foundry
-// 	CertFilePath  string `json:"cert_file_path"` // Path to scanned MTC PDF
-// 	VerifiedBy    string `json:"verified_by"`    // Metallurgist signature ID
-// 	CreatedAt     string `json:"created_at"`
-// }
-
-// type QualityInspection struct {
-// 	ID               int    `json:"id"`
-// 	WorkPackageID    int    `json:"work_package_id"`
-// 	InspectionType   string `json:"inspection_type"`   // Dimensional, Hydrostatic, Radiography, PMI
-// 	Passed           bool   `json:"passed"`            // Pass/Fail
-// 	MeasuredValues   string `json:"measured_values"`   // Recorded readings/measurements
-// 	ToleranceAllowed string `json:"tolerance_allowed"` // Permitted tolerance range
-// 	ReportFilePath   string `json:"report_file_path"`  // PDF/Photo evidence path
-// 	InspectedAt      string `json:"inspected_at"`
-// }
-
 type PaymentTracker struct {
 	ID            int `json:"id"`
 	WorkPackageID int `json:"work_package_id"`
@@ -281,4 +261,20 @@ type FlaggedLog struct {
 	FlagReason    string `json:"flag_reason"`
 	Message       string `json:"message"`
 	CreatedAt     string `json:"created_at"`
+}
+
+type WorkPackageSupplier struct {
+	WorkPackageID    int       `json:"work_package_id" db:"work_package_id"`
+	SupplierID       int       `json:"supplier_id" db:"supplier_id"`
+	AssignmentStatus string    `json:"assignment_status" db:"assignment_status"` // e.g., "Invited", "Bidding", "Awarded", "Declined"
+	AssignedAt       time.Time `json:"assigned_at" db:"assigned_at"`
+	SupplierName     string    `json:"supplier_name,omitempty" db:"supplier_name"`
+	WorkTitle        string    `json:"work_title,omitempty" db:"work_title"`
+}
+
+type SupplierDetails struct {
+	Title      string
+	Supplier   Supplier
+	Capability SupplierCapability
+	Machines   []MachineStatus
 }

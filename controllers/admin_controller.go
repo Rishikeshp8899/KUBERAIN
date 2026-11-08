@@ -12,7 +12,29 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
+
+type Set[T comparable] map[T]struct{}
+
+func NewSet[T comparable](items ...T) Set[T] {
+	s := make(Set[T])
+	for _, item := range items {
+		s.Add(item)
+	}
+	return s
+}
+
+func (s Set[T]) Union(other Set[T]) Set[T] {
+	result := NewSet[T]()
+	for item := range s {
+		result.Add(item)
+	}
+	for item := range other {
+		result.Add(item)
+	}
+	return result
+}
 
 func renderAdminView(w http.ResponseWriter, pageFile string, data interface{}) {
 
@@ -76,7 +98,7 @@ func AdminSMEHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || page < 1 {
 		page = 1
 	}
-	pageSize := 6 // Number of suppliers per page
+	pageSize := 10 // Number of suppliers per page
 
 	// Fetch Paginated & Filtered Data
 	paginatedData, err := models.GetPaginatedSuppliers(filter, search, page, pageSize)
@@ -385,7 +407,7 @@ func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Request completed successfully for RFQ ID=%d", rfqID)
 }
 
-// AdminSMEPaginatedHandler handles GET /admin/sme-directory
+// AdminSMEPaginatedHandler handles GET /admin/sme
 func AdminSMEPaginatedHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -451,7 +473,7 @@ func AdminWorkPackageDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	details, err := models.GetWorkPackageCompleteDetails(wpID)
 	if err != nil {
 		log.Printf("[ERROR] [AdminWorkPackageDetailsHandler] Failed to load details: %v", err)
-		http.Redirect(w, r, "/admin/work-packages", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
 		return
 	}
 
@@ -513,7 +535,10 @@ func AdminPaymentLedgerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch all work packages for the dropdown filter and modal selector
-	workPackages, err := models.GetAllWorkPackagesForDropdown()
+	workPackages, err := models.GetAllWorkPackagesForDropdown("current")
+
+	workPackages
+
 	if err != nil {
 		log.Printf("[WARN] [AdminPaymentLedgerHandler] Failed to load work packages dropdown: %v", err)
 	}
@@ -566,19 +591,56 @@ func AdminAddPaymentHandler(w http.ResponseWriter, r *http.Request) {
 // APISuppliersHandler returns all verified SME suppliers as JSON for multi-vendor payout splitting
 func APISuppliersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	suppliers, err := models.GetAllSuppliersForDropdown() // Or your existing supplier query
+	page := 1
+	filter := "all"
+	search := ""
+
+	// Decode parameters from POST JSON body
+	if r.Body != nil && r.Body != http.NoBody {
+		var payload struct {
+			Page   int    `json:"page"`
+			Filter string `json:"filter"`
+			Search string `json:"search"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			if payload.Page > 0 {
+				page = payload.Page
+			}
+			if payload.Filter != "" {
+				filter = payload.Filter
+			}
+			search = payload.Search
+		}
+	}
+
+	// Call the paginated & filtered model function
+	suppliers, err := models.GetAllSuppliersPaginatedWithFilter(page, filter, search)
 	if err != nil {
-		http.Error(w, `{"error":"failed to fetch suppliers"}`, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "failed to fetch suppliers",
+		})
 		return
 	}
-	json.NewEncoder(w).Encode(suppliers)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":   true,
+		"suppliers": suppliers,
+		"page":      page,
+		"filter":    filter,
+		"search":    search,
+	})
+
 }
 
 func APIWorkPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[DEBUG] [APIWorkPackagesHandler] Request received from %s", r.RemoteAddr)
 	w.Header().Set("Content-Type", "application/json")
 
-	workPackages, err := models.GetAllWorkPackagesForDropdown()
+	status := r.URL.Query().Get("status") // Optional filter: "all", "active", "completed"
+
+	workPackages, err := models.GetAllWorkPackagesForDropdown(status)
 	if err != nil {
 		log.Printf("[ERROR] [APIWorkPackagesHandler] Failed to fetch work packages: %v", err)
 		http.Error(w, `{"error":"failed to fetch work packages"}`, http.StatusInternalServerError)
@@ -617,8 +679,9 @@ func AdminUpdateRFQStatusHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("[SUCCESS] [AdminUpdateRFQStatusHandler] Successfully updated RFQ ID=%d to status='%s'", rfqID, status)
 
 			// Auto-create Work Package when RFQ is Approved
-			if status == "Approved" {
+			if status == "accept" {
 				log.Printf("[INFO] [AdminUpdateRFQStatusHandler] Status is 'Approved'. Triggering Work Package creation for RFQ ID=%d...", rfqID)
+
 				if wpErr := models.CreateWorkPackageFromRFQ(int(rfqID)); wpErr != nil {
 					log.Printf("[ERROR] [AdminUpdateRFQStatusHandler] Failed to create Work Package from RFQ ID=%d: %v", rfqID, wpErr)
 				} else {
@@ -808,4 +871,230 @@ func GetAddAuditFormHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[INFO] [AdminQualityAuditHandler] Rendering template 'admin_quality_audit_form.html'...")
 	renderAdminView(w, "admin_quality_audit_form.html", data)
 
+}
+
+func RenderSupplierDetailsPage(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	supplierID, err := strconv.Atoi(idStr)
+	if err != nil || supplierID <= 0 {
+		log.Printf("[WARN] [RenderSupplierDetailsPage] Invalid or missing supplier ID: %s", idStr)
+		http.Redirect(w, r, "/admin/sme", http.StatusSeeOther)
+		return
+	}
+	adminEmail := config.GetAdminEmail(r)
+	SupplierDetails, err := models.SupplierDetailsPage(supplierID)
+	if err != nil {
+		log.Printf("[ERROR] [RenderSupplierDetailsPage] Failed to fetch supplier details for ID %d: %v", supplierID, err)
+		http.Redirect(w, r, "/admin/sme", http.StatusSeeOther)
+		return
+	}
+
+	log.Printf("[INFO] [RenderSupplierDetailsPage] Successfully loaded details for supplier ID: %d", supplierID)
+
+	data := map[string]interface{}{
+		"Title":           "Supplier Details",
+		"AdminEmail":      adminEmail,
+		"SupplierDetails": SupplierDetails,
+	}
+
+	// Render using your project's template layout engine
+	renderAdminView(w, "admin_supplier_details.html", data)
+}
+
+// RenderOnboardingPage renders the SME registration form view via GET
+func RenderOnboardingPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "SME Manufacturer Onboarding Portal",
+	}
+	renderAdminView(w, "admin_sme_onboarding.html", data)
+}
+
+func HandleOnboardingSubmission(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		log.Printf("[ERROR] [HandleOnboardingSubmission] Failed to parse form: %v", err)
+		http.Error(w, "Bad Request: Invalid Form Data", http.StatusBadRequest)
+		return
+	}
+
+	// 1. Bind to Supplier Model
+	supplier := models.Supplier{
+		CompanyName:         r.FormValue("company_name"),
+		ContactEmail:        r.FormValue("contact_email"),
+		City:                r.FormValue("city"),
+		State:               r.FormValue("state"),
+		Phone:               r.FormValue("phone"),
+		GSTNumber:           r.FormValue("gst_number"),
+		MSMERegNumber:       r.FormValue("msme_reg_number"),
+		ISOStandard:         r.FormValue("iso_standard"),
+		PlantAreaSqFt:       parseInt(r.FormValue("plant_area_sq_ft")),
+		WorkerCount:         parseInt(r.FormValue("worker_count")),
+		CapabilitiesSummary: r.FormValue("capabilities_summary"),
+		IsVerified:          false,
+		NDASigned:           r.FormValue("nda_signed") == "true",
+	}
+
+	// 2. Bind to SupplierCapability Model
+	capability := models.SupplierCapability{
+		Category:         r.FormValue("category"),
+		MachiningType:    r.FormValue("machining_type"),
+		MaxTolerance:     r.FormValue("max_tolerance"),
+		MaxComponentDim:  r.FormValue("max_component_dim"),
+		MaterialsHandled: r.FormValue("materials_handled"),
+		CapacityPerMonth: parseInt(r.FormValue("capacity_per_month")),
+	}
+
+	// 3. Bind to MachineStatus Slice Models
+	names := r.Form["machine_name[]"]
+	calibrations := r.Form["last_calibration[]"]
+	services := r.Form["next_service_due[]"]
+	notes := r.Form["notes[]"]
+
+	var machines []models.MachineStatus
+	for i := 0; i < len(names); i++ {
+		if names[i] != "" {
+			m := models.MachineStatus{
+				MachineName:     names[i],
+				IsOperational:   true,
+				LastCalibration: getSafeSliceVal(calibrations, i),
+				NextServiceDue:  getSafeSliceVal(services, i),
+				Notes:           getSafeSliceVal(notes, i),
+			}
+			machines = append(machines, m)
+		}
+	}
+
+	supplierID, err := models.CreateSupplier(supplier)
+
+	if err != nil {
+		log.Printf("[ERROR] [HandleOnboardingSubmission] Failed to create supplier: %v", err)
+		data := map[string]interface{}{
+			"Title": "SME Manufacturer Onboarding Portal",
+			"Error": "Failed to save registration. Please check your inputs and try again.",
+		}
+		renderAdminView(w, "admin_sme_onboarding.html", data)
+		return
+	}
+	capabilityId, err := models.CreateSupplierCapability(capability)
+
+	if err != nil {
+		log.Printf("[ERROR] [HandleOnboardingSubmission] Failed to create supplier capability: %v", err)
+		data := map[string]interface{}{
+			"Title": "SME Manufacturer Onboarding Portal",
+			"Error": "Failed to save registration. Please check your inputs and try again.",
+		}
+		renderAdminView(w, "admin_sme_onboarding.html", data)
+		return
+	}
+	log.Printf("[INFO] [HandleOnboardingSubmission] Successfully created supplier capability with ID: %d for supplier ID: %d", capabilityId, supplierID)
+	for _, machine := range machines {
+		machine.SupplierID = int(supplierID)
+		machineId, err := models.CreateMachineStatus(machine)
+		if err != nil {
+			log.Printf("[ERROR] [HandleOnboardingSubmission] Failed to create machine status: %v", err)
+			data := map[string]interface{}{
+				"Title": "SME Manufacturer Onboarding Portal",
+				"Error": "Failed to save registration. Please check your inputs and try again.",
+			}
+			renderAdminView(w, "admin_sme_onboarding.html", data)
+			return
+		}
+		log.Printf("[INFO] [HandleOnboardingSubmission] Successfully created machine status with ID: %d for supplier ID: %d", machineId, supplierID)
+	}
+
+	log.Printf("[SUCCESS] [HandleOnboardingSubmission] Successfully registered supplier ID: %d , ", supplierID)
+	http.Redirect(w, r, "/admin/sme?success=true", http.StatusSeeOther)
+}
+
+func parseInt(val string) int {
+	res, _ := strconv.Atoi(val)
+	return res
+}
+
+func getSafeSliceVal(arr []string, index int) string {
+	if index < len(arr) {
+		return arr[index]
+	}
+	return ""
+}
+
+// 1. RenderDetails handles static/general work package details or auxiliary views
+func RenderDetails(w http.ResponseWriter, r *http.Request) {
+	adminEmail := config.GetAdminEmail(r)
+
+	data := map[string]interface{}{
+		"Title":      "Work Package General Overview",
+		"AdminEmail": adminEmail,
+	}
+
+	log.Printf("[INFO] [RenderDetails] Rendering general work package details view")
+	renderAdminView(w, "admin_work_package_general.html", data)
+}
+
+// 2. RenderWorkPackageDetailsPage handles dynamic ID inspection (e.g. /admin/work-packages/203)
+func RenderWorkPackageDetailsPage(w http.ResponseWriter, r *http.Request) {
+	// Extract ID from URL path (splits `/admin/work-packages/203` by '/')
+	pathParts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
+	if len(pathParts) == 0 {
+		log.Printf("[WARN] [RenderWorkPackageDetailsPage] Invalid URL path structure: %s", r.URL.Path)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	idStr := pathParts[len(pathParts)-1]
+	wpID, err := strconv.Atoi(idStr)
+	if err != nil || wpID <= 0 {
+		log.Printf("[WARN] [RenderWorkPackageDetailsPage] Invalid work package ID format: %s", idStr)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+
+	// Query database model for work package details and joined supplier info
+	wpDetails, err := models.GetWorkPackageDetailsByID(wpID)
+	if err != nil {
+		log.Printf("[ERROR] [RenderWorkPackageDetailsPage] Work package not found for ID %d: %v", wpID, err)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	log.Printf("[INFO] [RenderWorkPackageDetailsPage] Successfully loaded inspection view for Work Package ID: %d", wpID)
+
+	data := map[string]interface{}{
+		"Title":      "Work Package #" + strconv.Itoa(wpID) + " - Audit & Inspection",
+		"AdminEmail": adminEmail,
+		"Package":    wpDetails,
+	}
+
+	renderAdminView(w, "admin_work_package_details.html", data)
+}
+
+func RenderDispatchPerProjectPage(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
+	if len(parts) == 0 {
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	idStr := parts[len(parts)-1]
+	wpID, err := strconv.Atoi(idStr)
+	if err != nil || wpID <= 0 {
+		log.Printf("[WARN] [RenderDispatchPage] Invalid dispatch work package ID: %s", idStr)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	dispatchData, err := models.GetDispatchDetailsByID(wpID)
+	if err != nil {
+		log.Printf("[ERROR] [RenderDispatchPage] Dispatch record not found for ID %d", wpID)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":    "Dispatch & Bidding Portal - WP #" + strconv.Itoa(wpID),
+		"Dispatch": dispatchData,
+	}
+
+	renderAdminView(w, "admin_dispatch_details.html", data)
 }

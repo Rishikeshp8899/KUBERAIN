@@ -480,33 +480,35 @@ func GetWorkPackageCompleteDetails(wpID int) (WorkPackageCompleteDetail, error) 
 ║                     ordered descending by ID to optimize UI dropdown selectors.                  ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
-func GetAllWorkPackagesForDropdown() ([]WorkPackage, error) {
-	log.Printf("[DEBUG] [GetAllWorkPackagesForDropdown] Executing SQLite query on 'work_packages' table...")
-	query := `SELECT id, title FROM work_packages ORDER BY id DESC`
+func GetAllWorkPackagesForDropdown(status string) ([]WorkPackage, error) {
 
-	rows, err := database.DB.Query(query)
+	query := `
+		SELECT id, title, status, created_at 
+		FROM work_packages 
+		WHERE status = ? 
+		ORDER BY created_at DESC
+	`
+
+	rows, err := database.DB.Query(query, status)
 	if err != nil {
-		log.Printf("[ERROR] [GetAllWorkPackagesForDropdown] Database query failed: %v", err)
+		log.Printf("[ERROR] [GetWorkPackagesByStatus] Query failed for status %s: %v", status, err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	var list []WorkPackage
-	scanCount := 0
-
+	var packages []WorkPackage
 	for rows.Next() {
 		var wp WorkPackage
-		if err := rows.Scan(&wp.ID, &wp.Title); err != nil {
-			log.Printf("[ERROR] [GetAllWorkPackagesForDropdown] Row scan failed at index %d: %v", scanCount, err)
+		if err := rows.Scan(&wp.ID, &wp.Title, &wp.Status, &wp.CreatedAt); err != nil {
+			log.Printf("[WARN] [GetWorkPackagesByStatus] Row scan failed: %v", err)
 			continue
 		}
-		scanCount++
-		log.Printf("[DEBUG] [GetAllWorkPackagesForDropdown] Scanned WP ID: %d, Title: %s", wp.ID, wp.Title)
-		list = append(list, wp)
+		packages = append(packages, wp)
 	}
 
-	log.Printf("[SUCCESS] [GetAllWorkPackagesForDropdown] Successfully retrieved %d work packages from database", len(list))
-	return list, nil
+	log.Printf("[SUCCESS] [GetWorkPackagesByStatus] Retrieved %d packages for status: %s", len(packages), status)
+	return packages, nil
+
 }
 
 /*
@@ -521,11 +523,9 @@ func GetAllWorkPackagesForDropdown() ([]WorkPackage, error) {
 func CreateWorkPackageFromRFQ(rfqID int) error {
 	log.Printf("[DEBUG] [CreateWorkPackageFromRFQ] Executing insertion for RFQ ID=%d...", rfqID)
 
-	// SQL query inserting RFQ data directly into work_packages
 	query := `
         INSERT INTO work_packages (
             rfq_id, 
-            supplier_id, 
             title, 
             redacted_spec, 
             redacted_drawing_path, 
@@ -537,15 +537,14 @@ func CreateWorkPackageFromRFQ(rfqID int) error {
         )
         SELECT 
             id, 
-            COALESCE(supplier_id, 0), 
-            title, 
-            COALESCE(specifications, ''), 
-            COALESCE(drawing_path, ''), 
-            budget_usd, 
-            target_date, 
-            'Pending', 
-            'Active', 
-            datetime('now')
+            category || ' - ' || company_name, 
+            COALESCE(requirements, ''), 
+            COALESCE(drawing_file_path, ''), 
+            target_price_usd, 
+            delivery_deadline, 
+            'Unfunded', 
+            'current', 
+            CURRENT_TIMESTAMP
         FROM rfqs 
         WHERE id = ?
     `
@@ -562,6 +561,95 @@ func CreateWorkPackageFromRFQ(rfqID int) error {
 		return fmt.Errorf("no rfq found with id %d", rfqID)
 	}
 
-	log.Printf("[SUCCESS] [CreateWorkPackageFromRFQ] Created WorkPackage for RFQ ID=%d (Rows affected: %d)", rfqID, rowsAffected)
+	workPackageID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[SUCCESS] [CreateWorkPackageFromRFQ] Created WorkPackage ID=%d for RFQ ID=%d", workPackageID, rfqID)
 	return nil
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 📦 PACKAGE        : models                                                                       ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Queries work package details matching the exact WorkPackage struct fields.   ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+
+func GetWorkPackageDetailsByID(wpID int) (WorkPackage, error) {
+	query := `
+		SELECT 
+			wp.id, 
+			COALESCE(wp.rfq_id, 0) as rfq_id, 
+			COALESCE(wp.supplier_id, 0) as supplier_id, 
+			COALESCE(s.company_name, 'Unassigned (Open Bidding)') as supplier_name, 
+			wp.title, 
+			COALESCE(wp.redacted_spec, '') as redacted_spec, 
+			COALESCE(wp.redacted_drawing_path, '') as redacted_drawing_path, 
+			COALESCE(wp.budget_usd, 0.0) as budget_usd, 
+			COALESCE(wp.target_date, '2026-12-31') as target_date, 
+			COALESCE(wp.escrow_status, 'Pending') as escrow_status, 
+			wp.status, 
+			wp.created_at
+		FROM work_packages wp
+		LEFT JOIN suppliers s ON wp.supplier_id = s.id
+		WHERE wp.id = ?
+	`
+
+	var wp WorkPackage
+	err := database.DB.QueryRow(query, wpID).Scan(
+		&wp.ID,
+		&wp.RFQID,
+		&wp.SupplierID,
+		&wp.SupplierName,
+		&wp.Title,
+		&wp.RedactedSpec,
+		&wp.RedactedDrawingPath,
+		&wp.BudgetUSD,
+		&wp.TargetDate,
+		&wp.EscrowStatus,
+		&wp.Status,
+		&wp.CreatedAt,
+	)
+	if err != nil {
+		log.Printf("[ERROR] [GetWorkPackageDetailsByID] Failed to fetch WorkPackage ID %d: %v", wpID, err)
+		return WorkPackage{}, err
+	}
+
+	return wp, nil
+}
+
+func GetDispatchDetailsByID(wpID int) (WorkPackage, error) {
+	query := `
+		SELECT 
+			wp.id, 
+			COALESCE(wp.rfq_id, 0), 
+			COALESCE(wp.supplier_id, 0), 
+			COALESCE(s.company_name, 'Unassigned (Open Bidding Pool)'), 
+			wp.title, 
+			COALESCE(wp.redacted_spec, ''), 
+			COALESCE(wp.redacted_drawing_path, ''), 
+			COALESCE(wp.budget_usd, 0.0), 
+			COALESCE(wp.target_date, '2026-12-31'), 
+			COALESCE(wp.escrow_status, 'Pending Allocation'), 
+			wp.status, 
+			wp.created_at
+		FROM work_packages wp
+		LEFT JOIN suppliers s ON wp.supplier_id = s.id
+		WHERE wp.id = ?
+	`
+
+	var d WorkPackage
+	err := database.DB.QueryRow(query, wpID).Scan(
+		&d.ID, &d.RFQID, &d.SupplierID, &d.SupplierName, &d.Title,
+		&d.RedactedSpec, &d.RedactedDrawingPath, &d.BudgetUSD,
+		&d.TargetDate, &d.EscrowStatus, &d.Status, &d.CreatedAt,
+	)
+	if err != nil {
+		log.Printf("[ERROR] [GetDispatchDetailsByID] Failed to fetch dispatch ID %d: %v", wpID, err)
+		return WorkPackage{}, err
+	}
+	return d, nil
 }

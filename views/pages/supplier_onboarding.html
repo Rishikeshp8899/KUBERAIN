@@ -1,162 +1,133 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SME Onboarding & Registration - Richim Valve</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        industrial: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-industrial-950 text-slate-100 min-h-screen py-10 px-4 relative">
-
-    <!-- MAIN FORM BOX CONTAINER -->
-    <div class="max-w-4xl mx-auto bg-industrial-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-8 relative">
-        
-        <!-- TOP RIGHT CROSS CLOSE BUTTON -->
-        <a href="/" title="Close Form" class="absolute top-5 right-5 w-9 h-9 bg-industrial-800 hover:bg-rose-600/20 text-slate-400 hover:text-rose-400 border border-slate-700/60 hover:border-rose-500/40 rounded-xl flex items-center justify-center transition-all duration-200 shadow-md group z-10">
-            <i class="fa-solid fa-xmark text-sm group-hover:scale-110 transition-transform"></i>
-        </a>
-
-   
+{{define "content"}}
+<div class=" text-slate-800 min-h-screen py-10 px-4 relative">
         <!-- PAGE HEADER -->
-        <div class="border-b border-slate-800 pb-6 mb-6 pt-4 md:pt-0">
-            <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                <i class="fa-solid fa-industry text-blue-500"></i> SME Manufacturer Onboarding Portal
+        <div class="bg-industrial-900 text-white p-8 rounded-2xl mb-8 border border-slate-800 text-center">
+             <span class="bg-blue-600 text-xs font-bold uppercase px-3 py-1 rounded-full">Direct Procurement Portal</span>
+            <h2 class="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
+                 SME Manufacturer Onboarding Portal
             </h2>
-            <p class="text-xs text-slate-400 mt-1">Register your enterprise workshop, technical capabilities, and shop-floor machine inventory into the Richim Valve network.</p>
+            <p class="text-slate-300 text-sm">Register your enterprise workshop, technical capabilities, and shop-floor machine inventory into the Richim Valve network.</p>
         </div>
 
         <form id="smeRegisterForm" onsubmit="submitSMERegistration(event)" class="space-y-8">
             
             <!-- SECTION 1: COMPANY & LEGAL PROFILE -->
             <div class="space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 border-l-2 border-blue-500 pl-3">1. Enterprise & Legal Information</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 border-l-2 border-blue-600 pl-3">1. Enterprise & Legal Information</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Company Name</label>
-                        <input type="text" name="company_name" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="e.g., Apex Valve Precision Works">
+                        <label class="block text-slate-700 font-bold mb-1">Company Name</label>
+                        <input type="text" name="company_name" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="e.g., Apex Valve Precision Works">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Contact Email</label>
-                        <input type="email" name="contact_email" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="contact@apexvalves.in">
+                        <label class="block text-slate-700 font-bold mb-1">Contact Email</label>
+                        <input type="email" name="contact_email" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="contact@apexvalves.in">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">City</label>
-                        <input type="text" name="city" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="Thane">
+                        <label class="block text-slate-700 font-bold mb-1">City</label>
+                        <input type="text" name="city" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Thane">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">State</label>
-                        <input type="text" name="state" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="Maharashtra">
+                        <label class="block text-slate-700 font-bold mb-1">State</label>
+                        <input type="text" name="state" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Maharashtra">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Phone Number</label>
-                        <input type="text" name="phone" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="+91 98765 43210">
+                        <label class="block text-slate-700 font-bold mb-1">Phone Number</label>
+                        <input type="text" name="phone" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="+91 98765 43210">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">GSTIN Number</label>
-                        <input type="text" name="gst_number" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="27AABCA1234F1Z5">
+                        <label class="block text-slate-700 font-bold mb-1">GSTIN Number</label>
+                        <input type="text" name="gst_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="27AABCA1234F1Z5">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Udyam / MSME Registration Code</label>
-                        <input type="text" name="msme_reg_number" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="UDYAM-MH-03-0012345">
+                        <label class="block text-slate-700 font-bold mb-1">Udyam / MSME Registration Code</label>
+                        <input type="text" name="msme_reg_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="UDYAM-MH-03-0012345">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">ISO Certification Standard</label>
-                        <input type="text" name="iso_standard" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="ISO 9001:2015">
+                        <label class="block text-slate-700 font-bold mb-1">ISO Certification Standard</label>
+                        <input type="text" name="iso_standard" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="ISO 9001:2015">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Plant Area (Sq. Ft)</label>
-                        <input type="number" name="plant_area_sq_ft" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="12500">
+                        <label class="block text-slate-700 font-bold mb-1">Plant Area (Sq. Ft)</label>
+                        <input type="number" name="plant_area_sq_ft" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="12500">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Worker / Technician Count</label>
-                        <input type="number" name="worker_count" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="45">
+                        <label class="block text-slate-700 font-bold mb-1">Worker / Technician Count</label>
+                        <input type="number" name="worker_count" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="45">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 text-xs">Capabilities Summary</label>
-                    <textarea name="capabilities_summary" rows="2" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-blue-500 font-medium" placeholder="Describe core machining specialization (e.g., 5-Axis CNC Milling, SS316 Valve Bodies)"></textarea>
+                    <label class="block text-slate-700 font-bold mb-1 text-xs">Capabilities Summary</label>
+                    <textarea name="capabilities_summary" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Describe core machining specialization (e.g., 5-Axis CNC Milling, SS316 Valve Bodies)"></textarea>
                 </div>
 
                 <div class="flex items-center gap-3 pt-2">
-                    <input type="checkbox" id="nda_signed" name="nda_signed" value="true" class="w-4 h-4 bg-industrial-800 border-slate-700 rounded text-blue-600 focus:ring-blue-500">
-                    <label for="nda_signed" class="text-xs text-slate-300 font-medium">I agree and digitally sign the Richim Valve Master Platform NDA.</label>
+                    <input type="checkbox" id="nda_signed" name="nda_signed" value="true" class="w-4 h-4 bg-slate-50 border-slate-300 rounded text-blue-600 focus:ring-blue-500">
+                    <label for="nda_signed" class="text-xs text-slate-700 font-medium cursor-pointer">I agree and digitally sign the Richim Valve Master Platform NDA.</label>
                 </div>
             </div>
 
             <!-- SECTION 2: CAPABILITY MATRIX -->
-            <div class="space-y-4 pt-4 border-t border-slate-800">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-purple-400 border-l-2 border-purple-500 pl-3">2. Primary Machining & Manufacturing Capability</h3>
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-purple-600 border-l-2 border-purple-600 pl-3">2. Primary Machining & Manufacturing Capability</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Category</label>
-                        <input type="text" name="category" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="CNC Machining">
+                        <label class="block text-slate-700 font-bold mb-1">Category</label>
+                        <input type="text" name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="CNC Machining">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Machining Type</label>
-                        <input type="text" name="machining_type" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="5-Axis Milling / VMC">
+                        <label class="block text-slate-700 font-bold mb-1">Machining Type</label>
+                        <input type="text" name="machining_type" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="5-Axis Milling / VMC">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Max Tolerance Threshold</label>
-                        <input type="text" name="max_tolerance" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="+/- 0.005mm">
+                        <label class="block text-slate-700 font-bold mb-1">Max Tolerance Threshold</label>
+                        <input type="text" name="max_tolerance" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="+/- 0.005mm">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Max Component Dimension (LxWxH)</label>
-                        <input type="text" name="max_component_dim" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="800x600x500mm">
+                        <label class="block text-slate-700 font-bold mb-1">Max Component Dimension (LxWxH)</label>
+                        <input type="text" name="max_component_dim" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="800x600x500mm">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Materials Handled</label>
-                        <input type="text" name="materials_handled" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="SS316, Duplex, Inconel">
+                        <label class="block text-slate-700 font-bold mb-1">Materials Handled</label>
+                        <input type="text" name="materials_handled" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="SS316, Duplex, Inconel">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Monthly Capacity (Units)</label>
-                        <input type="number" name="capacity_per_month" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500 font-mono" placeholder="2500">
+                        <label class="block text-slate-700 font-bold mb-1">Monthly Capacity (Units)</label>
+                        <input type="number" name="capacity_per_month" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 font-mono placeholder:text-slate-400" placeholder="2500">
                     </div>
                 </div>
             </div>
 
             <!-- SECTION 3: SHOP-FLOOR MACHINE FLEET -->
-            <div class="space-y-4 pt-4 border-t border-slate-800">
+            <div class="space-y-4 pt-4 border-t border-slate-100">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 border-l-2 border-emerald-500 pl-3">3. Shop-Floor Machine Fleet Entry</h3>
-                    <button type="button" onclick="addMachineRow()" class="bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-600 border-l-2 border-emerald-600 pl-3">3. Shop-Floor Machine Fleet Entry</h3>
+                    <button type="button" onclick="addMachineRow()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-plus text-[10px]"></i> Add Another Machine
                     </button>
                 </div>
                 
                 <div id="machine-fleet-container" class="space-y-4">
-                    <div class="machine-row bg-industrial-800/60 border border-slate-700/60 rounded-xl p-4 relative space-y-3">
+                    <div class="machine-row bg-slate-50 border border-slate-200 rounded-xl p-4 relative space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div>
-                                <label class="block text-slate-400 font-bold mb-1">Machine Name / Model</label>
-                                <input type="text" name="machine_name[]" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Haas VF-4 4-Axis VMC">
+                                <label class="block text-slate-700 font-bold mb-1">Machine Name / Model</label>
+                                <input type="text" name="machine_name[]" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Haas VF-4 4-Axis VMC">
                             </div>
                             <div>
-                                <label class="block text-slate-400 font-bold mb-1">Last Calibration Date</label>
-                                <input type="date" name="last_calibration[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                                <label class="block text-slate-700 font-bold mb-1">Last Calibration Date</label>
+                                <input type="date" name="last_calibration[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                             </div>
                             <div>
-                                <label class="block text-slate-400 font-bold mb-1">Next Service Due</label>
-                                <input type="date" name="next_service_due[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                                <label class="block text-slate-700 font-bold mb-1">Next Service Due</label>
+                                <input type="date" name="next_service_due[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                             </div>
                             <div>
-                                <label class="block text-slate-400 font-bold mb-1">Audit Notes / Condition</label>
-                                <input type="text" name="notes[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Spindle precision verified">
+                                <label class="block text-slate-700 font-bold mb-1">Audit Notes / Condition</label>
+                                <input type="text" name="notes[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Spindle precision verified">
                             </div>
                         </div>
                     </div>
@@ -164,49 +135,49 @@
             </div>
 
             <!-- SUBMIT BUTTON -->
-            <div class="pt-6 border-t border-slate-800 flex items-center justify-center">
-                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2">
+            <div class="pt-6 border-t border-slate-100 flex items-center justify-center">
+                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 flex items-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Submit Registration for Audit
                 </button>
             </div>
 
         </form>
 
-    </div>
+   
 
     <!-- SUCCESS POPUP MODAL -->
-    <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="bg-industrial-900 border border-emerald-500/30 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
-            <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors text-lg font-bold">
+    <div id="successModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white border border-emerald-200 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors text-lg font-bold">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-2xl">
+            <div class="w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto text-emerald-600 text-2xl">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
             <div class="space-y-2">
-                <h3 class="text-lg font-black text-white tracking-tight">Registration Saved Successfully!</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Your SME workshop profile and machine fleet records have been securely stored in the database.</p>
+                <h3 class="text-lg font-black text-slate-900 tracking-tight">Registration Saved Successfully!</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Your SME workshop profile and machine fleet records have been securely stored in the database.</p>
             </div>
-            <a href="/" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all inline-block text-center shadow-lg shadow-emerald-600/20">
+            <a href="/" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all inline-block text-center shadow-md shadow-emerald-600/20">
                 Continue to Home
             </a>
         </div>
     </div>
 
     <!-- FAILURE POPUP MODAL -->
-    <div id="failureModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="bg-industrial-900 border border-rose-500/30 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
-            <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors text-lg font-bold">
+    <div id="failureModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white border border-rose-200 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors text-lg font-bold">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto text-rose-400 text-2xl">
+            <div class="w-16 h-16 bg-rose-50 border border-rose-200 rounded-full flex items-center justify-center mx-auto text-rose-600 text-2xl">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <div class="space-y-2">
-                <h3 class="text-lg font-black text-white tracking-tight">Registration Failed!</h3>
-                <p id="failureMessage" class="text-xs text-slate-400 leading-relaxed">Could not save records to database. Please check your inputs.</p>
+                <h3 class="text-lg font-black text-slate-900 tracking-tight">Registration Failed!</h3>
+                <p id="failureMessage" class="text-xs text-slate-500 leading-relaxed">Could not save records to database. Please check your inputs.</p>
             </div>
-            <button onclick="closeModals()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all">
+            <button onclick="closeModals()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all shadow-md shadow-rose-600/20">
                 Try Again
             </button>
         </div>
@@ -217,30 +188,30 @@
         function addMachineRow() {
             const container = document.getElementById('machine-fleet-container');
             const row = document.createElement('div');
-            row.className = "machine-row bg-industrial-800/60 border border-slate-700/60 rounded-xl p-4 relative space-y-3";
+            row.className = "machine-row bg-slate-50 border border-slate-200 rounded-xl p-4 relative space-y-3";
             row.innerHTML = `
                 <div class="flex justify-between items-center">
-                    <span class="text-[11px] font-bold text-emerald-400 uppercase font-mono">Additional Machine Unit</span>
-                    <button type="button" onclick="this.closest('.machine-row').remove()" class="text-rose-400 hover:text-rose-300 text-xs font-bold">
+                    <span class="text-[11px] font-bold text-emerald-600 uppercase font-mono">Additional Machine Unit</span>
+                    <button type="button" onclick="this.closest('.machine-row').remove()" class="text-rose-600 hover:text-rose-700 text-xs font-bold">
                         <i class="fa-solid fa-trash"></i> Remove
                     </button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Machine Name / Model</label>
-                        <input type="text" name="machine_name[]" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Mazak Variaxis i-700">
+                        <label class="block text-slate-700 font-bold mb-1">Machine Name / Model</label>
+                        <input type="text" name="machine_name[]" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Mazak Variaxis i-700">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Last Calibration Date</label>
-                        <input type="date" name="last_calibration[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <label class="block text-slate-700 font-bold mb-1">Last Calibration Date</label>
+                        <input type="date" name="last_calibration[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Next Service Due</label>
-                        <input type="date" name="next_service_due[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <label class="block text-slate-700 font-bold mb-1">Next Service Due</label>
+                        <input type="date" name="next_service_due[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1">Audit Notes / Condition</label>
-                        <input type="text" name="notes[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Linear scale checked">
+                        <label class="block text-slate-700 font-bold mb-1">Audit Notes / Condition</label>
+                        <input type="text" name="notes[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Linear scale checked">
                     </div>
                 </div>
             `;
@@ -291,5 +262,5 @@
             document.getElementById('failureModal').classList.remove('flex');
         }
     </script>
-</body>
-</html>
+</div>
+{{end}}

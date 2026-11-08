@@ -39,6 +39,7 @@ func renderTemplate(w http.ResponseWriter, pageFile string, data PageData) {
 	layoutPath := filepath.Join("views", "layouts", "main.html")
 	pagePath := filepath.Join("views", "pages", pageFile)
 
+	log.Printf("[INFO] Rendering template: Layout [%s] + Page [%s]", layoutPath, pagePath)
 	// Use template.New("") with Funcs, then parse both layout and page files into the set
 	tmpl, err := template.New("").Funcs(customFuncs).ParseFiles(layoutPath, pagePath)
 	if err != nil {
@@ -239,16 +240,14 @@ func PublicSMEOnboarding(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[INFO] [RenderSMERegistrationPage] Rendering supplier registration HTML page...")
 
-	tmpl, err := template.ParseFiles("views/pages/supplier_onboarding.html")
-	if err != nil {
-		log.Printf("[ERROR] [RenderSMERegistrationPage] Template parsing error: %v", err)
-		http.Error(w, "Template Error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	isSubmitted := r.URL.Query().Get("submitted") == "true"
 
-	if err := tmpl.Execute(w, nil); err != nil {
-		log.Printf("[ERROR] [RenderSMERegistrationPage] Template execution error: %v", err)
+	data := PageData{
+		Title:       "SME Manufacturer Onboarding Portal",
+		CurrentPage: "smes-onboarding",
+		Submitted:   isSubmitted,
 	}
+	renderTemplate(w, "supplier_onboarding.html", data)
 
 }
 
@@ -393,4 +392,34 @@ func SmeNwtworkHandler(w http.ResponseWriter, r *http.Request) {
 		CurrentPage: "sme-network",
 	}
 	renderTemplate(w, "sme-network.html", data)
+}
+
+func RenderDispatchPage(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
+	if len(parts) == 0 {
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	idStr := parts[len(parts)-1]
+	wpID, err := strconv.Atoi(idStr)
+	if err != nil || wpID <= 0 {
+		log.Printf("[WARN] [RenderDispatchPage] Invalid dispatch work package ID: %s", idStr)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	dispatchData, err := models.GetDispatchDetailsByID(wpID)
+	if err != nil {
+		log.Printf("[ERROR] [RenderDispatchPage] Dispatch record not found for ID %d", wpID)
+		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":    "Dispatch & Bidding Portal - WP #" + strconv.Itoa(wpID),
+		"Dispatch": dispatchData,
+	}
+
+	renderAdminView(w, "admin_dispatch_details.html", data)
 }

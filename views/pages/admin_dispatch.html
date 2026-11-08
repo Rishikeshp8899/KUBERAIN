@@ -1,4 +1,3 @@
-
 {{define "admin"}}
 
 <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
@@ -9,43 +8,37 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 gap-4">
             <div>
                 <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-rose-500"></i> Compliance & Disintermediation Shield
+                    <i class="fa-solid fa-truck-fast text-blue-500"></i> Work Package Dispatch & Bidding
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Audit Material Test Certificates (MTC) and inspect flagged communication logs.</p>
+                <p class="text-xs text-slate-400 mt-1">Manage active work package bidding, dispatch allocations, and project closures.</p>
             </div>
             <div class="flex items-center gap-3">
-                <!-- ADD AUDIT BUTTON -->
-                <button type="button" onclick="openAddAuditModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40">
-                    <i class="fa-solid fa-plus-circle"></i> Add Audit
-                </button>
-                <!-- VIEW PREVIOUS AUDITS BUTTON -->
-                <button type="button" onclick="openPreviousAuditsModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-600">
-                    <i class="fa-solid fa-history"></i> See Previous Audits
-                </button>
+                <span class="text-xs text-slate-400 font-mono">Logged in as: <span class="text-slate-200 font-bold">{{.AdminEmail}}</span></span>
             </div>
         </div>
 
-        <!-- DYNAMIC STATUS & PROJECT FILTER CONTROL BAR -->
+        <!-- STATUS FILTER & SEARCH CONTROL BAR -->
         <div class="bg-industrial-800 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
                 
                 <!-- STATUS FILTER DROPDOWN -->
                 <label for="statusFilter" class="text-xs font-bold text-slate-300 uppercase tracking-wider whitespace-nowrap">Status:</label>
-                <select id="statusFilter" onchange="handleStatusChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none font-mono">
+                <select id="statusFilter" onchange="handleStatusChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono">
                     <option value="current" selected>Current Work Packages</option>
                     <option value="completed">Completed Work Packages</option>
+                    <option value="closed">Closed Work Packages</option>
                 </select>
 
                 <!-- SEARCH INPUT -->
                 <div class="relative flex-1 sm:w-64">
-                    <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Search work packages..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                    <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Search work packages..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                     <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
                 </div>
             </div>
 
-            <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[11px] px-3 py-1 rounded-xl font-mono">
-                Tables: work_packages, communication_logs, mtc_certificates
+            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[11px] px-3 py-1 rounded-xl font-mono">
+                Endpoint: /admin/dispatch
             </span>
         </div>
 
@@ -53,7 +46,7 @@
         <div id="workPackagesContainer" class="space-y-4">
             <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
                 <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
-                <p class="text-sm font-bold text-slate-400">Loading data...</p>
+                <p class="text-sm font-bold text-slate-400">Loading work packages...</p>
             </div>
         </div>
 
@@ -70,20 +63,17 @@ let currentSearch = '';
 // Fetch work packages dynamically from backend REST API
 async function fetchWorkPackages(page = 1) {
     const container = document.getElementById('workPackagesContainer');
-    const pagination = document.getElementById('paginationContainer');
 
     container.innerHTML = `
         <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
             <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
-            <p class="text-sm font-bold text-slate-400">Loading data...</p>
+            <p class="text-sm font-bold text-slate-400">Loading work packages...</p>
         </div>
     `;
 
     try {
         const response = await fetch(`/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`);
         const data = await response.json();
-        console.log("API data", data);
-        console.log("Fetched work packages data.work_packages:", data.work_packages);
         renderWorkPackages(data.work_packages || data || []);
         renderPagination(data);
     } catch (error) {
@@ -95,6 +85,14 @@ async function fetchWorkPackages(page = 1) {
             </div>
         `;
     }
+}
+
+// Helper to determine status badge styles dynamically
+function getStatusBadgeClass(status) {
+    const s = (status || currentStatus).toLowerCase();
+    if (s === 'completed') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+    if (s === 'closed') return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+    return 'bg-amber-500/10 text-amber-400 border-amber-500/30'; // default current/active
 }
 
 // Render work package list dynamically
@@ -110,18 +108,37 @@ function renderWorkPackages(packages) {
         return;
     }
 
-    container.innerHTML = packages.map(pkg => `
-        <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition space-y-3">
+    container.innerHTML = packages.map(pkg => {
+        const id = pkg.id || pkg.ID;
+        const status = pkg.status || currentStatus;
+        const badgeClass = getStatusBadgeClass(status);
+
+        return `
+        <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition space-y-4">
             <div class="flex justify-between items-center text-xs">
-                <span class="font-mono font-bold text-blue-400">WP-#${pkg.id || pkg.ID}</span>
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${currentStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
-                    ${pkg.status || currentStatus}
+                <span class="font-mono font-bold text-blue-400">WP-#${id}</span>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${badgeClass}">
+                    ${status}
                 </span>
             </div>
-            <h4 class="text-sm font-bold text-white">${pkg.title || pkg.Title || 'Work Package Title'}</h4>
-            <p class="text-xs text-slate-400">${pkg.description || pkg.Description || 'No description provided.'}</p>
+            
+            <div>
+                <h4 class="text-sm font-bold text-white">${pkg.title || pkg.Title || 'Work Package Title'}</h4>
+                <p class="text-xs text-slate-400 mt-1">${pkg.description || pkg.Description || 'No description provided.'}</p>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-800/80">
+                <button type="button" onclick="viewDetails(${id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-600">
+                    <i class="fa-solid fa-eye"></i> See Details
+                </button>
+                <button type="button" onclick="dispatchWorkPackage(${id})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-950/40">
+                    <i class="fa-solid fa-paper-plane"></i> Bid / Dispatch
+                </button>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Render pagination buttons
@@ -135,7 +152,7 @@ function renderPagination(data) {
     let buttons = '';
     for (let i = 1; i <= data.total_pages; i++) {
         buttons += `
-            <button onclick="fetchWorkPackages(${i})" class="px-3 py-1.5 rounded-xl text-xs font-mono font-bold ${data.current_page === i ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+            <button onclick="fetchWorkPackages(${i})" class="px-3 py-1.5 rounded-xl text-xs font-mono font-bold ${data.current_page === i ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
                 ${i}
             </button>
         `;
@@ -143,18 +160,27 @@ function renderPagination(data) {
     pagination.innerHTML = buttons;
 }
 
-// Dropdown change handler for "current" vs "completed"
+// Dropdown change handler for "current", "completed", and "closed"
 function handleStatusChange(status) {
     currentStatus = status;
     fetchWorkPackages(1);
 }
 
-// Search input debounce handler
+// Search input handler
 function handleSearchInput(event) {
     currentSearch = event.target.value;
     if (event.key === 'Enter') {
         fetchWorkPackages(1);
     }
+}
+
+// Action handlers
+function viewDetails(wpId) {
+    window.location.href = `/admin/work-packages/${wpId}`;
+}
+
+function dispatchWorkPackage(wpId) {
+    window.location.href = `/admin/dispatch/${wpId}`;
 }
 
 // Initial load on page load

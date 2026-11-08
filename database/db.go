@@ -185,33 +185,41 @@ func InitTables() {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		);`,
 
-		// 9. Dispatched Work Packages
+		// 9. Dispatched Work Packages (removed single supplier_id)
 		`CREATE TABLE IF NOT EXISTS work_packages (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			rfq_id INTEGER REFERENCES rfqs(id) ON DELETE CASCADE,
-			supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL,
-			title TEXT NOT NULL,
-			redacted_spec TEXT NOT NULL,
-			redacted_drawing_path TEXT,
-			budget_usd REAL DEFAULT 0.0,
-			target_date TEXT,
-			escrow_status TEXT DEFAULT 'Unfunded',
-			status TEXT DEFAULT 'Bidding',
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		);`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rfq_id INTEGER REFERENCES rfqs(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    redacted_spec TEXT NOT NULL,
+    redacted_drawing_path TEXT,
+    budget_usd REAL DEFAULT 0.0,
+    target_date TEXT,
+    escrow_status TEXT DEFAULT 'Unfunded',
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);`,
+
+		// 9b. Junction Table for Many-to-Many Work Package <-> Suppliers
+		`CREATE TABLE IF NOT EXISTS work_package_suppliers (
+    work_package_id INTEGER REFERENCES work_packages(id) ON DELETE CASCADE,
+    supplier_id INTEGER REFERENCES suppliers(id) ON DELETE CASCADE,
+    assignment_status TEXT DEFAULT 'Invited', -- e.g., Invited, Bidding, Awarded, Declined
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (work_package_id, supplier_id)
+);`,
 
 		// 10. Project Progress Tracking
 		`CREATE TABLE IF NOT EXISTS project_progress (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		work_package_id INTEGER REFERENCES work_packages(id) ON DELETE CASCADE,
-        stage TEXT NOT NULL DEFAULT 'Sourcing',
-        percent_complete INTEGER DEFAULT 0,
-        milestone_note TEXT,
-        photos_path TEXT,
-        inspection_doc TEXT,
-        inspector_name TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		);`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    work_package_id INTEGER REFERENCES work_packages(id) ON DELETE CASCADE,
+    stage TEXT NOT NULL DEFAULT 'Sourcing',
+    percent_complete INTEGER DEFAULT 0,
+    milestone_note TEXT,
+    photos_path TEXT,
+    inspection_doc TEXT,
+    inspector_name TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);`,
 
 		// 11. Material Test Certificates (MTC)
 		`CREATE TABLE IF NOT EXISTS material_certificates (

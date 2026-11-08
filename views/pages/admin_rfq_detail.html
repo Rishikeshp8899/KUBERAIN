@@ -96,7 +96,7 @@
         pagination.innerHTML = '';
 
         try {
-            const url = `/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`;
+            const url = `/admin/work-packages/status?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`;
             const response = await fetch(url);
             
             if (!response.ok) {

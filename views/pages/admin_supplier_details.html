@@ -1,0 +1,120 @@
+{{define "admin"}}
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+
+        <!-- SUPPLIER HEADER BANNER -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-black text-white tracking-tight">{{.Supplier.CompanyName}}</h2>
+                    {{if .Supplier.IsVerified}}
+                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full">Verified Partner</span>
+                    {{else}}
+                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full">Pending KYC Audit</span>
+                    {{end}}
+                </div>
+                <p class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-location-dot text-blue-500 mr-1"></i> {{.Supplier.City}}, {{.Supplier.State}} • <i class="fa-solid fa-envelope text-blue-500 ml-2 mr-1"></i> {{.Supplier.ContactEmail}} • <i class="fa-solid fa-phone text-blue-500 ml-2 mr-1"></i> {{.Supplier.Phone}}</p>
+            </div>
+            
+            <!-- APPROVE & REJECT ACTIONS -->
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="supplierStatus({{.Supplier.ID}}, 1)" class="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-check text-xs"></i> Approve KYC
+                </button>
+                <button type="button" onclick="supplierStatus({{.Supplier.ID}}, 0)" class="bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/30 text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-xmark text-xs"></i> Reject / Revoke
+                </button>
+            </div>
+        </div>
+
+        <!-- GRID: ENTERPRISE INFO & CAPABILITY MATRIX -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- SECTION 1: LEGAL & WORKSHOP METRICS -->
+            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 border-l-2 border-blue-500 pl-3">Enterprise & Compliance Audit</h3>
+                
+                <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800/80 text-xs space-y-3">
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">GSTIN Number:</span> <span class="font-mono text-slate-200">{{.Supplier.GSTNumber}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">MSME / Udyam Code:</span> <span class="font-mono text-slate-200">{{.Supplier.MSMERegNumber}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">ISO Certification:</span> <span class="text-slate-200 font-medium">{{if .Supplier.ISOStandard}}{{.Supplier.ISOStandard}}{{else}}Not Specified{{end}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Plant Floor Area:</span> <span class="font-mono text-slate-200">{{.Supplier.PlantAreaSqFt}} sq. ft</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Workforce Size:</span> <span class="text-slate-200 font-medium">{{.Supplier.WorkerCount}} Technicians</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Platform NDA Signed:</span> <span class="{{if .Supplier.NDASigned}}text-emerald-400{{else}}text-rose-400{{end}} font-bold">{{if .Supplier.NDASigned}}Yes (Executed){{else}}Pending{{end}}</span></div>
+                    <div class="flex justify-between py-1"><span class="text-slate-400">Onboarded Timestamp:</span> <span class="font-mono text-slate-300">{{.Supplier.CreatedAt}}</span></div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-1">Capabilities Summary</h4>
+                    <p class="text-xs bg-industrial-800/40 p-3 rounded-xl border border-slate-800 text-slate-300 leading-relaxed">{{if .Supplier.CapabilitiesSummary}}{{.Supplier.CapabilitiesSummary}}{{else}}No summary provided.{{end}}</p>
+                </div>
+            </div>
+
+            <!-- SECTION 2: PRIMARY MACHINING CAPABILITY MATRIX -->
+            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-purple-400 border-l-2 border-purple-500 pl-3">Primary Machining Capability Matrix</h3>
+                
+                <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800/80 text-xs space-y-3">
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Machining Category:</span> <span class="text-purple-300 font-bold">{{if .Capability.Category}}{{.Capability.Category}}{{else}}N/A{{end}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Machining Process / Type:</span> <span class="text-slate-200 font-medium">{{if .Capability.MachiningType}}{{.Capability.MachiningType}}{{else}}N/A{{end}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Max Tolerance Threshold:</span> <span class="font-mono text-emerald-400">{{if .Capability.MaxTolerance}}{{.Capability.MaxTolerance}}{{else}}N/A{{end}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Max Component Dimension:</span> <span class="font-mono text-slate-200">{{if .Capability.MaxComponentDim}}{{.Capability.MaxComponentDim}}{{else}}N/A{{end}}</span></div>
+                    <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Materials Handled:</span> <span class="text-blue-400 font-semibold">{{if .Capability.MaterialsHandled}}{{.Capability.MaterialsHandled}}{{else}}N/A{{end}}</span></div>
+                    <div class="flex justify-between py-1"><span class="text-slate-400">Monthly Production Capacity:</span> <span class="font-mono text-slate-200">{{.Capability.CapacityPerMonth}} Units / Month</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 3: SHOP-FLOOR MACHINE FLEET INVENTORY -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 border-l-2 border-emerald-500 pl-3">Shop-Floor Machine Fleet Inventory</h3>
+
+            {{if .Machines}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {{range .Machines}}
+                <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-700/60 space-y-2 text-xs">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-white text-sm"><i class="fa-solid fa-gears text-emerald-500 mr-1.5"></i> {{.MachineName}}</h4>
+                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full">Operational</span>
+                    </div>
+                    <div class="space-y-1 text-slate-400 pt-1">
+                        <div class="flex justify-between"><span>Last Calibration:</span> <span class="font-mono text-slate-200">{{if .LastCalibration}}{{.LastCalibration}}{{else}}N/A{{end}}</span></div>
+                        <div class="flex justify-between"><span>Next Service Due:</span> <span class="font-mono text-slate-200">{{if .NextServiceDue}}{{.NextServiceDue}}{{else}}N/A{{end}}</span></div>
+                        <div class="flex justify-between"><span>Audit Notes:</span> <span class="text-slate-300 italic">{{if .Notes}}{{.Notes}}{{else}}None{{end}}</span></div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <div class="bg-industrial-800/40 p-8 rounded-xl border border-slate-800 text-center text-slate-500 text-xs">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl mb-1"></i>
+                <p>No shop-floor machine fleet inventory registered for this supplier.</p>
+            </div>
+            {{end}}
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT ACTION HANDLER -->
+    <script>
+        async function supplierStatus(smeId, newStatus) {
+            try {
+                const response = await fetch('/api/suppliers/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sme_id: smeId, is_verified: newStatus })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    window.location.reload();
+                } else {
+                    alert(result.message || "Failed to update supplier status.");
+                }
+            } catch (error) {
+                alert("Network error while updating supplier status.");
+            }
+        }
+    </script>
+{{end}}

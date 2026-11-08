@@ -1,0 +1,264 @@
+{{define "admin"}}
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+
+        <div class="bg-industrial-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-8 relative">
+            
+            <!-- PAGE HEADER -->
+            <div class="border-b border-slate-800 pb-6 mb-6">
+                <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-industry text-blue-500"></i> SME Manufacturer Onboarding Portal
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Register your enterprise workshop, technical capabilities, and shop-floor machine inventory into the Richim Valve network.</p>
+            </div>
+
+            <form id="smeRegisterForm" onsubmit="submitSMERegistration(event)" class="space-y-8">
+                
+                <!-- SECTION 1: COMPANY & LEGAL PROFILE -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 border-l-2 border-blue-500 pl-3">1. Enterprise & Legal Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Company Name</label>
+                            <input type="text" name="company_name" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="e.g., Apex Valve Precision Works">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Contact Email</label>
+                            <input type="email" name="contact_email" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="contact@apexvalves.in">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">City</label>
+                            <input type="text" name="city" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="Thane">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">State</label>
+                            <input type="text" name="state" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="Maharashtra">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Phone Number</label>
+                            <input type="text" name="phone" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="+91 98765 43210">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">GSTIN Number</label>
+                            <input type="text" name="gst_number" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="27AABCA1234F1Z5">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Udyam / MSME Registration Code</label>
+                            <input type="text" name="msme_reg_number" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="UDYAM-MH-03-0012345">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">ISO Certification Standard</label>
+                            <input type="text" name="iso_standard" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-medium" placeholder="ISO 9001:2015">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Plant Area (Sq. Ft)</label>
+                            <input type="number" name="plant_area_sq_ft" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="12500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Worker / Technician Count</label>
+                            <input type="number" name="worker_count" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 font-mono" placeholder="45">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 text-xs">Capabilities Summary</label>
+                        <textarea name="capabilities_summary" rows="2" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-blue-500 font-medium" placeholder="Describe core machining specialization (e.g., 5-Axis CNC Milling, SS316 Valve Bodies)"></textarea>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <input type="checkbox" id="nda_signed" name="nda_signed" value="true" class="w-4 h-4 bg-industrial-800 border-slate-700 rounded text-blue-600 focus:ring-blue-500">
+                        <label for="nda_signed" class="text-xs text-slate-300 font-medium">I agree and digitally sign the Richim Valve Master Platform NDA.</label>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: CAPABILITY MATRIX -->
+                <div class="space-y-4 pt-4 border-t border-slate-800">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-purple-400 border-l-2 border-purple-500 pl-3">2. Primary Machining & Manufacturing Capability</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Category</label>
+                            <input type="text" name="category" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="CNC Machining">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Machining Type</label>
+                            <input type="text" name="machining_type" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="5-Axis Milling / VMC">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Max Tolerance Threshold</label>
+                            <input type="text" name="max_tolerance" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="+/- 0.005mm">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Max Component Dimension (LxWxH)</label>
+                            <input type="text" name="max_component_dim" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="800x600x500mm">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Materials Handled</label>
+                            <input type="text" name="materials_handled" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500" placeholder="SS316, Duplex, Inconel">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 font-bold mb-1">Monthly Capacity (Units)</label>
+                            <input type="number" name="capacity_per_month" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-purple-500 font-mono" placeholder="2500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: SHOP-FLOOR MACHINE FLEET -->
+                <div class="space-y-4 pt-4 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 border-l-2 border-emerald-500 pl-3">3. Shop-Floor Machine Fleet Entry</h3>
+                        <button type="button" onclick="addMachineRow()" class="bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Add Another Machine
+                        </button>
+                    </div>
+                    
+                    <div id="machine-fleet-container" class="space-y-4">
+                        <div class="machine-row bg-industrial-800/60 border border-slate-700/60 rounded-xl p-4 relative space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-slate-400 font-bold mb-1">Machine Name / Model</label>
+                                    <input type="text" name="machine_name[]" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Haas VF-4 4-Axis VMC">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 font-bold mb-1">Last Calibration Date</label>
+                                    <input type="date" name="last_calibration[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 font-bold mb-1">Next Service Due</label>
+                                    <input type="date" name="next_service_due[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 font-bold mb-1">Audit Notes / Condition</label>
+                                    <input type="text" name="notes[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Spindle precision verified">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT BUTTON -->
+                <div class="pt-6 border-t border-slate-800 flex items-center justify-center">
+                    <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Registration for Audit
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- SUCCESS POPUP MODAL -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-industrial-900 border border-emerald-500/30 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
+            <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-black text-white tracking-tight">Registration Saved Successfully!</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Your SME workshop profile and machine fleet records have been securely stored in the database.</p>
+            </div>
+            <a href="/admin/sme" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all inline-block text-center shadow-lg shadow-emerald-600/20 no-underline cursor-pointer">
+                Return to Directory
+            </a>
+        </div>
+    </div>
+
+    <!-- FAILURE POPUP MODAL -->
+    <div id="failureModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-industrial-900 border border-rose-500/30 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
+            <button type="button" onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors text-lg font-bold cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto text-rose-400 text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-black text-white tracking-tight">Operation Failed!</h3>
+                <p id="failureMessage" class="text-xs text-slate-400 leading-relaxed">Could not complete request. Please check your inputs.</p>
+            </div>
+            <button type="button" onclick="closeModals()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all cursor-pointer">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT HANDLERS -->
+    <script>
+        function addMachineRow() {
+            const container = document.getElementById('machine-fleet-container');
+            const row = document.createElement('div');
+            row.className = "machine-row bg-industrial-800/60 border border-slate-700/60 rounded-xl p-4 relative space-y-3";
+            row.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-emerald-400 uppercase font-mono">Additional Machine Unit</span>
+                    <button type="button" onclick="this.closest('.machine-row').remove()" class="text-rose-400 hover:text-rose-300 text-xs font-bold cursor-pointer">
+                        <i class="fa-solid fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Machine Name / Model</label>
+                        <input type="text" name="machine_name[]" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Mazak Variaxis i-700">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Last Calibration Date</label>
+                        <input type="date" name="last_calibration[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Next Service Due</label>
+                        <input type="date" name="next_service_due[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Audit Notes / Condition</label>
+                        <input type="text" name="notes[]" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Linear scale checked">
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        async function submitSMERegistration(event) {
+            event.preventDefault();
+            const form = document.getElementById('smeRegisterForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submitBtn');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
+
+            try {
+                const response = await fetch('/api/suppliers/register', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    document.getElementById('successModal').classList.remove('hidden');
+                    document.getElementById('successModal').classList.add('flex');
+                    form.reset();
+                } else {
+                    document.getElementById('failureMessage الرئيسي').innerText = result.message || "Database insertion failed.";
+                    document.getElementById('failureModal').classList.remove('hidden');
+                    document.getElementById('failureModal').classList.add('flex');
+                }
+            } catch (error) {
+                document.getElementById('failureMessage').innerText = "Network error or server unreachable.";
+                document.getElementById('failureModal').classList.remove('hidden');
+                document.getElementById('failureModal').classList.add('flex');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Registration for Audit`;
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+            document.getElementById('failureModal').classList.add('hidden');
+            document.getElementById('failureModal').classList.remove('flex');
+        }
+    </script>
+{{end}}

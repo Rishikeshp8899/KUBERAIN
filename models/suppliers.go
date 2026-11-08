@@ -13,6 +13,7 @@
 package models
 
 import (
+	"fmt"
 	"go-mvc-app/database"
 	"log"
 )
@@ -523,18 +524,45 @@ func GetPaginatedSuppliers(filter string, search string, page int, pageSize int)
 
 /*
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🛠️ FUNCTION       : GetAllSuppliersForDropdown                                                   ║
-║ 👨‍💻 DEVELOPER      : Rishikesh Patil (KUBERAIN INDUSTRY)                                          ║
-║ 🎯 WHAT IT DOES   : Ultra-lightweight projection query returning only ID, name, city, and state. ║
-║ 🏛️ ARCHITECTURE   : Omits heavy compliance, rating, and metadata columns entirely to optimize    ║
-║                     network payloads and memory consumption for UI dropdown form selectors.      ║
+║ 🛠️ FUNCTION       : GetAllSuppliersPaginatedWithFilter                                           ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Queries supplier records with dynamic filtering, search, and pagination.     ║
+║ 🏛️ ARCHITECTURE   : Parameterized pagination query execution with integrated error handling.     ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
-func GetAllSuppliersForDropdown() ([]Supplier, error) {
-	query := `SELECT id, company_name, city, state FROM suppliers ORDER BY company_name ASC`
 
-	rows, err := database.DB.Query(query)
+func GetAllSuppliersPaginatedWithFilter(page int, filter string, search string) ([]Supplier, error) {
+	limit := 10
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	query := `SELECT id, company_name, city, state, contact_email, phone, gst_number, msme_reg_number, is_verified, iso_standard, plant_area_sq_ft, worker_count, rating, capabilities_summary, nda_signed, created_at FROM suppliers WHERE 1=1`
+	var args []interface{}
+
+	// Apply Filter Tab Logic
+	if filter == "approved" {
+		query += ` AND is_verified = 1`
+	} else if filter == "pending" {
+		query += ` AND is_verified = 0`
+	}
+
+	// Apply Search Query Logic
+	if search != "" {
+		query += ` AND (company_name LIKE ? OR city LIKE ? OR gst_number LIKE ?)`
+		searchPattern := "%" + search + "%"
+		args = append(args, searchPattern, searchPattern, searchPattern)
+	}
+
+	query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	args = append(args, limit, offset)
+
+	log.Printf("[INFO] Executing paginated & filtered query: %s [Page: %d, Filter: %s, Search: %s]", query, page, filter, search)
+
+	rows, err := database.DB.Query(query, args...)
 	if err != nil {
+		log.Printf("[ERROR] Failed to execute supplier query: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -542,11 +570,82 @@ func GetAllSuppliersForDropdown() ([]Supplier, error) {
 	var suppliers []Supplier
 	for rows.Next() {
 		var s Supplier
-		err := rows.Scan(&s.ID, &s.CompanyName, &s.City, &s.State)
+		err := rows.Scan(
+			&s.ID, &s.CompanyName, &s.City, &s.State, &s.ContactEmail, &s.Phone,
+			&s.GSTNumber, &s.MSMERegNumber, &s.IsVerified, &s.ISOStandard,
+			&s.PlantAreaSqFt, &s.WorkerCount, &s.Rating, &s.CapabilitiesSummary,
+			&s.NDASigned, &s.CreatedAt,
+		)
 		if err != nil {
 			continue
 		}
 		suppliers = append(suppliers, s)
 	}
+
+	log.Printf("[INFO] Successfully retrieved %d supplier records.", len(suppliers))
 	return suppliers, nil
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : SupplierDetailsPage                                                      ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Queries relational tables for supplier profile, capabilities, and machine    ║
+║                     fleet inventory by supplier ID, checking errors and returning ViewModel.     ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+func SupplierDetailsPage(supplierID int) (SupplierDetails, error) {
+	if supplierID <= 0 {
+		log.Printf("[WARN] [SupplierDetailsPage] Invalid or missing supplier ID: %d", supplierID)
+		return SupplierDetails{}, fmt.Errorf("invalid supplier ID: %d", supplierID)
+	}
+
+	// 1. Fetch Supplier Profile
+	var s Supplier
+	querySupplier := `SELECT id, company_name, city, state, contact_email, phone, gst_number, msme_reg_number, is_verified, iso_standard, plant_area_sq_ft, worker_count, rating, capabilities_summary, nda_signed, created_at 
+                      FROM suppliers WHERE id = ?`
+
+	err := database.DB.QueryRow(querySupplier, supplierID).Scan(
+		&s.ID, &s.CompanyName, &s.City, &s.State, &s.ContactEmail, &s.Phone,
+		&s.GSTNumber, &s.MSMERegNumber, &s.IsVerified, &s.ISOStandard,
+		&s.PlantAreaSqFt, &s.WorkerCount, &s.Rating, &s.CapabilitiesSummary,
+		&s.NDASigned, &s.CreatedAt,
+	)
+	if err != nil {
+		log.Printf("[ERROR] [SupplierDetailsPage] Supplier not found for ID %d: %v", supplierID, err)
+		return SupplierDetails{}, err
+	}
+
+	// 2. Fetch Supplier Capabilities
+	var cap SupplierCapability
+	queryCap := `SELECT id, supplier_id, category, machining_type, max_tolerance, max_component_dim, materials_handled, capacity_per_month 
+                 FROM supplier_capabilities WHERE supplier_id = ?`
+	_ = database.DB.QueryRow(queryCap, supplierID).Scan(
+		&cap.ID, &cap.SupplierID, &cap.Category, &cap.MachiningType,
+		&cap.MaxTolerance, &cap.MaxComponentDim, &cap.MaterialsHandled, &cap.CapacityPerMonth,
+	)
+
+	// 3. Fetch Machine Fleet
+	queryMachines := `SELECT id, supplier_id, machine_name, is_operational, last_calibration, next_service_due, notes 
+                      FROM machine_statuses WHERE supplier_id = ?`
+	rows, err := database.DB.Query(queryMachines, supplierID)
+	var machines []MachineStatus
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var m MachineStatus
+			if scanErr := rows.Scan(&m.ID, &m.SupplierID, &m.MachineName, &m.IsOperational, &m.LastCalibration, &m.NextServiceDue, &m.Notes); scanErr == nil {
+				machines = append(machines, m)
+			}
+		}
+	}
+
+	log.Printf("[INFO] [SupplierDetailsPage] Successfully loaded details for supplier ID: %d", supplierID)
+
+	return SupplierDetails{
+		Title:      s.CompanyName + " - Audit Profile",
+		Supplier:   s,
+		Capability: cap,
+		Machines:   machines,
+	}, nil
 }
