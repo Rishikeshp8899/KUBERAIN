@@ -653,3 +653,81 @@ func GetDispatchDetailsByID(wpID int) (WorkPackage, error) {
 	}
 	return d, nil
 }
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 📦 PACKAGE        : models                                                                       ║
+║ 🎯 WHAT IT DOES   : Provides paginated retrieval of work packages along with total count metrics   ║
+║                     for administrative dispatch and bidding lists.                               ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+
+// GetPaginatedWorkPackages retrieves a slice of work packages for a specific page and limit size
+func GetPaginatedWorkPackages(page int, status string) ([]WorkPackage, int, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	limit := 10
+
+	offset := (page - 1) * limit
+
+	// 1. Fetch total count of work packages for pagination metadata
+	var totalCount int
+	countQuery := `SELECT COUNT(*) FROM work_packages`
+	err := database.DB.QueryRow(countQuery).Scan(&totalCount)
+	if err != nil {
+		log.Printf("[ERROR] [GetPaginatedWorkPackages] Failed to count total work packages: %v", err)
+		return nil, 0, err
+	}
+
+	// 2. Query paginated records sorted by id DESC
+	query := `SELECT 
+                id, 
+                rfq_id, 
+                COALESCE(supplier_id, 0), 
+                COALESCE(title, ''), 
+                COALESCE(redacted_spec, ''), 
+                COALESCE(redacted_drawing_path, ''), 
+                COALESCE(budget_usd, 0.0), 
+                COALESCE(target_date, ''), 
+                COALESCE(escrow_status, 'Unfunded'), 
+                COALESCE(status, 'Bidding'), 
+                COALESCE(created_at, '') 
+              FROM work_packages 
+              ORDER BY created_at DESC 
+			  where status = ?
+              LIMIT ? OFFSET ?`
+
+	rows, err := database.DB.Query(query, status, limit, offset)
+	if err != nil {
+		log.Printf("[ERROR] [GetPaginatedWorkPackages] Query failed: %v", err)
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var packages []WorkPackage
+	for rows.Next() {
+		var wp WorkPackage
+		err := rows.Scan(
+			&wp.ID,
+			&wp.RFQID,
+			&wp.SupplierID,
+			&wp.Title,
+			&wp.RedactedSpec,
+			&wp.RedactedDrawingPath,
+			&wp.BudgetUSD,
+			&wp.TargetDate,
+			&wp.EscrowStatus,
+			&wp.Status,
+			&wp.CreatedAt,
+		)
+		if err != nil {
+			log.Printf("[WARN] [GetPaginatedWorkPackages] Scan failed: %v", err)
+			return nil, 0, err
+		}
+		packages = append(packages, wp)
+	}
+
+	return packages, totalCount, nil
+}

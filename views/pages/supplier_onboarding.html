@@ -227,9 +227,11 @@
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
+            console.log("Submitting SME Registration Form...");
+            console.log("Form Data:", Object.fromEntries(formData.entries()));
 
             try {
-                const response = await fetch('/api/suppliers/register', {
+                const response = await fetch('/suppliers/register', {
                     method: 'POST',
                     body: formData
                 });

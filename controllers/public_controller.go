@@ -254,8 +254,11 @@ func PublicSMEOnboarding(w http.ResponseWriter, r *http.Request) {
 // SMESubmitHandler handles POST /suppliers/register (Processes form data & inserts into DB)
 func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	log.Printf("[INFO] [APISaveSMERegistration] Received request: Method=%s, RemoteAddr=%s", r.Method, r.RemoteAddr)
 
+	// Step 1: Validate HTTP Method
 	if r.Method != http.MethodPost {
+		log.Printf("[WARN] [APISaveSMERegistration] Invalid method received: %s", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -263,24 +266,58 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	log.Printf("[DEBUG] [APISaveSMERegistration] Method validation passed (POST).")
 
-	if err := r.ParseForm(); err != nil {
-		log.Printf("[ERROR] [APISaveSMERegistration] Failed to parse form: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Bad Request: Failed to parse form data",
-		})
-		return
+	// Step 2: Parse Form Data (Multipart vs URL-encoded)
+	contentType := r.Header.Get("Content-Type")
+	log.Printf("[DEBUG] [APISaveSMERegistration] Parsing incoming form data with Content-Type: %s", contentType)
+
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			log.Printf("[ERROR] [APISaveSMERegistration] Failed to parse multipart form: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Bad Request: Failed to parse multipart form data",
+			})
+			return
+		}
+		log.Printf("[DEBUG] [APISaveSMERegistration] Successfully parsed multipart form data.")
+	} else {
+		if err := r.ParseForm(); err != nil {
+			log.Printf("[ERROR] [APISaveSMERegistration] Failed to parse form: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Bad Request: Failed to parse form data",
+			})
+			return
+		}
+		log.Printf("[DEBUG] [APISaveSMERegistration] Successfully parsed standard URL-encoded form data.")
 	}
 
-	// Extract numeric fields safely
-	plantArea, _ := strconv.Atoi(r.FormValue("plant_area_sq_ft"))
-	workerCount, _ := strconv.Atoi(r.FormValue("worker_count"))
-	capacityPerMonth, _ := strconv.Atoi(r.FormValue("capacity_per_month"))
-	ndaSigned := r.FormValue("nda_signed") == "true" || r.FormValue("nda_signed") == "on"
+	// Step 3: Extract and convert numeric/boolean fields safely
+	log.Printf("[DEBUG] [APISaveSMERegistration] Extracting numeric and boolean form values...")
+	plantArea, errPlant := strconv.Atoi(r.FormValue("plant_area_sq_ft"))
+	if errPlant != nil {
+		log.Printf("[WARN] [APISaveSMERegistration] Could not parse plant_area_sq_ft ('%s'): %v. Defaulting to 0.", r.FormValue("plant_area_sq_ft"), errPlant)
+	}
 
-	// Construct Supplier struct
+	workerCount, errWorker := strconv.Atoi(r.FormValue("worker_count"))
+	if errWorker != nil {
+		log.Printf("[WARN] [APISaveSMERegistration] Could not parse worker_count ('%s'): %v. Defaulting to 0.", r.FormValue("worker_count"), errWorker)
+	}
+
+	capacityPerMonth, errCap := strconv.Atoi(r.FormValue("capacity_per_month"))
+	if errCap != nil {
+		log.Printf("[WARN] [APISaveSMERegistration] Could not parse capacity_per_month ('%s'): %v. Defaulting to 0.", r.FormValue("capacity_per_month"), errCap)
+	}
+
+	ndaRaw := r.FormValue("nda_signed")
+	ndaSigned := ndaRaw == "true" || ndaRaw == "on"
+	log.Printf("[DEBUG] [APISaveSMERegistration] Parsed numeric/boolean fields -> PlantArea: %d, WorkerCount: %d, CapacityPerMonth: %d, NDASigned: %v", plantArea, workerCount, capacityPerMonth, ndaSigned)
+
+	// Step 4: Construct Supplier struct
 	supplier := models.Supplier{
 		CompanyName:         r.FormValue("company_name"),
 		City:                r.FormValue("city"),
@@ -295,8 +332,9 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 		CapabilitiesSummary: r.FormValue("capabilities_summary"),
 		NDASigned:           ndaSigned,
 	}
+	log.Printf("[DEBUG] [APISaveSMERegistration] Constructed Supplier object: CompanyName=%s, City=%s, Email=%s", supplier.CompanyName, supplier.City, supplier.ContactEmail)
 
-	// Construct SupplierCapability struct
+	// Step 5: Construct SupplierCapability struct
 	capability := models.SupplierCapability{
 		Category:         r.FormValue("category"),
 		MachiningType:    r.FormValue("machining_type"),
@@ -305,13 +343,17 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 		MaterialsHandled: r.FormValue("materials_handled"),
 		CapacityPerMonth: capacityPerMonth,
 	}
+	log.Printf("[DEBUG] [APISaveSMERegistration] Constructed Capability object: Category=%s, MachiningType=%s", capability.Category, capability.MachiningType)
+	log.Printf("[DEBUG] [APISaveSMERegistration] Parsed Supplier: %+v | Capability: %+v", supplier, capability)
 
-	// Extract Multiple Machines from Form Slices
+	// Step 6: Extract Multiple Machines from Form Slices
 	machineNames := r.Form["machine_name[]"]
 	lastCalibrations := r.Form["last_calibration[]"]
 	nextServiceDues := r.Form["next_service_due[]"]
 	notesList := r.Form["notes[]"]
+	log.Printf("[DEBUG] [APISaveSMERegistration] Extracted form arrays -> machine_name count: %d, last_calibration count: %d, next_service_due count: %d, notes count: %d", len(machineNames), len(lastCalibrations), len(nextServiceDues), len(notesList))
 
+	// Step 7: Map and build MachineStatus slice
 	var machines []models.MachineStatus
 	for i := 0; i < len(machineNames); i++ {
 		lastCal := ""
@@ -327,15 +369,20 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 			note = notesList[i]
 		}
 
-		machines = append(machines, models.MachineStatus{
+		machine := models.MachineStatus{
 			MachineName:     machineNames[i],
 			LastCalibration: lastCal,
 			NextServiceDue:  nextServ,
 			Notes:           note,
-		})
+		}
+		machines = append(machines, machine)
+		log.Printf("[DEBUG] [APISaveSMERegistration] Processed Machine #%d: Name=%s, LastCal=%s, NextDue=%s", i+1, machine.MachineName, machine.LastCalibration, machine.NextServiceDue)
 	}
 
-	// Save to Database Atomically
+	log.Printf("[DEBUG] [APISaveSMERegistration] Final Parsed Machines list (total %d): %+v", len(machines), machines)
+
+	// Step 8: Save to Database Atomically
+	log.Printf("[INFO] [APISaveSMERegistration] Calling database model RegisterNewSMESupplier...")
 	if err := models.RegisterNewSMESupplier(supplier, capability, machines); err != nil {
 		log.Printf("[ERROR] [APISaveSMERegistration] Database registration failed: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -345,14 +392,15 @@ func SMESubmitHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	log.Printf("[SUCCESS] [APISaveSMERegistration] Database registration completed successfully.")
 
-	// Return Success JSON Response
+	// Step 9: Return Success JSON Response
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"message": "Supplier registered and saved successfully",
 	})
-
+	log.Printf("[INFO] [APISaveSMERegistration] Successfully sent 200 OK JSON response to client.")
 }
 
 // AboutUsPageHandler handles GET /

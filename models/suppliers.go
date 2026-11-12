@@ -13,9 +13,11 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"go-mvc-app/database"
 	"log"
+	"strconv"
 )
 
 /*
@@ -648,4 +650,63 @@ func SupplierDetailsPage(supplierID int) (SupplierDetails, error) {
 		Capability: cap,
 		Machines:   machines,
 	}, nil
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : GetWorkPackageSuppliers                                                  ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Validates the work package ID and queries relational tables to retrieve all  ║
+║                     assigned SME suppliers, their assignment status, and formatted dates.        ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+
+func GetWorkPackageSuppliers(wpId string) ([]SupplierResponse, error) {
+	wpID, err := strconv.Atoi(wpId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid work package ID %q: %w", wpId, err)
+	}
+
+	query := `
+		SELECT 
+			s.id, 
+			COALESCE(s.company_name, 'Unknown Supplier') AS name, 
+			wps.assignment_status, 
+			wps.assigned_at
+		FROM work_package_suppliers wps
+		JOIN suppliers s ON wps.supplier_id = s.id
+		WHERE wps.work_package_id = ?
+	`
+
+	rows, err := database.DB.Query(query, wpID)
+	if err != nil {
+		return nil, fmt.Errorf("database error querying suppliers: %w", err)
+	}
+	defer rows.Close()
+
+	suppliers := []SupplierResponse{}
+	for rows.Next() {
+		var sup SupplierResponse
+		var assignedAt sql.NullString
+
+		if err := rows.Scan(&sup.ID, &sup.Name, &sup.Status, &assignedAt); err != nil {
+			return nil, fmt.Errorf("error scanning supplier row: %w", err)
+		}
+
+		if assignedAt.Valid {
+			if len(assignedAt.String) >= 10 {
+				sup.Date = assignedAt.String[:10]
+			} else {
+				sup.Date = assignedAt.String
+			}
+		}
+
+		suppliers = append(suppliers, sup)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating supplier rows: %w", err)
+	}
+
+	return suppliers, nil
 }

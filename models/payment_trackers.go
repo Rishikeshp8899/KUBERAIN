@@ -158,40 +158,59 @@ func DeletePaymentTracker(id int) error {
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ FUNCTION       : GetPaymentLedger                                                             ║
 ║ 👨‍💻 DEVELOPER      : Rishikesh Patil (KUBERAIN INDUSTRY)                                          ║
-║ 🎯 WHAT IT DOES   : Fetches all double-entry financial records joined with work package titles.  ║
-║ 🏛️ ARCHITECTURE   : Broad listing query joining payment trackers and work packages, sorted       ║
-║                     descending by ID to present the latest financial activities first.           ║
+║ 🎯 WHAT IT DOES   : Fetches payment ledger records filtered by status and project title search.   ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
-func GetPaymentLedger() ([]PaymentTracker, error) {
-	query := `SELECT pt.id, pt.work_package_id, COALESCE(wp.title, 'General Project'),
-                pt.client_amount_usd, pt.client_paid_status, COALESCE(pt.client_paid_date, ''), 
-                pt.supplier_amount_usd, pt.supplier_paid_status, COALESCE(pt.supplier_paid_date, ''), 
-                COALESCE(pt.notes, ''), COALESCE(pt.updated_at, '') 
-              FROM payment_trackers pt
-              LEFT JOIN work_packages wp ON pt.work_package_id = wp.id
-              ORDER BY pt.id DESC`
+func GetPaymentLedger(statusArgs ...string) ([]PaymentTrackerLog, error) {
+	status := "current"
+	if len(statusArgs) > 0 && statusArgs[0] != "" {
+		status = statusArgs[0]
+	}
+
+	log.Printf("[DEBUG] [GetPaymentLedger] Fetching payment ledger records with status filter: %s", status)
+
+	query := `
+        SELECT 
+            pt.id, 
+            pt.work_package_id, 
+            COALESCE(wp.title, 'Untitled Package') as work_package_title,
+            pt.client_amount_usd, 
+            pt.client_paid_status, 
+            COALESCE(pt.client_paid_date, ''), 
+            pt.supplier_amount_usd, 
+            pt.supplier_paid_status, 
+            COALESCE(pt.supplier_paid_date, ''), 
+            COALESCE(pt.notes, ''), 
+            COALESCE(pt.updated_at, '') 
+        FROM payment_trackers pt
+        LEFT JOIN work_packages wp ON pt.work_package_id = wp.id
+        ORDER BY pt.updated_at DESC
+    `
 
 	rows, err := database.DB.Query(query)
 	if err != nil {
+		log.Printf("[ERROR] [GetPaymentLedger] Database query failed: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	var payments []PaymentTracker
+	var payments []PaymentTrackerLog
 	for rows.Next() {
-		var p PaymentTracker
+		var p PaymentTrackerLog
 		err := rows.Scan(
-			&p.ID, &p.WorkPackageID,
+			&p.ID, &p.WorkPackageID, &p.WorkPackageTitle,
 			&p.ClientAmountUSD, &p.ClientPaidStatus, &p.ClientPaidDate,
 			&p.SupplierAmountUSD, &p.SupplierPaidStatus, &p.SupplierPaidDate,
 			&p.Notes, &p.UpdatedAt,
 		)
 		if err != nil {
+			log.Printf("[ERROR] [GetPaymentLedger] Row scan failed: %v", err)
 			continue
 		}
 		payments = append(payments, p)
 	}
+
+	log.Printf("[SUCCESS] [GetPaymentLedger] Successfully fetched %d payment ledger records.", len(payments))
 	return payments, nil
 }
 

@@ -15,27 +15,6 @@ import (
 	"strings"
 )
 
-type Set[T comparable] map[T]struct{}
-
-func NewSet[T comparable](items ...T) Set[T] {
-	s := make(Set[T])
-	for _, item := range items {
-		s.Add(item)
-	}
-	return s
-}
-
-func (s Set[T]) Union(other Set[T]) Set[T] {
-	result := NewSet[T]()
-	for item := range s {
-		result.Add(item)
-	}
-	for item := range other {
-		result.Add(item)
-	}
-	return result
-}
-
 func renderAdminView(w http.ResponseWriter, pageFile string, data interface{}) {
 
 	layoutPath := filepath.Join("views", "layouts", "admin.html")
@@ -189,8 +168,11 @@ func AdminPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	adminEmail := config.GetAdminEmail(r)
 	payments, err := models.GetPaymentLedger()
+
+	log.Printf("[INFO] [AdminPaymentsHandler] Retrieved %d payment records for admin: %s", len(payments), adminEmail)
+
 	if err != nil {
-		payments = []models.PaymentTracker{}
+		payments = []models.PaymentTrackerLog{}
 	}
 
 	data := map[string]interface{}{
@@ -464,11 +446,13 @@ func AdminWorkPackageDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	idStr := r.URL.Query().Get("id")
+
 	wpID, err := strconv.Atoi(idStr)
 	if err != nil || wpID < 1 {
 		http.Redirect(w, r, "/admin/work-packages", http.StatusSeeOther)
 		return
 	}
+	log.Printf("[INFO] [AdminWorkPackageDetailsHandler] Fetching details for Work Package ID: %d", wpID)
 
 	details, err := models.GetWorkPackageCompleteDetails(wpID)
 	if err != nil {
@@ -476,7 +460,7 @@ func AdminWorkPackageDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
 		return
 	}
-
+	log.Printf("[SUCCESS] [AdminWorkPackageDetailsHandler] Successfully retrieved details for Work Package ID: %d", wpID)
 	data := map[string]interface{}{
 		"Title":   "Work Package Execution Hub - WP-#" + strconv.Itoa(wpID),
 		"Details": details,
@@ -512,32 +496,43 @@ func AdminSendCommunicationHandler(w http.ResponseWriter, r *http.Request) {
 
 // AdminPaymentLedgerHandler handles GET /admin/payments with project filtering
 func AdminPaymentLedgerHandler(w http.ResponseWriter, r *http.Request) {
+	page := 1
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	status := r.URL.Query().Get("status") // Optional filter: "all", "active", "completed"
+
+	if status == "" && (status != "all" || status != "active" || status != "completed") {
+		status = "all"
+	}
 	// Parse optional project/work package filter query param
-	packageIDStr := r.URL.Query().Get("work_package_id")
+	packageIDStr := r.URL.Query().Get("id")
 	selectedPackageID, _ := strconv.Atoi(packageIDStr)
 
-	var payments []models.PaymentTracker
+	pageStr := r.URL.Query().Get("page")
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	var payments []models.PaymentTrackerLog
 	var err error
 
-	if selectedPackageID > 0 {
-		payments, err = models.GetPaymentsByWorkPackageID(selectedPackageID)
-	} else {
-		payments, err = models.GetPaymentLedger()
-	}
+	// if selectedPackageID > 0 {
+	// 	payments, err = models.GetPaymentsByWorkPackageID(selectedPackageID)
+	// } else {
+	payments, err = models.GetPaymentLedger()
+	// }
 
 	if err != nil {
 		log.Printf("[ERROR] [AdminPaymentLedgerHandler] Failed to fetch payments: %v", err)
 	}
 
 	// Fetch all work packages for the dropdown filter and modal selector
-	workPackages, err := models.GetAllWorkPackagesForDropdown("current")
-
-	workPackages
+	workPackage, _, err := models.GetPaginatedWorkPackages(page, status)
 
 	if err != nil {
 		log.Printf("[WARN] [AdminPaymentLedgerHandler] Failed to load work packages dropdown: %v", err)
@@ -546,7 +541,7 @@ func AdminPaymentLedgerHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title":             "Double-Entry Payment Ledger",
 		"Payments":          payments,
-		"WorkPackages":      workPackages,
+		"WorkPackages":      workPackage,
 		"SelectedPackageID": selectedPackageID,
 	}
 
@@ -555,36 +550,56 @@ func AdminPaymentLedgerHandler(w http.ResponseWriter, r *http.Request) {
 
 // AdminAddPaymentHandler handles POST /admin/payments/add to store new ledger entries
 func AdminAddPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [AdminAddPaymentHandler] Received %s request from %s", r.Method, r.RemoteAddr)
+
 	if r.Method != http.MethodPost {
+		log.Printf("[WARN] [AdminAddPaymentHandler] Method Not Allowed: %s", r.Method)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	if err := r.ParseForm(); err != nil {
+		log.Printf("[ERROR] [AdminAddPaymentHandler] Failed to parse form: %v", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
-	wpID, _ := strconv.Atoi(r.FormValue("work_package_id"))
-	clientAmt, _ := strconv.ParseFloat(r.FormValue("client_amount_usd"), 64)
+	wpID, err := strconv.Atoi(r.FormValue("work_package_id"))
+	if err != nil {
+		log.Printf("[WARN] [AdminAddPaymentHandler] Invalid work_package_id '%s': %v", r.FormValue("work_package_id"), err)
+	}
+
+	clientAmt, err := strconv.ParseFloat(r.FormValue("client_amount_usd"), 64)
+	if err != nil {
+		log.Printf("[WARN] [AdminAddPaymentHandler] Invalid client_amount_usd '%s': %v", r.FormValue("client_amount_usd"), err)
+	}
 	clientStatus := r.FormValue("client_paid_status")
 	clientDate := r.FormValue("client_paid_date")
 
-	supplierAmt, _ := strconv.ParseFloat(r.FormValue("supplier_amount_usd"), 64)
+	supplierAmt, err := strconv.ParseFloat(r.FormValue("supplier_amount_usd"), 64)
+	if err != nil {
+		log.Printf("[WARN] [AdminAddPaymentHandler] Invalid supplier_amount_usd '%s': %v", r.FormValue("supplier_amount_usd"), err)
+	}
 	supplierStatus := r.FormValue("supplier_paid_status")
 	supplierDate := r.FormValue("supplier_paid_date")
 	notes := r.FormValue("notes")
 
 	if wpID > 0 {
+		log.Printf("[INFO] [AdminAddPaymentHandler] Attempting to insert payment record for work_package_id=%d", wpID)
 		err := models.InsertPaymentRecord(
 			wpID, clientAmt, clientStatus, clientDate,
 			supplierAmt, supplierStatus, supplierDate, notes,
 		)
 		if err != nil {
-			log.Printf("[ERROR] [AdminAddPaymentHandler] Failed to insert payment: %v", err)
+			log.Printf("[ERROR] [AdminAddPaymentHandler] Failed to insert payment for work_package_id=%d: %v", wpID, err)
+		} else {
+			log.Printf("[INFO] [AdminAddPaymentHandler] Successfully inserted payment record for work_package_id=%d", wpID)
 		}
+	} else {
+		log.Printf("[WARN] [AdminAddPaymentHandler] Skipped database insertion due to invalid work_package_id: %d", wpID)
 	}
 
+	log.Printf("[INFO] [AdminAddPaymentHandler] Redirecting to /admin/payments")
 	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
 }
 
@@ -1097,4 +1112,50 @@ func RenderDispatchPerProjectPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderAdminView(w, "admin_dispatch_details.html", data)
+}
+
+func HandleGetWorkPackageSuppliers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		log.Printf("[WARN] [HandleGetWorkPackageSuppliers] Invalid HTTP method: %s from %s", r.Method, r.RemoteAddr)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.PathValue("id")
+	if idStr == "" {
+		log.Printf("[WARN] [HandleGetWorkPackageSuppliers] Missing work package ID in request path from %s", r.RemoteAddr)
+		http.Error(w, "Missing work package ID", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("[INFO] [HandleGetWorkPackageSuppliers] Fetching assigned suppliers for WorkPackageID=%s", idStr)
+
+	suppliers, err := models.GetWorkPackageSuppliers(idStr)
+	if err != nil {
+		// Return 400 Bad Request if the ID failed integer parsing, otherwise 500 Internal Server Error
+		if strings.Contains(err.Error(), "invalid work package ID") {
+			log.Printf("[WARN] [HandleGetWorkPackageSuppliers] Bad request for WorkPackageID=%s: %v", idStr, err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		log.Printf("[ERROR] [HandleGetWorkPackageSuppliers] Database error fetching suppliers for WorkPackageID=%s: %v", idStr, err)
+		http.Error(w, "Database error querying suppliers", http.StatusInternalServerError)
+		return
+	}
+
+	// Ensure non-nil slice so empty results encode as [] instead of null
+	if suppliers == nil {
+		suppliers = []models.SupplierResponse{}
+	}
+
+	log.Printf("[INFO] [HandleGetWorkPackageSuppliers] Successfully retrieved %d supplier(s) for WorkPackageID=%s", len(suppliers), idStr)
+
+	// Return JSON matching frontend expectations
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string]any{
+		"suppliers": suppliers,
+	}); err != nil {
+		log.Printf("[ERROR] [HandleGetWorkPackageSuppliers] Failed to encode JSON response for WorkPackageID=%s: %v", idStr, err)
+		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+	}
 }

@@ -278,3 +278,25 @@ type SupplierDetails struct {
 	Capability SupplierCapability
 	Machines   []MachineStatus
 }
+
+type PaymentTrackerLog struct {
+	ID                 int     `json:"id"`
+	WorkPackageID      int     `json:"work_package_id"`
+	WorkPackageTitle   string  `json:"work_package_title"`
+	ClientAmountUSD    float64 `json:"client_amount_usd"`
+	ClientPaidStatus   string  `json:"client_paid_status"`
+	ClientPaidDate     string  `json:"client_paid_date"`
+	SupplierAmountUSD  float64 `json:"supplier_amount_usd"`
+	SupplierPaidStatus string  `json:"supplier_paid_status"`
+	SupplierPaidDate   string  `json:"supplier_paid_date"`
+	Notes              string  `json:"notes"`
+	UpdatedAt          string  `json:"updated_at"`
+}
+
+type SupplierResponse struct {
+	ID     int     `json:"id"`
+	Name   string  `json:"name"`
+	Status string  `json:"status"`
+	Amount float64 `json:"amount"`
+	Date   string  `json:"date"`
+}

@@ -8,7 +8,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 gap-4">
             <div>
                 <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                    <i class="fa-solid fa-truck-fast text-blue-500"></i> Work Package Dispatch & Bidding
+                    <i class="fa-solid fa-truck-fast text-blue-500"></i> Active Dispatch & Progress
                 </h2>
                 <p class="text-xs text-slate-400 mt-1">Manage active work package bidding, dispatch allocations, and project closures.</p>
             </div>
@@ -56,6 +56,57 @@
     </main>
 </div>
 
+<!-- ADD SUPPLIERS MODAL FORM WITH CAPABILITY MATCHING -->
+<div id="modal-add-suppliers" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="bg-industrial-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 space-y-5 shadow-2xl relative">
+        <button onclick="closeModal('modal-add-suppliers')" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors text-lg font-bold">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+            <div class="w-10 h-10 bg-emerald-600/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 text-base">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-black text-white tracking-tight">Assign Qualified SME Suppliers</h3>
+                <p class="text-xs text-slate-400">Filter and assign operational suppliers matching specs for Work Package <span id="modal-wp-id-label" class="font-mono text-emerald-400 font-bold"></span>.</p>
+            </div>
+        </div>
+
+        <form id="addSuppliersForm" action="" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" id="modal_work_package_id" name="work_package_id">
+
+            <div>
+                <label class="block text-slate-400 font-bold mb-1">Filter by Capability Category / Machining Type</label>
+                <div class="flex gap-2">
+                    <input type="text" id="filter-category" placeholder="e.g., CNC Milling" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    <button type="button" onclick="loadSuppliersForModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-bold transition">Filter</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-slate-400 font-bold mb-1">Select Qualified SME Supplier (Operational Machines Verified)</label>
+                <select name="supplier_id" id="modal-supplier-select" required class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white font-medium focus:outline-none focus:border-emerald-500">
+                    <option value="">-- Loading Qualified Suppliers --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-slate-400 font-bold mb-1">Allocation Notes / Requirements</label>
+                <textarea name="allocation_notes" rows="3" class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-white" placeholder="Specify batch tolerances, delivery timelines, escrow notes..."></textarea>
+            </div>
+
+            <div class="pt-2 flex gap-3">
+                <button type="button" onclick="closeModal('modal-add-suppliers')" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-wider transition-all">
+                    Cancel
+                </button>
+                <button type="submit" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/30">
+                    Assign Supplier
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 let currentStatus = 'current';
 let currentSearch = '';
@@ -92,7 +143,7 @@ function getStatusBadgeClass(status) {
     const s = (status || currentStatus).toLowerCase();
     if (s === 'completed') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
     if (s === 'closed') return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
-    return 'bg-amber-500/10 text-amber-400 border-amber-500/30'; // default current/active
+    return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
 }
 
 // Render work package list dynamically
@@ -110,6 +161,8 @@ function renderWorkPackages(packages) {
 
     container.innerHTML = packages.map(pkg => {
         const id = pkg.id || pkg.ID;
+        const title = pkg.title || pkg.Title || 'Work Package Title';
+        const description = pkg.description || pkg.Description || 'No description provided.';
         const status = pkg.status || currentStatus;
         const badgeClass = getStatusBadgeClass(status);
 
@@ -123,17 +176,20 @@ function renderWorkPackages(packages) {
             </div>
             
             <div>
-                <h4 class="text-sm font-bold text-white">${pkg.title || pkg.Title || 'Work Package Title'}</h4>
-                <p class="text-xs text-slate-400 mt-1">${pkg.description || pkg.Description || 'No description provided.'}</p>
+                <h4 class="text-sm font-bold text-white">${title}</h4>
+                <p class="text-xs text-slate-400 mt-1">${description}</p>
             </div>
 
-            <!-- ACTION BUTTONS -->
+            <!-- ACTION BUTTONS: Add Suppliers (triggers modal), Dispatch, View -->
             <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-800/80">
-                <button type="button" onclick="viewDetails(${id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-600">
-                    <i class="fa-solid fa-eye"></i> See Details
+                <button type="button" onclick="openAddSuppliersModal(${id})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-950/40">
+                    <i class="fa-solid fa-user-plus"></i> Add Suppliers
                 </button>
                 <button type="button" onclick="dispatchWorkPackage(${id})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-950/40">
-                    <i class="fa-solid fa-paper-plane"></i> Bid / Dispatch
+                    <i class="fa-solid fa-paper-plane"></i> Dispatch
+                </button>
+                <button type="button" onclick="viewDetails(${id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 border border-slate-600">
+                    <i class="fa-solid fa-eye"></i> View
                 </button>
             </div>
         </div>
@@ -160,7 +216,7 @@ function renderPagination(data) {
     pagination.innerHTML = buttons;
 }
 
-// Dropdown change handler for "current", "completed", and "closed"
+// Dropdown change handler for statuses
 function handleStatusChange(status) {
     currentStatus = status;
     fetchWorkPackages(1);
@@ -174,13 +230,57 @@ function handleSearchInput(event) {
     }
 }
 
-// Action handlers
-function viewDetails(wpId) {
-    window.location.href = `/admin/work-packages/${wpId}`;
+// Modal control functions
+async function openAddSuppliersModal(wpId) {
+    document.getElementById('modal_work_package_id').value = wpId;
+    document.getElementById('modal-wp-id-label').innerText = `#${wpId}`;
+    document.getElementById('addSuppliersForm').action = `/admin/work-packages/${wpId}/add-suppliers`;
+    
+    openModal('modal-add-suppliers');
+    await loadSuppliersForModal();
 }
 
+async function loadSuppliersForModal() {
+    const selectEl = document.getElementById('modal-supplier-select');
+    const categoryQuery = document.getElementById('filter-category').value;
+    
+    selectEl.innerHTML = '<option value="">-- Filtering Qualified Suppliers --</option>';
+    try {
+        const res = await fetch(`/admin/suppliers/matching?category=${encodeURIComponent(categoryQuery)}`);
+        const data = await res.json();
+        const suppliers = data.suppliers || data || [];
+        
+        selectEl.innerHTML = '<option value="">-- Select Qualified SME Supplier --</option>';
+        if (suppliers.length > 0) {
+            suppliers.forEach(s => {
+                selectEl.innerHTML += `<option value="${s.id}">${s.company_name} (${s.city}, ${s.state}) - Rating: ${s.rating}★</option>`;
+            });
+        } else {
+            selectEl.innerHTML = '<option value="">No qualified suppliers found meeting criteria</option>';
+        }
+    } catch (err) {
+        console.error('Failed to load matching suppliers:', err);
+        selectEl.innerHTML = '<option value="">Error loading suppliers</option>';
+    }
+}
+
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+}
+
+// Action handlers
 function dispatchWorkPackage(wpId) {
     window.location.href = `/admin/dispatch/${wpId}`;
+}
+
+function viewDetails(wpId) {
+    window.location.href = `/admin/work-packages/${wpId}`;
 }
 
 // Initial load on page load
