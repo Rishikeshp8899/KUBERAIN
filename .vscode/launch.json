@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run main.go",
+      "type": "go-debug-pro",
+      "request": "launch",
+      "program": "/Users/rishikeshpatil/Desktop/Richim Valve/main.go",
+      "cwd": "/Users/rishikeshpatil/Desktop/Richim Valve",
+      "mode": "exec"
+    }
+  ]
+}

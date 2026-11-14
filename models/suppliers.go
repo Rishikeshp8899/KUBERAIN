@@ -18,6 +18,7 @@ import (
 	"go-mvc-app/database"
 	"log"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -195,6 +196,9 @@ func UpdateSMEVerificationStatus(id int64, isVerified bool) error {
 func GetCapableSuppliersForRFQ(category string, material string) ([]Supplier, error) {
 	var suppliers []Supplier
 
+	// Log function entry and input parameters
+	log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Function called with category=%q, material=%q", category, material)
+
 	// Query suppliers whose capabilities or verification match the RFQ needs
 	query := `SELECT DISTINCT s.id, s.company_name, s.city, s.state, s.contact_email, s.phone, 
               s.gst_number, s.msme_reg_number, s.is_verified, s.iso_standard, s.plant_area_sq_ft, 
@@ -206,6 +210,8 @@ func GetCapableSuppliersForRFQ(category string, material string) ([]Supplier, er
 	searchTerm := "%" + category + "%"
 	materialTerm := "%" + material + "%"
 
+	log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Executing main query with searchTerm=%q, materialTerm=%q", searchTerm, materialTerm)
+
 	rows, err := database.DB.Query(query, searchTerm, materialTerm, searchTerm)
 	if err != nil {
 		log.Printf("[ERROR] [GetCapableSuppliersForRFQ] Query execution failed: %v", err)
@@ -213,6 +219,7 @@ func GetCapableSuppliersForRFQ(category string, material string) ([]Supplier, er
 	}
 	defer rows.Close()
 
+	scanCount := 0
 	for rows.Next() {
 		var sup Supplier
 		err := rows.Scan(
@@ -221,33 +228,48 @@ func GetCapableSuppliersForRFQ(category string, material string) ([]Supplier, er
 			&sup.WorkerCount, &sup.Rating, &sup.CapabilitiesSummary, &sup.NDASigned, &sup.CreatedAt,
 		)
 		if err != nil {
-			log.Printf("[WARN] [GetCapableSuppliersForRFQ] Row scan error: %v", err)
+			log.Printf("[WARN] [GetCapableSuppliersForRFQ] Row scan error on row index %d: %v", scanCount, err)
 			continue
 		}
 		suppliers = append(suppliers, sup)
+		scanCount++
 	}
+
+	log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Main query matched and successfully scanned %d suppliers", len(suppliers))
 
 	// Fallback: If no capability match found, return top verified suppliers as general candidates
 	if len(suppliers) == 0 {
 		log.Printf("[INFO] [GetCapableSuppliersForRFQ] No strict capability match found. Fetching top verified general suppliers.")
+
 		fallbackQuery := `SELECT id, company_name, city, state, contact_email, phone, gst_number, msme_reg_number, 
                           is_verified, iso_standard, plant_area_sq_ft, worker_count, rating, capabilities_summary, nda_signed, created_at 
                           FROM suppliers WHERE is_verified = 1 LIMIT 5`
+
+		log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Executing fallback query")
 		fRows, fErr := database.DB.Query(fallbackQuery)
-		if fErr == nil {
+		if fErr != nil {
+			log.Printf("[ERROR] [GetCapableSuppliersForRFQ] Fallback query execution failed: %v", fErr)
+		} else {
 			defer fRows.Close()
+			fallbackCount := 0
 			for fRows.Next() {
 				var sup Supplier
-				_ = fRows.Scan(
+				if scanErr := fRows.Scan(
 					&sup.ID, &sup.CompanyName, &sup.City, &sup.State, &sup.ContactEmail, &sup.Phone,
 					&sup.GSTNumber, &sup.MSMERegNumber, &sup.IsVerified, &sup.ISOStandard, &sup.PlantAreaSqFt,
 					&sup.WorkerCount, &sup.Rating, &sup.CapabilitiesSummary, &sup.NDASigned, &sup.CreatedAt,
-				)
+				); scanErr != nil {
+					log.Printf("[WARN] [GetCapableSuppliersForRFQ] Fallback row scan error: %v", scanErr)
+					continue
+				}
 				suppliers = append(suppliers, sup)
+				fallbackCount++
 			}
+			log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Fallback added %d general suppliers", fallbackCount)
 		}
 	}
 
+	log.Printf("[DEBUG] [GetCapableSuppliersForRFQ] Returning total of %d suppliers", len(suppliers))
 	return suppliers, nil
 }
 
@@ -534,20 +556,29 @@ func GetPaginatedSuppliers(filter string, search string, page int, pageSize int)
 */
 
 func GetAllSuppliersPaginatedWithFilter(page int, filter string, search string) ([]Supplier, error) {
+	log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Entry: page=%d, filter=%q, search=%q", page, filter, search)
+
 	limit := 10
 	if page < 1 {
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Page %d is less than 1, defaulting to page 1", page)
 		page = 1
 	}
 	offset := (page - 1) * limit
+	log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Calculated pagination: limit=%d, offset=%d", limit, offset)
 
 	query := `SELECT id, company_name, city, state, contact_email, phone, gst_number, msme_reg_number, is_verified, iso_standard, plant_area_sq_ft, worker_count, rating, capabilities_summary, nda_signed, created_at FROM suppliers WHERE 1=1`
 	var args []interface{}
 
+	filter = strings.ToLower(filter)
 	// Apply Filter Tab Logic
 	if filter == "approved" {
 		query += ` AND is_verified = 1`
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Applied filter: approved (is_verified = 1)")
 	} else if filter == "pending" {
 		query += ` AND is_verified = 0`
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Applied filter: pending (is_verified = 0)")
+	} else {
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Filter set to 'all' or unhandled value %q; no verification constraint applied", filter)
 	}
 
 	// Apply Search Query Logic
@@ -555,22 +586,27 @@ func GetAllSuppliersPaginatedWithFilter(page int, filter string, search string) 
 		query += ` AND (company_name LIKE ? OR city LIKE ? OR gst_number LIKE ?)`
 		searchPattern := "%" + search + "%"
 		args = append(args, searchPattern, searchPattern, searchPattern)
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Applied search pattern %q to company_name, city, and gst_number", searchPattern)
+	} else {
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] No search query provided")
 	}
 
 	query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`
 	args = append(args, limit, offset)
 
-	log.Printf("[INFO] Executing paginated & filtered query: %s [Page: %d, Filter: %s, Search: %s]", query, page, filter, search)
+	log.Printf("[INFO] [GetAllSuppliersPaginatedWithFilter] Executing query: %s | Args: %+v", query, args)
 
 	rows, err := database.DB.Query(query, args...)
 	if err != nil {
-		log.Printf("[ERROR] Failed to execute supplier query: %v", err)
+		log.Printf("[ERROR] [GetAllSuppliersPaginatedWithFilter] Failed to execute supplier query: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	var suppliers []Supplier
+	rowCount := 0
 	for rows.Next() {
+		rowCount++
 		var s Supplier
 		err := rows.Scan(
 			&s.ID, &s.CompanyName, &s.City, &s.State, &s.ContactEmail, &s.Phone,
@@ -579,12 +615,19 @@ func GetAllSuppliersPaginatedWithFilter(page int, filter string, search string) 
 			&s.NDASigned, &s.CreatedAt,
 		)
 		if err != nil {
+			log.Printf("[WARN] [GetAllSuppliersPaginatedWithFilter] Failed to scan row #%d: %v", rowCount, err)
 			continue
 		}
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Successfully scanned Supplier ID=%d (%s)", s.ID, s.CompanyName)
 		suppliers = append(suppliers, s)
 	}
 
-	log.Printf("[INFO] Successfully retrieved %d supplier records.", len(suppliers))
+	if err = rows.Err(); err != nil {
+		log.Printf("[ERROR] [GetAllSuppliersPaginatedWithFilter] Row iteration error: %v", err)
+		return nil, err
+	}
+
+	log.Printf("[INFO] [GetAllSuppliersPaginatedWithFilter] Successfully retrieved %d supplier records for Page=%d, Filter=%q, Search=%q", len(suppliers), page, filter, search)
 	return suppliers, nil
 }
 
@@ -709,4 +752,58 @@ func GetWorkPackageSuppliers(wpId string) ([]SupplierResponse, error) {
 	}
 
 	return suppliers, nil
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : UpdateSupplierStatus                                                     ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Validates the supplier ID and target status with step-by-step debug logs,    ║
+║                     updates the suppliers table, and verifies row modification.                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+func UpdateSupplierStatus(supplierIDStr string, newStatus string) error {
+	log.Printf("[DEBUG] [UpdateSupplierStatus] Starting update: supplierIDStr=%q, newStatus=%q", supplierIDStr, newStatus)
+
+	supplierID, err := strconv.Atoi(supplierIDStr)
+	if err != nil {
+		log.Printf("[WARN] [UpdateSupplierStatus] Failed to parse supplierIDStr=%q to int: %v", supplierIDStr, err)
+		return fmt.Errorf("invalid supplier ID %q: %w", supplierIDStr, err)
+	}
+	log.Printf("[DEBUG] [UpdateSupplierStatus] Parsed supplierID=%d", supplierID)
+
+	canonicalStatus := ""
+
+	newStatus = strings.ToLower(newStatus)
+	// Apply Filter Tab Logic
+	if newStatus == "approved" {
+		canonicalStatus = `1`
+		log.Printf("[DEBUG] [GetAllSuppliersPaginatedWithFilter] Applied filter: approved (is_verified = 1)")
+	} else {
+		canonicalStatus = `0`
+	}
+
+	query := `UPDATE suppliers SET is_verified = ? , created_at = CURRENT_TIMESTAMP WHERE id = ?`
+	log.Printf("[DEBUG] [UpdateSupplierStatus] Executing query: %s | Args: [status=%q, id=%d]", query, canonicalStatus, supplierID)
+
+	res, err := database.DB.Exec(query, canonicalStatus, supplierID)
+	if err != nil {
+		log.Printf("[ERROR] [UpdateSupplierStatus] SQL Exec failed for supplierID=%d: %v", supplierID, err)
+		return fmt.Errorf("database error updating supplier status: %w", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("[ERROR] [UpdateSupplierStatus] Failed to retrieve RowsAffected for supplierID=%d: %v", supplierID, err)
+		return fmt.Errorf("error checking affected rows: %w", err)
+	}
+	log.Printf("[DEBUG] [UpdateSupplierStatus] RowsAffected=%d for supplierID=%d", rowsAffected, supplierID)
+
+	if rowsAffected == 0 {
+		log.Printf("[WARN] [UpdateSupplierStatus] No supplier record found with id=%d (0 rows affected)", supplierID)
+		return sql.ErrNoRows
+	}
+
+	log.Printf("[SUCCESS] [UpdateSupplierStatus] Successfully updated supplierID=%d to status=%q", supplierID, canonicalStatus)
+	return nil
 }

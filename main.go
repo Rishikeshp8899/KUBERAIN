@@ -94,6 +94,8 @@ func main() {
 
 	mux.HandleFunc("/admin/work-packages/{id}/suppliers", middleware.RequireAdminAuth(controllers.HandleGetWorkPackageSuppliers))
 
+	mux.HandleFunc("/admin/suppliers/status/{id}/{status}", middleware.RequireAdminAuth(controllers.HandleUpdateSupplierStatus))
+
 	// ==========================================
 	// ADMIN PROTECTED OPERATIONS - WORK PACKAGES
 	// ==========================================

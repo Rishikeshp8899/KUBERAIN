@@ -34,7 +34,7 @@
             <!-- Search Bar -->
             <div class="flex items-center gap-2 w-full md:w-80">
                 <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search company, city, GST..." class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-medium">
-                <button type="button" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
+                <button type="button" onclick="handleSearch()" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
                     <i class="fa-solid fa-search"></i>
                 </button>
             </div>
@@ -73,7 +73,7 @@
                         <a href="/admin/sme/details?id={{.ID}}" class="bg-industrial-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 no-underline">
                             <i class="fa-solid fa-eye text-[10px]"></i> View
                         </a>
-                        <button type="button" onclick="supplierStatus({{.ID}}, {{if .IsVerified}}0{{else}}1{{end}})" class="{{if .IsVerified}}bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border-rose-500/30{{else}}bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border-emerald-500/30{{end}} border text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+                        <button type="button" onclick="supplierStatus({{.ID}}, '{{if .IsVerified}}pending{{else}}approved{{end}}', this)" class="{{if .IsVerified}}bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border-rose-500/30{{else}}bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border-emerald-500/30{{end}} border text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                             {{if .IsVerified}}Revoke Status{{else}}Approve KYC{{end}}
                         </button>
                     </div>
@@ -120,7 +120,10 @@
 
         async function fetchSuppliers() {
             try {
-                const response = await fetch('/admin/sme/onboarding-status', {
+                url = '/admin/sme/onboarding-status'
+                console.log('url:'+url+': page:'+page_number+': current_filter'+current_filter+': search_query'+search_query)
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -189,7 +192,9 @@
                 return;
             }
             console.log("Rendering suppliers:", suppliers);
-            container.innerHTML = suppliers.map(s => `
+            container.innerHTML = suppliers.map(s => {
+                const nextStatus = s.is_verified ? 'pending' : 'approved';
+                return `
                 <div class="bg-industrial-900 p-5 rounded-2xl border border-slate-800 space-y-3.5 shadow-xl flex flex-col justify-between">
                     <div class="space-y-3">
                         <div class="flex justify-between items-start">
@@ -215,28 +220,47 @@
                             <a href="/admin/sme/details?id=${s.id}" class="bg-industrial-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 no-underline">
                                 <i class="fa-solid fa-eye text-[10px]"></i> View
                             </a>
-                            <button type="button" onclick="supplierStatus(${s.id}, ${s.is_verified ? 0 : 1})" class="${s.is_verified ? 'bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border-rose-500/30' : 'bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border-emerald-500/30'} border text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+                            <button type="button" onclick="supplierStatus(${s.id}, '${nextStatus}', this)" class="${s.is_verified ? 'bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border-rose-500/30' : 'bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border-emerald-500/30'} border text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                                 ${s.is_verified ? 'Revoke Status' : 'Approve KYC'}
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
-        async function supplierStatus(smeId, newStatus) {
+        async function supplierStatus(smeId, newStatus, btnEl) {
+            const originalText = btnEl ? btnEl.innerText : '';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerText = 'Updating...';
+            }
+
             try {
-                const response = await fetch('/api/suppliers/status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sme_id: smeId, is_verified: newStatus })
+                url = `/admin/suppliers/status/${encodeURIComponent(smeId)}/${encodeURIComponent(newStatus)}`
+                console.log(url)
+                const response = await fetch(url, {
+                    method: 'Get',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    fetchSuppliers();
+
+                console.log(response.ok)
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || `HTTP ${response.status}`);
                 }
+                    await fetchSuppliers();
             } catch (error) {
                 console.error("Status update error:", error);
+                alert("Failed to update supplier status: " + error.message);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerText = originalText;
+                }
             }
         }
     </script>

@@ -13,6 +13,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"go-mvc-app/database"
 	"log"
@@ -109,12 +110,18 @@ func DeleteRFQ(id int) error {
 */
 func GetRFQByID(rfqID int) (RFQ, error) {
 	var rfq RFQ
+
+	// Log function entry and input parameters
+	log.Printf("[DEBUG] [GetRFQByID] Function called with rfqID=%d", rfqID)
+
 	query := `SELECT id, rfq_code, company_name, contact_person, email, phone, category, material, quantity, 
               requirements, drawing_file_path, target_price_usd, delivery_deadline, 
               incobooking_terms, country, city, ip_address, status, created_at 
               FROM rfqs WHERE id = ?`
 
+	log.Printf("[DEBUG] [GetRFQByID] Executing point lookup query for rfqID=%d", rfqID)
 	row := database.DB.QueryRow(query, rfqID)
+
 	err := row.Scan(
 		&rfq.ID, &rfq.RFQCode, &rfq.CompanyName, &rfq.ContactPerson, &rfq.Email, &rfq.Phone,
 		&rfq.Category, &rfq.Material, &rfq.Quantity, &rfq.Requirements,
@@ -122,8 +129,14 @@ func GetRFQByID(rfqID int) (RFQ, error) {
 		&rfq.Country, &rfq.City, &rfq.IPAddress, &rfq.Status, &rfq.CreatedAt,
 	)
 	if err != nil {
-		log.Printf("[ERROR] [GetRFQByID] Failed to fetch RFQ ID %d: %v", rfqID, err)
+		if err == sql.ErrNoRows {
+			log.Printf("[WARN] [GetRFQByID] No RFQ record found for ID %d", rfqID)
+		} else {
+			log.Printf("[ERROR] [GetRFQByID] Failed to scan RFQ ID %d: %v", rfqID, err)
+		}
 		return rfq, err
 	}
+
+	log.Printf("[DEBUG] [GetRFQByID] Successfully fetched and scanned RFQ ID %d (RFQCode: %s)", rfqID, rfq.RFQCode)
 	return rfq, nil
 }

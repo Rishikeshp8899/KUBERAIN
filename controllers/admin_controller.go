@@ -3,7 +3,9 @@ package controllers
 import (
 	// "bytes"
 
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"go-mvc-app/config"
 	"go-mvc-app/middleware"
 	"go-mvc-app/models"
@@ -1158,4 +1160,87 @@ func HandleGetWorkPackageSuppliers(w http.ResponseWriter, r *http.Request) {
 		log.Printf("[ERROR] [HandleGetWorkPackageSuppliers] Failed to encode JSON response for WorkPackageID=%s: %v", idStr, err)
 		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 	}
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : HandleUpdateSupplierStatus                                               ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Manohar Patil (KUBERAIN INDUSTRY)                                  ║
+║ 🎯 WHAT IT DOES   : Handles GET /admin/suppliers/status/{id}/{status} with detailed debug logs,  ║
+║                     updates supplier status, fetches refreshed paginated list, and renders view. ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+func HandleUpdateSupplierStatus(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Incoming request: Method=%s Path=%s RemoteAddr=%s", r.Method, r.URL.Path, r.RemoteAddr)
+
+	filter := "all"
+
+	if r.Method != http.MethodGet {
+		log.Printf("[WARN] [HandleUpdateSupplierStatus] Invalid HTTP method: %s from %s", r.Method, r.RemoteAddr)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.PathValue("id")
+	statusStr := r.PathValue("status")
+	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Extracted PathValues: id=%q, status=%q", idStr, statusStr)
+
+	if idStr == "" || statusStr == "" {
+		log.Printf("[WARN] [HandleUpdateSupplierStatus] Missing id or status path parameter from %s", r.RemoteAddr)
+		http.Error(w, "Missing supplier ID or status", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("[INFO] [HandleUpdateSupplierStatus] Calling models.UpdateSupplierStatus(id=%s, status=%s)", idStr, statusStr)
+	err := models.UpdateSupplierStatus(idStr, statusStr)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("[WARN] [HandleUpdateSupplierStatus] SupplierID=%s not found in DB", idStr)
+			http.Error(w, "Supplier not found", http.StatusNotFound)
+			return
+		}
+		if strings.Contains(err.Error(), "invalid supplier") {
+			log.Printf("[WARN] [HandleUpdateSupplierStatus] Validation failed for SupplierID=%s: %v", idStr, err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		log.Printf("[ERROR] [HandleUpdateSupplierStatus] Database error updating SupplierID=%s: %v", idStr, err)
+		http.Error(w, "Failed to update supplier status", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("[SUCCESS] [HandleUpdateSupplierStatus] Successfully updated SupplierID=%s to Status=%s", idStr, statusStr)
+
+	search := ""
+	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Fetching refreshed paginated suppliers: filter=%q, search=%q, page=1, limit=10", filter, search)
+
+	// Fetch Paginated & Filtered Data
+	paginatedData, err := models.GetPaginatedSuppliers(filter, search, 1, 10)
+	if err != nil {
+		log.Printf("[ERROR] [HandleUpdateSupplierStatus] Failed to load paginated suppliers: %v", err)
+		paginatedData = models.PaginatedResult{
+			Suppliers:   []models.Supplier{},
+			TotalPages:  1,
+			CurrentPage: 1,
+			Filter:      filter,
+			Search:      search,
+		}
+	} else {
+		log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Retrieved %d suppliers (CurrentPage=%d, TotalPages=%d)", len(paginatedData.Suppliers), paginatedData.CurrentPage, paginatedData.TotalPages)
+	}
+
+	// Construct View Data Context
+	data := map[string]interface{}{
+		"Title":      "SME Supplier Directory",
+		"Page":       "sme",
+		"Suppliers":  paginatedData.Suppliers,
+		"Pagination": paginatedData,
+		"Filter":     filter,
+		"Search":     search,
+	}
+
+	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Rendering template 'admin_sme.html' for SupplierID=%s", idStr)
+	renderAdminView(w, "admin_sme.html", data)
+	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Completed request for SupplierID=%s", idStr)
 }
