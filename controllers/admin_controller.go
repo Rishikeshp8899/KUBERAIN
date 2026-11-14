@@ -9,10 +9,13 @@ import (
 	"go-mvc-app/config"
 	"go-mvc-app/middleware"
 	"go-mvc-app/models"
+	"go-mvc-app/utility"
 	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -326,69 +329,6 @@ func AdminLoginHandler(w http.ResponseWriter, r *http.Request) {
 func AdminLogoutHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.ClearAuthCookie(w)
 	http.Redirect(w, r, "/admin/login?status=logged_out", http.StatusSeeOther)
-}
-
-// AdminRFQDetailAndMatchHandler handles GET /admin/rfqs/update-status
-// Protected endpoint to view specific RFQ status, audit details, and filter capable SMEs.
-func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
-
-	// Step 1: Authentication / Session Check
-	adminEmail := config.GetAdminEmail(r)
-	if adminEmail == "" {
-		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Unauthorized access attempt detected.")
-		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
-		return
-	}
-
-	// Step 2: Parse Query Parameters for RFQ ID
-	rfqIDStr := r.FormValue("rfq_id")
-	if rfqIDStr == "" {
-		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Missing 'id' query parameter.")
-		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
-		return
-	}
-
-	rfqID, err := strconv.Atoi(rfqIDStr)
-	if err != nil || rfqID <= 0 {
-		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Invalid RFQ ID format: '%s'", rfqIDStr)
-		http.Error(w, "Invalid RFQ ID", http.StatusBadRequest)
-		return
-	}
-	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Target RFQ ID parsed successfully: %d", rfqID)
-
-	// Step 3: Fetch Target RFQ Record
-	rfq, err := models.GetRFQByID(rfqID)
-	if err != nil {
-		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] RFQ record not found for ID %d: %v", rfqID, err)
-		http.Error(w, "RFQ Not Found", http.StatusNotFound)
-		return
-	}
-	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Fetched RFQ Code: %s, Category: %s, Material: %s, Current Status: %s",
-		rfq.RFQCode, rfq.Category, rfq.Material, rfq.Status)
-
-	// Step 4: Filter Capable SMEs Based on RFQ Specifications
-	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Filtering capable SMEs for Category='%s', Material='%s'...", rfq.Category, rfq.Material)
-	capableSuppliers, err := models.GetCapableSuppliersForRFQ(rfq.Category, rfq.Material)
-	if err != nil {
-		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Failed to query capable suppliers: %v", err)
-		capableSuppliers = []models.Supplier{}
-	}
-	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Found %d matching capable SME suppliers.", len(capableSuppliers))
-
-	// Step 5: Construct View Data Context
-	data := map[string]interface{}{
-		"Title":            "RFQ Review & SME Matching Desk",
-		"AdminEmail":       adminEmail,
-		"Page":             "rfq_detail",
-		"RFQ":              rfq,
-		"CapableSuppliers": capableSuppliers,
-	}
-
-	// Step 6: Render View
-	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Rendering template 'admin_rfq_detail.html'...")
-	renderAdminView(w, "admin_rfq_detail.html", data)
-	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Request completed successfully for RFQ ID=%d", rfqID)
 }
 
 // AdminSMEPaginatedHandler handles GET /admin/sme
@@ -1243,4 +1183,99 @@ func HandleUpdateSupplierStatus(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Rendering template 'admin_sme.html' for SupplierID=%s", idStr)
 	renderAdminView(w, "admin_sme.html", data)
 	log.Printf("[DEBUG] [HandleUpdateSupplierStatus] Completed request for SupplierID=%s", idStr)
+}
+
+// AdminRFQDetailAndMatchHandler handles GET /admin/rfqs/update-status
+func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
+
+	// Step 1: Authentication / Session Check
+	adminEmail := config.GetAdminEmail(r)
+	if adminEmail == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Unauthorized access attempt detected.")
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+
+	// Step 2: Parse Query Parameters for RFQ ID
+	rfqIDStr := r.FormValue("id")
+	if rfqIDStr == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Missing 'rfq_id' parameter.")
+		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
+		return
+	}
+
+	rfqID, err := strconv.Atoi(rfqIDStr)
+	if err != nil || rfqID <= 0 {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Invalid RFQ ID format: '%s'", rfqIDStr)
+		http.Error(w, "Invalid RFQ ID", http.StatusBadRequest)
+		return
+	}
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Target RFQ ID parsed successfully: %d", rfqID)
+
+	// Step 3: Fetch Target RFQ Record
+	rfq, err := models.GetRFQByID(rfqID)
+	if err != nil {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] RFQ record not found for ID %d: %v", rfqID, err)
+		http.Error(w, "RFQ Not Found", http.StatusNotFound)
+		return
+	}
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Fetched RFQ Code: %s, Category: %s, Material: %s, Current Status: %s",
+		rfq.RFQCode, rfq.Category, rfq.Material, rfq.Status)
+
+	// Step 4: Existing Capable SME Filter (Untouched as requested)
+	capableSuppliers, err := models.GetCapableSuppliersForRFQ(rfq.Category, rfq.Material)
+	if err != nil {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchHandler] Failed to query capable suppliers: %v", err)
+		capableSuppliers = []models.Supplier{}
+	}
+
+	// Step 5: Compute Cosine Similarity between RFQ Requirements and SME Capabilities Summary
+	allSuppliers, err := models.GetAllVerifiedSuppliers()
+	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Fallback to capableSuppliers for similarity scoring: %v", err)
+		allSuppliers = capableSuppliers
+	}
+
+	// Combine RFQ requirements with category & material for richer semantic matching
+	rfqQueryText := rfq.Requirements + " " + rfq.Category + " " + rfq.Material
+
+	var scoredSMEs []models.SupplierMatchDTO
+	for _, sup := range allSuppliers {
+		score := utility.ComputeCosineSimilarity(rfqQueryText, sup.CapabilitiesSummary)
+		scoredSMEs = append(scoredSMEs, models.SupplierMatchDTO{
+			Supplier:             sup,
+			SimilarityScore:      score,
+			SimilarityPercentage: int(math.Round(score * 100)),
+		})
+	}
+
+	// Sort by highest similarity score first (tie-breaker: supplier rating)
+	sort.Slice(scoredSMEs, func(i, j int) bool {
+		if scoredSMEs[i].SimilarityScore == scoredSMEs[j].SimilarityScore {
+			return scoredSMEs[i].Rating > scoredSMEs[j].Rating
+		}
+		return scoredSMEs[i].SimilarityScore > scoredSMEs[j].SimilarityScore
+	})
+
+	// Limit to Top 10 SMEs
+	if len(scoredSMEs) > 10 {
+		scoredSMEs = scoredSMEs[:10]
+	}
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Ranked top %d SMEs using Cosine Similarity.", len(scoredSMEs))
+
+	// Step 6: Construct View Data Context
+	data := map[string]interface{}{
+		"Title":            "RFQ Review & SME Matching Desk",
+		"AdminEmail":       adminEmail,
+		"Page":             "rfq_detail",
+		"RFQ":              rfq,
+		"CapableSuppliers": scoredSMEs,
+	}
+
+	// Step 7: Render View
+	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Rendering template 'admin_rfq_detail.html'...")
+	renderAdminView(w, "admin_rfq_detail.html", data)
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Request completed successfully for RFQ ID=%d", rfqID)
 }

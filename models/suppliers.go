@@ -807,3 +807,32 @@ func UpdateSupplierStatus(supplierIDStr string, newStatus string) error {
 	log.Printf("[SUCCESS] [UpdateSupplierStatus] Successfully updated supplierID=%d to status=%q", supplierID, canonicalStatus)
 	return nil
 }
+
+// GetAllVerifiedSuppliers fetches all verified SMEs without mutating GetCapableSuppliersForRFQ.
+func GetAllVerifiedSuppliers() ([]Supplier, error) {
+	var suppliers []Supplier
+	query := `SELECT id, company_name, city, state, contact_email, phone, gst_number, msme_reg_number, 
+              is_verified, iso_standard, plant_area_sq_ft, worker_count, rating, capabilities_summary, nda_signed, created_at 
+              FROM suppliers WHERE is_verified = 1`
+
+	rows, err := database.DB.Query(query)
+	if err != nil {
+		log.Printf("[ERROR] [GetAllVerifiedSuppliers] Query execution failed: %v", err)
+		return suppliers, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var sup Supplier
+		if err := rows.Scan(
+			&sup.ID, &sup.CompanyName, &sup.City, &sup.State, &sup.ContactEmail, &sup.Phone,
+			&sup.GSTNumber, &sup.MSMERegNumber, &sup.IsVerified, &sup.ISOStandard, &sup.PlantAreaSqFt,
+			&sup.WorkerCount, &sup.Rating, &sup.CapabilitiesSummary, &sup.NDASigned, &sup.CreatedAt,
+		); err != nil {
+			log.Printf("[WARN] [GetAllVerifiedSuppliers] Row scan error: %v", err)
+			continue
+		}
+		suppliers = append(suppliers, sup)
+	}
+	return suppliers, nil
+}

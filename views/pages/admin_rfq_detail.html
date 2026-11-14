@@ -4,204 +4,155 @@
     <main class="flex-1 min-w-0 space-y-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl gap-4">
             <div>
-                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5">
-                    <i class="fa-solid fa-boxes-stacked text-blue-500"></i> Dispatched Work Packages
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">RFQ ID #{{.RFQ.ID}}</span>
+                    <span class="text-[10px] font-mono text-slate-400 bg-industrial-800 px-2 py-0.5 rounded border border-slate-700">Code: {{.RFQ.RFQCode}}</span>
+                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">{{.RFQ.Status}}</span>
+                </div>
+                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5 mt-1">
+                    <i class="fa-solid fa-file-invoice text-blue-500"></i> Customer RFQ Review: {{.RFQ.CompanyName}}
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Bundle scrubbed RFQs into vendor work orders, track execution milestones, and review completed deliverables.</p>
+                <p class="text-xs text-slate-400 mt-1">Detailed evaluation of customer-submitted specifications, requirements, target pricing, and cosine similarity matched SME vendor candidates.</p>
             </div>
-            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3.5 py-2 rounded-xl font-mono">Table: work_packages</span>
-        </div>
-
-        <!-- STATUS FILTER TABS & SEARCH BAR -->
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-industrial-900 p-4 rounded-2xl border border-slate-800">
-            <!-- STATUS FILTER TABS -->
-            <div id="filterTabs" class="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                <button onclick="setFilter('all')" id="tab-all" data-filter="all" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/30">
-                    All Packages
-                </button>
-                <button onclick="setFilter('current')" id="tab-current" data-filter="current" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800">
-                    Current / Active
-                </button>
-                <button onclick="setFilter('completed')" id="tab-completed" data-filter="completed" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800">
-                    Completed
-                </button>
-            </div>
-
-            <!-- SEARCH BAR -->
-            <div class="flex items-center gap-2 w-full md:w-80">
-                <input type="text" id="searchInput" oninput="debounceSearch()" placeholder="Search task name or ID..." class="w-full bg-industrial-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-medium">
-                <button onclick="fetchWorkPackages(1)" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all">
-                    <i class="fa-solid fa-search"></i>
-                </button>
+            <div class="flex items-center gap-3">
+                <a href="/admin/rfqs" class="bg-industrial-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to List
+                </a>
             </div>
         </div>
 
-        <!-- WORK PACKAGES DYNAMIC CONTAINER -->
-        <div id="workPackagesContainer" class="space-y-4">
-            <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
-                <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
-                <p class="text-sm font-bold text-slate-400">Loading work packages from API...</p>
-            </div>
-        </div>
-
-        <!-- PAGINATION CONTROLS CONTAINER -->
-        <div id="paginationContainer"></div>
-    </main>
-</div>
-
-<!-- CLIENT-SIDE API FETCH & DOM RENDERING SCRIPT -->
-<script>
-    let currentStatus = 'all';
-    let currentSearch = '';
-    let searchTimer = null;
-
-    function setFilter(status) {
-        currentStatus = status;
-        
-        // Update tab styles dynamically based on active filter state
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            const btnFilter = btn.getAttribute('data-filter');
-            if (btnFilter === status) {
-                let colorClass = 'blue';
-                if (status === 'current') colorClass = 'amber';
-                if (status === 'completed') colorClass = 'emerald';
-                
-                btn.className = `filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-white shadow-md shadow-${colorClass}-600/30 bg-${colorClass}-600`;
-            } else {
-                btn.className = "filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white bg-industrial-800";
-            }
-        });
-
-        fetchWorkPackages(1);
-    }
-
-    function debounceSearch() {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
-            currentSearch = document.getElementById('searchInput').value;
-            fetchWorkPackages(1);
-        }, 300);
-    }
-
-    async function fetchWorkPackages(page = 1) {
-        const container = document.getElementById('workPackagesContainer');
-        const pagination = document.getElementById('paginationContainer');
-
-        container.innerHTML = `
-            <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
-                <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
-                <p class="text-sm font-bold text-slate-400">Loading data...</p>
-            </div>
-        `;
-        pagination.innerHTML = '';
-
-        try {
-            const url = `/admin/work-packages/status?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`;
-            const response = await fetch(url);
+        <!-- GRID SECTION: CUSTOMER SUBMISSION DETAILS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
-            }
+            <!-- LEFT 2 COLS: SPECIFICATIONS & REQUIREMENTS -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-500"></i> Manufacturing Parameters
+                    </h3>
 
-            const data = await response.json();
-            console.log("Fetched work packages data:", data);
-            renderWorkPackages(data.work_packages || []);
-            renderPagination(data);
-        } catch (error) {
-            console.error("API Error:", error);
-            container.innerHTML = `
-                <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-rose-500 space-y-2">
-                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
-                    <p class="text-sm font-bold">Failed to load work packages from API.</p>
-                    <p class="text-xs text-slate-400">Please check your network connection or server terminal logs.</p>
-                </div>
-            `;
-        }
-    }
-
-    function renderWorkPackages(packages) {
-        console.log("Rendering work packages:", packages);
-        const container = document.getElementById('workPackagesContainer');
-        if (!packages || packages.length === 0) {
-            container.innerHTML = `
-                <div class="bg-industrial-900 p-12 rounded-2xl border border-slate-800 text-center text-slate-500 space-y-2">
-                    <i class="fa-solid fa-folder-open text-3xl text-slate-600"></i>
-                    <p class="text-sm font-bold text-slate-400">No work packages found.</p>
-                    <p class="text-xs text-slate-500">Try switching between filter views or clearing your search query.</p>
-                </div>
-            `;
-            return;
-        }
-        console.log("Rendering work packages:", packages);
-        container.innerHTML = packages.map(wp => `
-            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl hover:border-slate-700 transition-all">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3.5">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">WP-ID #${wp.id}</span>
-                            ${wp.supplier_id && wp.supplier_id > 0 ? `<span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20"><i class="fa-solid fa-industry text-[9px] mr-1"></i> SME ID: ${wp.supplier_id}</span>` : ''}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Category / Process</span>
+                            <strong class="text-sm text-white font-semibold mt-1 block">{{.RFQ.Category}}</strong>
                         </div>
-                        <h3 class="font-bold text-white text-base mt-1.5">${wp.title}</h3>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Material Required</span>
+                            <strong class="text-sm text-white font-semibold mt-1 block">{{.RFQ.Material}}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Required Quantity</span>
+                            <strong class="text-sm text-emerald-400 font-mono font-bold mt-1 block">{{.RFQ.Quantity}} units</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Target Price (USD)</span>
+                            <strong class="text-sm text-blue-400 font-mono font-bold mt-1 block">${.RFQ.TargetPriceUSD}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Delivery Deadline</span>
+                            <strong class="text-sm text-amber-400 font-mono font-bold mt-1 block">{{.RFQ.DeliveryDeadline}}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Incoterms</span>
+                            <strong class="text-sm text-white font-mono font-semibold mt-1 block">{{.RFQ.IncobookingTerms}}</strong>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-mono font-bold">$${wp.budget_usd} USD</span>
-                        <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">${wp.status}</span>
+
+                    <div class="space-y-2 pt-2">
+                        <span class="text-[11px] text-slate-400 font-mono uppercase tracking-wider block">Customer Specifications / Notes</span>
+                        <div class="bg-industrial-800/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">
+                            {{if .RFQ.Requirements}}{{.RFQ.Requirements}}{{else}}No specific notes or secondary requirements provided by the customer.{{end}}
+                        </div>
                     </div>
                 </div>
-                
-                <p class="text-xs text-slate-300 font-mono bg-industrial-800/80 p-3.5 rounded-xl border border-slate-800/80">${wp.redacted_spec || 'No specific specifications provided.'}</p>
-                
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center text-[11px] text-slate-400 border-t border-slate-800 pt-3 gap-3">
-                    <div class="flex items-center gap-4">
-                        <span>Escrow Status: <strong class="text-blue-400 font-mono">${wp.escrow_status || 'Pending'}</strong></span>
-                        <span>Target Date: <strong class="text-slate-200 font-mono">${wp.target_date || 'N/A'}</strong></span>
+            </div>
+
+            <!-- RIGHT 1 COL: CUSTOMER CONTACT & AUDIT META -->
+            <div class="space-y-6">
+                <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-building-user text-purple-400"></i> Corporate Contact
+                    </h3>
+
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Company Name</span>
+                            <strong class="text-white text-sm font-bold mt-0.5 block">{{.RFQ.CompanyName}}</strong>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Contact Person</span>
+                            <span class="text-slate-200 font-medium mt-0.5 block">{{.RFQ.ContactPerson}}</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Email Address</span>
+                            <a href="mailto:{{.RFQ.Email}}" class="text-blue-400 hover:underline font-mono mt-0.5 block">{{.RFQ.Email}}</a>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Phone Number</span>
+                            <span class="text-slate-200 font-mono mt-0.5 block">{{if .RFQ.Phone}}{{.RFQ.Phone}}{{else}}Not Provided{{end}}</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION: MATCHED CAPABLE SME SUPPLIERS WITH COSINE SIMILARITY -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 mt-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-brain text-purple-400"></i> SME matches for requirements of rfq
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Ranked by text` vector cosine similarity score between RFQ requirements and supplier capabilities.</p>
+                </div>
+                <span class="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs px-3 py-1 rounded-xl font-mono font-bold">
+                    {{len .CapableSuppliers}} Ranked Vendors
+                </span>
+            </div>
+
+            {{if .CapableSuppliers}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{range .CapableSuppliers}}
+                <div class="bg-industrial-800/70 p-5 rounded-xl border border-slate-800 space-y-3 hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">SME ID #{{.ID}}</span>
+                      
+                            <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
+    Similarity: {{.SimilarityPercentage}}%
+</span>
+
+                        </div>
+                        <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">★ {{.Rating}} / 5.0</span>
+                    </div>
+
                     <div>
-                        <a href="/admin/work-packages/details?id=${wp.id}" class="bg-industrial-800 hover:bg-blue-600 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-eye text-[10px]"></i> See Details
+                        <h4 class="text-sm font-bold text-white">{{.CompanyName}}</h4>
+                        <span class="text-[11px] text-slate-400 font-mono">{{.City}}, {{.State}}</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-slate-400 font-mono uppercase">Capabilities Summary:</span>
+                        <p class="text-xs text-slate-300 font-mono bg-industrial-900/60 p-2.5 rounded-lg border border-slate-800">{{if .CapabilitiesSummary}}{{.CapabilitiesSummary}}{{else}}General verified manufacturing vendor.{{end}}</p>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80 pt-3">
+                        <span>ISO: <strong class="text-slate-200 font-mono">{{if .ISOStandard}}{{.ISOStandard}}{{else}}N/A{{end}}</strong></span>
+                        <a href="mailto:{{.ContactEmail}}" class="text-blue-400 hover:underline font-mono flex items-center gap-1">
+                            <i class="fa-solid fa-envelope text-[10px]"></i> {{.ContactEmail}}
                         </a>
                     </div>
                 </div>
+                {{end}}
             </div>
-        `).join('');
-    }
-
-    function renderPagination(meta) {
-        const pagination = document.getElementById('paginationContainer');
-        if (!meta.total_pages || meta.total_pages <= 1) {
-            pagination.innerHTML = '';
-            return;
-        }
-
-        pagination.innerHTML = `
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 bg-industrial-900 p-4 rounded-2xl border border-slate-800">
-                <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                    <i class="fa-solid fa-list-ol text-blue-500"></i> Showing page <strong class="text-white">${meta.current_page}</strong> of <strong class="text-white">${meta.total_pages}</strong> (${meta.total_rows} total records)
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    ${meta.current_page > 1 ? `
-                        <button onclick="fetchWorkPackages(1)" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">First</button>
-                        <button onclick="fetchWorkPackages(${meta.prev_page})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5"><i class="fa-solid fa-chevron-left text-[10px]"></i> Previous</button>
-                    ` : ''}
-
-                    <span class="text-xs font-mono text-slate-400 px-3">
-                        ${meta.current_page} / ${meta.total_pages}
-                    </span>
-
-                    ${meta.current_page < meta.total_pages ? `
-                        <button onclick="fetchWorkPackages(${meta.next_page})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5">Next <i class="fa-solid fa-chevron-right text-[10px]"></i></button>
-                        <button onclick="fetchWorkPackages(${meta.total_pages})" class="bg-industrial-800 hover:bg-industrial-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 transition-all">Last</button>
-                    ` : ''}
-                </div>
+            {{else}}
+            <div class="bg-industrial-800/50 p-8 rounded-xl text-center text-slate-500 space-y-2 border border-slate-800">
+                <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500"></i>
+                <p class="text-xs font-bold text-slate-300">No capable SME vendors or general fallback suppliers found.</p>
             </div>
-        `;
-    }
-
-    // Initial load on page mount
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchWorkPackages(1);
-    });
-</script>
+            {{end}}
+        </div>
+    </main>
+</div>
 {{end}}
-

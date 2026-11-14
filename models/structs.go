@@ -300,3 +300,10 @@ type SupplierResponse struct {
 	Amount float64 `json:"amount"`
 	Date   string  `json:"date"`
 }
+
+// SupplierMatchDTO wraps the Supplier model with calculated similarity score for template rendering
+type SupplierMatchDTO struct {
+	Supplier
+	SimilarityScore      float64 // e.g., 0.85
+	SimilarityPercentage int     // e.g., 85
+}
