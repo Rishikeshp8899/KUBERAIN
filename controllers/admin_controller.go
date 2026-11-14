@@ -1199,9 +1199,9 @@ func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 2: Parse Query Parameters for RFQ ID
-	rfqIDStr := r.FormValue("id")
+	rfqIDStr := r.FormValue("rfq_id")
 	if rfqIDStr == "" {
-		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Missing 'rfq_id' parameter.")
+		log.Printf("[WARN] [AdminRFQDetailAndMatchHandler] Missing 'id' parameter.")
 		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
 		return
 	}
@@ -1278,4 +1278,98 @@ func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[INFO] [AdminRFQDetailAndMatchHandler] Rendering template 'admin_rfq_detail.html'...")
 	renderAdminView(w, "admin_rfq_detail.html", data)
 	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Request completed successfully for RFQ ID=%d", rfqID)
+}
+
+// AdminRFQDetailAndMatchScreenshotHandler handles GET /admin/rfqs/detail
+func AdminRFQDetailAndMatchScreenshotHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [AdminRFQDetailAndMatchScreenshotHandler] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
+
+	if r.Method != http.MethodGet {
+
+	}
+
+	adminEmail := config.GetAdminEmail(r)
+	if adminEmail == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Unauthorized access attempt.")
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+
+	rfqIDStr := r.PathValue("id")
+	if rfqIDStr == "" {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Missing 'id' parameter.")
+		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
+		return
+	}
+
+	rfqID, err := strconv.Atoi(rfqIDStr)
+	if err != nil || rfqID <= 0 {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] Invalid RFQ ID: '%s'", rfqIDStr)
+		http.Error(w, "Invalid RFQ ID", http.StatusBadRequest)
+		return
+	}
+
+	// 1. Fetch RFQ
+	rfq, err := models.GetRFQByID(rfqID)
+	if err != nil {
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] RFQ ID %d not found: %v", rfqID, err)
+		http.Error(w, "RFQ Not Found", http.StatusNotFound)
+		return
+	}
+
+	// 2. Compute Cosine Similarity for Top 10 SME Matches
+	allSuppliers, err := models.GetAllVerifiedSuppliers()
+	if err != nil {
+		allSuppliers = []models.Supplier{}
+	}
+
+	rfqQueryText := rfq.Requirements + " " + rfq.Category + " " + rfq.Material
+	var scoredSMEs []models.SupplierMatchDTO
+
+	for _, sup := range allSuppliers {
+		score := utility.ComputeCosineSimilarity(rfqQueryText, sup.CapabilitiesSummary)
+		scoredSMEs = append(scoredSMEs, models.SupplierMatchDTO{
+			Supplier:             sup,
+			SimilarityScore:      score,
+			SimilarityPercentage: int(math.Round(score * 100)),
+		})
+	}
+
+	sort.Slice(scoredSMEs, func(i, j int) bool {
+		if scoredSMEs[i].SimilarityScore == scoredSMEs[j].SimilarityScore {
+			return scoredSMEs[i].Rating > scoredSMEs[j].Rating
+		}
+		return scoredSMEs[i].SimilarityScore > scoredSMEs[j].SimilarityScore
+	})
+
+	if len(scoredSMEs) > 10 {
+		scoredSMEs = scoredSMEs[:10]
+	}
+
+	// 3. Fetch Assigned SMEs, Converted Work Packages, Payment History & Audit Logs
+	assignedSMEs, _ := models.GetAssignedSMEsForRFQ(rfqID)
+	workPackages, _ := models.GetWorkPackagesByRFQID(rfqID)
+	payments, _ := models.GetPaymentsForRFQ(rfqID)
+	auditLogs, _ := models.GetAuditLogsForRFQ(rfqID)
+
+	// 4. Construct Comprehensive Context
+	detailsData := models.RFQComprehensiveDetails{
+		RFQ:              rfq,
+		MatchedSuppliers: scoredSMEs,
+		AssignedSMEs:     assignedSMEs,
+		WorkPackages:     workPackages,
+		PaymentTrackers:  payments,
+		AuditLogs:        auditLogs,
+	}
+
+	data := map[string]interface{}{
+		"Title":      "RFQ Review & Comprehensive Audit Desk",
+		"AdminEmail": adminEmail,
+		"Page":       "rfq_detail",
+		"RFQ":        rfq,
+		"Details":    detailsData,
+	}
+
+	renderAdminView(w, "admin_rfq_screenshot_details.html", data)
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Completed request for RFQ ID=%d", rfqID)
 }

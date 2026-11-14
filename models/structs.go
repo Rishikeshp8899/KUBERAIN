@@ -307,3 +307,31 @@ type SupplierMatchDTO struct {
 	SimilarityScore      float64 // e.g., 0.85
 	SimilarityPercentage int     // e.g., 85
 }
+
+// AuditLog represents recorded modifications and lifecycle events for an RFQ
+type AuditLog struct {
+	ID        int    `json:"id"`
+	RFQID     int    `json:"rfq_id"`
+	Action    string `json:"action"`
+	Actor     string `json:"actor"`
+	Details   string `json:"details"`
+	CreatedAt string `json:"created_at"`
+}
+
+// AssignedSMEDTO holds assigned supplier details and their invitation/bidding status
+type AssignedSMEDTO struct {
+	Supplier
+	AssignmentStatus string `json:"assignment_status"`
+	AssignedAt       string `json:"assigned_at"`
+}
+
+// RFQComprehensiveDetails aggregates all related operational records for a single RFQ
+type RFQComprehensiveDetails struct {
+	RFQ              RFQ
+	MatchedSuppliers []SupplierMatchDTO
+	AssignedSMEs     []AssignedSMEDTO
+	WorkPackages     []WorkPackage
+	PaymentTrackers  []PaymentTracker
+	AuditLogs        []AuditLog
+	DrawingRevisions []DrawingRevision
+}

@@ -1,0 +1,341 @@
+{{define "admin"}}
+<div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+    <!-- PAGE HEADER -->
+    <main class="flex-1 min-w-0 space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">RFQ ID #{{.RFQ.ID}}</span>
+                    <span class="text-[10px] font-mono text-slate-400 bg-industrial-800 px-2 py-0.5 rounded border border-slate-700">Code: {{.RFQ.RFQCode}}</span>
+                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">{{.RFQ.Status}}</span>
+                </div>
+                <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5 mt-1">
+                    <i class="fa-solid fa-file-invoice text-blue-500"></i> Customer RFQ Review: {{.RFQ.CompanyName}}
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Comprehensive audit dashboard: Submitted documents, work package conversion status, payment tracking, and assigned SMEs.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/admin/rfqs" class="bg-industrial-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to List
+                </a>
+            </div>
+        </div>
+
+        <!-- GRID SECTION: CUSTOMER SUBMISSION DETAILS & CONTACT -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- LEFT 2 COLS: SPECIFICATIONS & DOWNLOADABLE DOCUMENTS -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-500"></i> Manufacturing Parameters & Documents
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Category / Process</span>
+                            <strong class="text-sm text-white font-semibold mt-1 block">{{.RFQ.Category}}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Material Required</span>
+                            <strong class="text-sm text-white font-semibold mt-1 block">{{.RFQ.Material}}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Required Quantity</span>
+                            <strong class="text-sm text-emerald-400 font-mono font-bold mt-1 block">{{.RFQ.Quantity}} units</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Target Price (USD)</span>
+                            <strong class="text-sm text-blue-400 font-mono font-bold mt-1 block">${.RFQ.TargetPriceUSD}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Delivery Deadline</span>
+                            <strong class="text-sm text-amber-400 font-mono font-bold mt-1 block">{{.RFQ.DeliveryDeadline}}</strong>
+                        </div>
+                        <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <span class="text-[11px] text-slate-400 block font-mono">Incoterms</span>
+                            <strong class="text-sm text-white font-mono font-semibold mt-1 block">{{.RFQ.IncobookingTerms}}</strong>
+                        </div>
+                    </div>
+
+                    <!-- DETAILED REQUIREMENTS -->
+                    <div class="space-y-2 pt-2">
+                        <span class="text-[11px] text-slate-400 font-mono uppercase tracking-wider block">Customer Specifications / Notes</span>
+                        <div class="bg-industrial-800/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">{{if .RFQ.Requirements}}{{.RFQ.Requirements}}{{else}}No specific notes provided.{{end}}</div>
+                    </div>
+
+                    <!-- DOWNLOADABLE SUBMITTED DOCUMENTS -->
+                    <div class="space-y-3 pt-2">
+                        <span class="text-[11px] text-slate-400 font-mono uppercase tracking-wider block">Submitted Blueprint / Drawing Files</span>
+                        {{if .RFQ.DrawingFilePath}}
+                        <div class="flex items-center justify-between bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                                    <i class="fa-solid fa-file-arrow-down text-lg"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-white font-bold block">Primary Drawing / CAD Document</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">{{.RFQ.DrawingFilePath}}</span>
+                                </div>
+                            </div>
+                            <a href="{{.RFQ.DrawingFilePath}}" download target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/30">
+                                <i class="fa-solid fa-download text-[10px]"></i> Download Document
+                            </a>
+                        </div>
+                        {{else}}
+                        <div class="bg-industrial-800/40 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 font-mono">
+                            No attached drawing file submitted for this RFQ.
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT 1 COL: CORPORATE CONTACT & AUDIT META -->
+            <div class="space-y-6">
+                <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+                    <h3 class="text-sm font-bold text-white tracking-wide uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-building-user text-purple-400"></i> Corporate Contact
+                    </h3>
+
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Company Name</span>
+                            <strong class="text-white text-sm font-bold mt-0.5 block">{{.RFQ.CompanyName}}</strong>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Contact Person</span>
+                            <span class="text-slate-200 font-medium mt-0.5 block">{{.RFQ.ContactPerson}}</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Email Address</span>
+                            <a href="mailto:{{.RFQ.Email}}" class="text-blue-400 hover:underline font-mono mt-0.5 block">{{.RFQ.Email}}</a>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-slate-400 block font-mono">Phone Number</span>
+                            <span class="text-slate-200 font-mono mt-0.5 block">{{if .RFQ.Phone}}{{.RFQ.Phone}}{{else}}Not Provided{{end}}</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 space-y-3 text-xs">
+                        <h4 class="text-[11px] font-mono text-slate-400 uppercase tracking-widest">Audit & Origin Metadata</h4>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">Location:</span>
+                            <strong class="font-mono">{{.RFQ.City}}, {{.RFQ.Country}}</strong>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">Client IP:</span>
+                            <strong class="font-mono text-slate-400">{{if .RFQ.IPAddress}}{{.RFQ.IPAddress}}{{else}}Hidden{{end}}</strong>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">Submitted At:</span>
+                            <strong class="font-mono text-slate-200">{{.RFQ.CreatedAt}}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION: WORK PACKAGE CONVERSION & ASSIGNED SMES -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- CONVERTED WORK PACKAGES -->
+            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-box-archive text-emerald-400"></i> Converted Work Packages
+                    </h3>
+                    <span class="text-xs font-mono bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded border border-emerald-500/20">{{len .Details.WorkPackages}} Packages</span>
+                </div>
+                {{if .Details.WorkPackages}}
+                <div class="space-y-3">
+                    {{range .Details.WorkPackages}}
+                    <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-white">#WP-{{.ID}}: {{.Title}}</span>
+                            <span class="text-[10px] font-mono uppercase bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">{{.Status}}</span>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-slate-400 font-mono">
+                            <span>Budget: <strong class="text-emerald-400">${.BudgetUSD} USD</strong></span>
+                            <span>Escrow: <strong class="text-amber-400">{{.EscrowStatus}}</strong></span>
+                        </div>
+                        <a href="/admin/work-packages/details?id={{.ID}}" class="text-blue-400 hover:underline text-[11px] font-mono block pt-1">View Work Package &rarr;</a>
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <div class="bg-industrial-800/40 p-6 rounded-xl text-center text-slate-500 text-xs font-mono">
+                    This RFQ has not yet been converted into a work package.
+                </div>
+                {{end}}
+            </div>
+
+            <!-- ASSIGNED SMES -->
+            <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-industry text-purple-400"></i> Assigned & Invited SMEs
+                    </h3>
+                    <span class="text-xs font-mono bg-purple-500/10 text-purple-400 px-2.5 py-0.5 rounded border border-purple-500/20">{{len .Details.AssignedSMEs}} Assigned</span>
+                </div>
+                {{if .Details.AssignedSMEs}}
+                <div class="space-y-3">
+                    {{range .Details.AssignedSMEs}}
+                    <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-white">{{.CompanyName}}</span>
+                            <span class="text-[10px] font-mono bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded border border-purple-500/20">{{.AssignmentStatus}}</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 font-mono block">{{.City}}, {{.State}} | Email: {{.ContactEmail}}</span>
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <div class="bg-industrial-800/40 p-6 rounded-xl text-center text-slate-500 text-xs font-mono">
+                    No SMEs currently assigned to work packages for this RFQ.
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- SECTION: PAYMENT HISTORY -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-credit-card text-blue-400"></i> Payment History & Escrow Tracker
+                </h3>
+                <span class="text-xs font-mono bg-blue-500/10 text-blue-400 px-2.5 py-0.5 rounded border border-blue-500/20">{{len .Details.PaymentTrackers}} Records</span>
+            </div>
+            {{if .Details.PaymentTrackers}}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs font-mono text-slate-300">
+                    <thead class="bg-industrial-800/80 text-slate-400 border-b border-slate-700">
+                        <tr>
+                            <th class="p-3">WP ID</th>
+                            <th class="p-3">Client Amount</th>
+                            <th class="p-3">Client Status</th>
+                            <th class="p-3">SME Payout</th>
+                            <th class="p-3">SME Status</th>
+                            <th class="p-3">Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        {{range .Details.PaymentTrackers}}
+                        <tr>
+                            <td class="p-3 text-blue-400 font-bold">#{{.WorkPackageID}}</td>
+                            <td class="p-3 text-emerald-400">${{.ClientAmountUSD}}</td>
+                            <td class="p-3"><span class="bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px]">{{.ClientPaidStatus}}</span></td>
+                            <td class="p-3 text-purple-400">${{.SupplierAmountUSD}}</td>
+                            <td class="p-3"><span class="bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px]">{{.SupplierPaidStatus}}</span></td>
+                            <td class="p-3 text-slate-400">{{.UpdatedAt}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+            <div class="bg-industrial-800/40 p-6 rounded-xl text-center text-slate-500 text-xs font-mono">
+                No payment transactions recorded for this RFQ yet.
+            </div>
+            {{end}}
+        </div>
+
+        <!-- SECTION: AUDIT HISTORY -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Audit History Log
+                </h3>
+                <span class="text-xs font-mono bg-amber-500/10 text-amber-400 px-2.5 py-0.5 rounded border border-amber-500/20">{{len .Details.AuditLogs}} Events</span>
+            </div>
+            {{if .Details.AuditLogs}}
+            <div class="space-y-3 font-mono">
+                {{range .Details.AuditLogs}}
+                <div class="bg-industrial-800/50 p-3.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 font-bold">{{.Action}}</span>
+                            <span class="text-[11px] text-slate-300 font-semibold">Actor: {{.Actor}}</span>
+                        </div>
+                        <p class="text-slate-400 text-[11px]">{{.Details}}</p>
+                    </div>
+                    <span class="text-[10px] text-slate-500">{{.CreatedAt}}</span>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <div class="bg-industrial-800/40 p-6 rounded-xl text-center text-slate-500 text-xs font-mono">
+                No audit logs found.
+            </div>
+            {{end}}
+        </div>
+
+        <!-- SECTION: TOP 10 COSINE SIMILARITY MATCHED SME VENDORS -->
+        <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 mt-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-industry text-purple-400"></i> Top 10 Matched SME Vendors (Cosine Similarity)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Ranked by semantic text similarity between RFQ requirements and SME capabilities summary.</p>
+                </div>
+                <span class="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs px-3 py-1 rounded-xl font-mono font-bold">
+                    Top {{len .Details.MatchedSuppliers}} SMEs
+                </span>
+            </div>
+
+            {{if .Details.MatchedSuppliers}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{range .Details.MatchedSuppliers}}
+                <div class="bg-industrial-800/70 p-5 rounded-xl border border-slate-800 space-y-3 hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-mono text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">SME ID #{{.ID}}</span>
+                            <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
+                                Match: {{.SimilarityPercentage}}%
+                            </span>
+                            {{if .IsVerified}}
+                            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                                <i class="fa-solid fa-check-circle text-[9px]"></i> Verified
+                            </span>
+                            {{end}}
+                        </div>
+                        <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 shrink-0">★ {{.Rating}} / 5.0</span>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-white">{{.CompanyName}}</h4>
+                        <span class="text-[11px] text-slate-400 font-mono">{{.City}}, {{.State}}</span>
+                    </div>
+
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-mono uppercase block mb-1">Capabilities Summary</span>
+                        <p class="text-xs text-slate-300 font-mono bg-industrial-900/60 p-2.5 rounded-lg border border-slate-800">{{if .CapabilitiesSummary}}{{.CapabilitiesSummary}}{{else}}General verified vendor.{{end}}</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80 pt-3 gap-2">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <a href="mailto:{{.ContactEmail}}" class="text-blue-400 hover:underline font-mono flex items-center gap-1">
+                                <i class="fa-solid fa-envelope text-[10px]"></i> {{.ContactEmail}}
+                            </a>
+                            {{if .Phone}}
+                            <span class="text-slate-300 font-mono flex items-center gap-1">
+                                <i class="fa-solid fa-phone text-[10px] text-slate-500"></i> {{.Phone}}
+                            </span>
+                            {{end}}
+                        </div>
+                        <span class="text-slate-400 font-mono">ISO: <strong class="text-slate-200">{{if .ISOStandard}}{{.ISOStandard}}{{else}}N/A{{end}}</strong></span>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <div class="bg-industrial-800/50 p-8 rounded-xl text-center text-slate-500 space-y-2 border border-slate-800">
+                <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500"></i>
+                <p class="text-xs font-bold text-slate-300">No verified SME vendors found for similarity matching.</p>
+            </div>
+            {{end}}
+        </div>
+    </main>
+</div>
+{{end}}

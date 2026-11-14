@@ -133,7 +133,7 @@
                     })
                 });
                 const result = await response.json();
-                console.log("Fetched suppliers:", result);
+                console.log("Fetched suppliers:", result); 
                 if (response.ok && result.success) {
                     page_number = result.page;
                     document.getElementById('current-page-indicator').innerText = page_number;

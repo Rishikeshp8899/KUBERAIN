@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -139,7 +140,9 @@ func SubmitRFQHandler(w http.ResponseWriter, r *http.Request) {
 	// 2. Generate unique RFQ Code and request-specific folder
 	rfqCode := r.FormValue("rfq_code")
 	if rfqCode == "" {
-		rfqCode = fmt.Sprintf("RFQ-%s-%d", time.Now().Format("20060102"), time.Now().UnixNano()%10000)
+		now := time.Now()
+		randomSuffix := rand.Intn(9000) + 1000
+		rfqCode = fmt.Sprintf("RFQ-%s-%d", now.Format("20060102"), randomSuffix)
 	}
 
 	// Folder structure: static/uploads/drawings/RFQ-20261020-1234/

@@ -70,6 +70,8 @@ func main() {
 	// Handles RFQ detail view, matching logic, and status updates
 	mux.HandleFunc("/admin/rfqs/update-status", middleware.RequireAdminAuth(controllers.AdminRFQDetailAndMatchHandler))
 
+	mux.HandleFunc("/admin/rfqs/screenshot/{id}", middleware.RequireAdminAuth(controllers.AdminRFQDetailAndMatchScreenshotHandler))
+
 	// ==========================================
 	// ADMIN PROTECTED OPERATIONS - SME & SUPPLIER MANAGEMENT
 	// ==========================================
