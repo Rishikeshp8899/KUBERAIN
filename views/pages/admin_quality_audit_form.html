@@ -17,7 +17,8 @@
 
     <!-- AUDIT FORM CARD -->
     <div class="bg-industrial-800 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-        <form action="/admin/audit/create" method="POST" class="space-y-4 text-xs">
+        <!-- Added enctype="multipart/form-data" for file document uploading -->
+        <form action="/admin/audit/create" method="POST" enctype="multipart/form-data" class="space-y-4 text-xs">
             
             <!-- ROW 1: WORK PACKAGE & SUPPLIER -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -74,7 +75,7 @@
                 </div>
             </div>
 
-            <!-- ROW 4: INSPECTION STATUS & REPORT FILE PATH -->
+            <!-- ROW 4: INSPECTION STATUS & DOCUMENT UPLOAD -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-bold uppercase text-slate-400 mb-1.5">Inspection Status (Pass / Fail) <span class="text-rose-500">*</span></label>
@@ -84,8 +85,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Report File Path / MTC Doc</label>
-                    <input type="text" name="report_file_path" placeholder="/storage/reports/mtc_batch_09.pdf" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl p-3 font-mono text-[11px] focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                    <label class="block font-bold uppercase text-slate-400 mb-1.5">Upload Audit Report / MTC Document</label>
+                    <input type="file" name="audit_report_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" class="w-full bg-slate-950 border border-slate-800 text-slate-300 rounded-xl p-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-rose-600 file:text-white hover:file:bg-rose-500 cursor-pointer font-mono text-[11px] focus:ring-2 focus:ring-rose-500 focus:outline-none" />
+                    <span class="text-[10px] text-slate-500 mt-1 block">Accepted formats: PDF, DOCX, JPG, PNG (Max 10MB)</span>
                 </div>
             </div>
 
@@ -106,7 +108,7 @@
                 <a href="/admin/compliance" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
                     Cancel
                 </a>
-                <button type="submit" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-950/40 transition flex items-center gap-2">
+                <button type="submit" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-950/40 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-check-circle"></i> Save Quality Audit Record
                 </button>
             </div>

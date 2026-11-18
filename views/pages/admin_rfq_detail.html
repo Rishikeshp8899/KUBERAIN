@@ -46,7 +46,7 @@
                         </div>
                         <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
                             <span class="text-[11px] text-slate-400 block font-mono">Target Price (USD)</span>
-                            <strong class="text-sm text-blue-400 font-mono font-bold mt-1 block">${.RFQ.TargetPriceUSD}</strong>
+                            <strong class="text-sm text-blue-400 font-mono font-bold mt-1 block">${{.RFQ.TargetPriceUSD}}</strong>
                         </div>
                         <div class="bg-industrial-800/60 p-4 rounded-xl border border-slate-800">
                             <span class="text-[11px] text-slate-400 block font-mono">Delivery Deadline</span>
@@ -60,9 +60,58 @@
 
                     <div class="space-y-2 pt-2">
                         <span class="text-[11px] text-slate-400 font-mono uppercase tracking-wider block">Customer Specifications / Notes</span>
-                        <div class="bg-industrial-800/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">
-                            {{if .RFQ.Requirements}}{{.RFQ.Requirements}}{{else}}No specific notes or secondary requirements provided by the customer.{{end}}
-                        </div>
+                        <div class="bg-industrial-800/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">{{if .RFQ.Requirements}}{{.RFQ.Requirements}}{{else}}No specific notes or secondary requirements provided by the customer.{{end}}</div>
+                    </div>
+
+                    <!-- SUBMITTED DOCUMENTS / DRAWINGS DOWNLOAD SECTION (POST API) -->
+                    <div class="space-y-3 pt-2 border-t border-slate-800">
+                        <span class="text-[11px] text-slate-400 font-mono uppercase tracking-wider block">Submitted Documents & Blueprints</span>
+                        
+                        {{if .RFQ.DrawingFiles}}
+                            <div class="space-y-2">
+                                {{range .RFQ.DrawingFiles}}
+                                <div class="flex items-center justify-between bg-industrial-800/60 p-3.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-all">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                                            <i class="fa-solid fa-file-arrow-down text-sm"></i>
+                                        </div>
+                                        <div class="truncate">
+                                            <span class="text-xs text-white font-bold block">Submitted Document</span>
+                                            <span class="text-[10px] text-slate-400 font-mono truncate block">{{.}}</span>
+                                        </div>
+                                    </div>
+                                    <form action="/admin/download" method="POST" class="inline shrink-0 ml-3">
+                                        <input type="hidden" name="file_path" value="/{{.}}">
+                                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/30 cursor-pointer">
+                                            <i class="fa-solid fa-download text-[10px]"></i> Download
+                                        </button>
+                                    </form>
+                                </div>
+                                {{end}}
+                            </div>
+                        {{else if .RFQ.DrawingFilePath}}
+                            <div class="flex items-center justify-between bg-industrial-800/60 p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition-all">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                                        <i class="fa-solid fa-file-pdf text-lg"></i>
+                                    </div>
+                                    <div class="truncate">
+                                        <span class="text-xs text-white font-bold block">Engineering Drawing / Submitted Document</span>
+                                        <span class="text-[10px] text-slate-400 font-mono truncate block">{{.RFQ.DrawingFilePath}}</span>
+                                    </div>
+                                </div>
+                                <form action="/admin/download" method="POST" class="inline shrink-0 ml-3">
+                                    <input type="hidden" name="file_path" value="/{{.RFQ.DrawingFilePath}}">
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/30 cursor-pointer">
+                                        <i class="fa-solid fa-download text-[10px]"></i> Download File
+                                    </button>
+                                </form>
+                            </div>
+                        {{else}}
+                            <div class="bg-industrial-800/40 p-4 rounded-xl border border-slate-800 text-xs text-slate-500 font-mono flex items-center gap-2">
+                                <i class="fa-solid fa-folder-open text-slate-600"></i> No documents or drawings were uploaded by the customer.
+                            </div>
+                        {{end}}
                     </div>
                 </div>
             </div>
@@ -104,7 +153,7 @@
                     <h3 class="text-base font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-brain text-purple-400"></i> SME matches for requirements of rfq
                     </h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Ranked by text` vector cosine similarity score between RFQ requirements and supplier capabilities.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Ranked by text vector cosine similarity score between RFQ requirements and supplier capabilities.</p>
                 </div>
                 <span class="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs px-3 py-1 rounded-xl font-mono font-bold">
                     {{len .CapableSuppliers}} Ranked Vendors
@@ -120,9 +169,8 @@
                             <span class="text-[10px] font-mono text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">SME ID #{{.ID}}</span>
                       
                             <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
-    Similarity: {{.SimilarityPercentage}}%
-</span>
-
+                                Similarity: {{.SimilarityPercentage}}%
+                            </span>
                         </div>
                         <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">★ {{.Rating}} / 5.0</span>
                     </div>

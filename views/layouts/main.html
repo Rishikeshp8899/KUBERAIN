@@ -108,74 +108,7 @@
 
     <!-- ==================== MAIN BODY ==================== -->
     <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-8">
-
-        <!-- ==================== SIDEBAR ==================== -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-2xl transform -translate-x-full lg:translate-x-0 lg:static lg:w-1/4 transition-transform duration-300 ease-in-out p-6 rounded-2xl flex flex-col justify-between border border-slate-200">
-            <div>
-                <div class="flex items-center justify-between mb-6 lg:hidden">
-                    <span class="font-bold text-lg text-slate-900 flex items-center gap-2">
-                        <i class="fa-solid fa-layer-group text-blue-600"></i> Technical Categories
-                    </span>
-                    <button id="closeSidebar" class="text-slate-500 hover:text-black">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-4">Technical Categories</h3>
-                <ul class="space-y-2 text-sm font-semibold text-slate-600">
-    <li>
-        <a href="/products?cat=valves" onclick="filterCategory('valves')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
-            <span class="flex items-center gap-2">
-                <i class="fa-solid fa-ring text-blue-600"></i> Industrial Valves
-            </span>
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-        </a>
-    </li>
-    <li>
-        <a href="/products?cat=pipes" onclick="filterCategory('pipes')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
-            <span class="flex items-center gap-2">
-                <i class="fa-solid fa-lines-leaning text-blue-600"></i> Seamless Pipes
-            </span>
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-        </a>
-    </li>
-    <li>
-        <a href="/products?cat=fittings" onclick="filterCategory('fittings')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
-            <span class="flex items-center gap-2">
-                <i class="fa-solid fa-circle-notch text-blue-600"></i> Heavy Fittings
-            </span>
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-        </a>
-    </li>
-    <li>
-        <a href="/products?cat=cnc" onclick="filterCategory('cnc')" class="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition">
-            <span class="flex items-center gap-2">
-                <i class="fa-solid fa-gear text-blue-600"></i> CNC Machining
-            </span>
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-        </a>
-    </li>
-</ul>
-
-                <hr class="my-6 border-slate-200">
-
-                <h3 class="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-4">Enterprise Standards</h3>
-                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm space-y-3 border border-slate-800">
-                    <p class="font-bold flex items-center text-sm text-blue-400">
-                        <i class="fa-solid fa-certificate text-emerald-400 mr-2 text-base"></i> ISO 9001:2015 Compliant
-                    </p>
-                    <p class="text-xs text-slate-300 leading-relaxed">Strict stage-gate QC inspections & Hydro-testing certificates included with every shipment.</p>
-                </div>
-            </div>
-
-            <div class="pt-6">
-                <div class="bg-blue-600 text-white p-5 rounded-2xl text-center shadow-lg">
-                    <p class="text-xs text-blue-100 uppercase tracking-widest font-bold">Direct Desk Inquiry</p>
-                    <a href="mailto:rfq@kuberainindustry.com" class="text-sm font-extrabold text-white mt-1 hover:underline block break-all">rfq@kuberainindustry.com</a>
-                </div>
-            </div>
-        </aside>
-
+       
         <!-- Dynamic Page Content Insertion -->
         <main class="flex-1 bg-white p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200">
             {{block "content" .}}{{end}}
@@ -216,11 +149,17 @@
             </div>
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-            &copy; 2026 Kuberain Industry. All rights reserved. Powered by 500+ SME Engineering Partners across India.
+            &copy; 2026 Kuberain Industry. All rights reserved.
         </div>
     </footer>
 
-    <!-- Mobile Drawer & Sidebar Navigation JS -->
+    <!-- Scroll Navigation Hint Indicator -->
+    <div id="scrollNavHint" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-industrial-900/95 text-white border border-blue-500/50 px-5 py-2.5 rounded-full shadow-2xl text-xs font-bold tracking-wide z-50 flex items-center gap-2.5 opacity-0 pointer-events-none transition-all duration-200">
+        <i id="scrollNavIcon" class="fa-solid fa-arrow-down text-blue-400"></i>
+        <span id="scrollNavText">Keep scrolling for Next Page</span>
+    </div>
+
+    <!-- Mobile Drawer, Sidebar Navigation & Scroll Page Transition JS -->
     <script>
         const sidebar = document.getElementById('sidebar');
         const mobileBackdrop = document.getElementById('mobileBackdrop');
@@ -228,27 +167,148 @@
 
         // Toggle Sidebar (Left Slide Drawer)
         document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-            sidebar.classList.remove('-translate-x-full');
-            mobileBackdrop.classList.remove('hidden');
-            // Close header nav if open
-            mobileHeaderNav.classList.add('hidden');
+            sidebar?.classList.remove('-translate-x-full');
+            mobileBackdrop?.classList.remove('hidden');
+            mobileHeaderNav?.classList.add('hidden');
         });
 
         // Close Sidebar
         const closeSidebarFn = () => {
-            sidebar.classList.add('-translate-x-full');
-            mobileBackdrop.classList.add('hidden');
+            sidebar?.classList.add('-translate-x-full');
+            mobileBackdrop?.classList.add('hidden');
         };
         document.getElementById('closeSidebar')?.addEventListener('click', closeSidebarFn);
         mobileBackdrop?.addEventListener('click', closeSidebarFn);
 
         // Toggle Mobile Header Navigation Drawer (Top Dropdown)
         document.getElementById('mobileHeaderToggle')?.addEventListener('click', () => {
-            mobileHeaderNav.classList.toggle('hidden');
-            // Close sidebar if open
-            sidebar.classList.add('-translate-x-full');
-            mobileBackdrop.classList.add('hidden');
+            mobileHeaderNav?.classList.toggle('hidden');
+            sidebar?.classList.add('-translate-x-full');
+            mobileBackdrop?.classList.add('hidden');
         });
+
+        // ==================== HEADER-BASED SCROLL NAVIGATION WITH BOUNDARY PAUSE ====================
+        const headerPages = [
+            { path: "/", label: "Home" },
+            { path: "/products", label: "Products" },
+            { path: "/services", label: "Services" },
+            { path: "/about", label: "About Us" },
+            { path: "/compliance", label: "Quality & Compliance" },
+            { path: "/sme-network", label: "SME Hubs" },
+            { path: "/smes-onboarding", label: "Work with us" }
+        ];
+
+        let isNavigating = false;
+        let boundaryReachedTime = null;
+        let boundaryDirection = null; // 'down' or 'up'
+        let overscrollAccumulator = 0;
+        let hintTimeout = null;
+
+        const PAUSE_DURATION_MS = 800; // Must rest at footer/header for 0.8s before overscroll triggers
+        const OVERSCROLL_THRESHOLD = 350; // Extra scroll effort required after pause
+
+        const hintEl = document.getElementById('scrollNavHint');
+        const hintText = document.getElementById('scrollNavText');
+        const hintIcon = document.getElementById('scrollNavIcon');
+
+        function showNavHint(text, direction) {
+            hintText.textContent = text;
+            hintIcon.className = direction === 'down' 
+                ? 'fa-solid fa-arrow-down text-blue-400 animate-bounce' 
+                : 'fa-solid fa-arrow-up text-blue-400 animate-bounce';
+            hintEl.classList.remove('opacity-0');
+            
+            clearTimeout(hintTimeout);
+            hintTimeout = setTimeout(() => {
+                hintEl.classList.add('opacity-0');
+                overscrollAccumulator = 0;
+            }, 1200);
+        }
+
+        // Reset boundary timer whenever the user actively scrolls through the middle of the page
+        window.addEventListener('scroll', () => {
+            const atBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 5);
+            const atTop = window.scrollY <= 5;
+
+            if (!atBottom && !atTop) {
+                boundaryReachedTime = null;
+                boundaryDirection = null;
+                overscrollAccumulator = 0;
+                hintEl.classList.add('opacity-0');
+            }
+        }, { passive: true });
+
+        window.addEventListener('wheel', (event) => {
+            if (isNavigating) return;
+
+            const currentPath = window.location.pathname;
+            const currentIndex = headerPages.findIndex(p => p.path === currentPath);
+            if (currentIndex === -1) return;
+
+            const scrollPosition = window.innerHeight + window.scrollY;
+            const documentHeight = document.documentElement.scrollHeight;
+            const atBottom = scrollPosition >= documentHeight - 5;
+            const atTop = window.scrollY <= 5;
+            const now = Date.now();
+
+            // 1. User is scrolling DOWN at the bottom (Footer visible)
+            if (event.deltaY > 0 && atBottom && currentIndex < headerPages.length - 1) {
+                const nextPage = headerPages[currentIndex + 1];
+
+                // First time hitting the bottom: start the pause timer so user can read the footer
+                if (boundaryDirection !== 'down') {
+                    boundaryDirection = 'down';
+                    boundaryReachedTime = now;
+                    overscrollAccumulator = 0;
+                    showNavHint(`Footer reached — keep scrolling down for ${nextPage.label}`, 'down');
+                    return;
+                }
+
+                // Ignore momentum scroll events until the pause duration has passed
+                if (now - boundaryReachedTime < PAUSE_DURATION_MS) {
+                    return;
+                }
+
+                // Accumulate intentional extra downward scrolling
+                overscrollAccumulator += event.deltaY;
+                showNavHint(`Opening ${nextPage.label}...`, 'down');
+
+                if (overscrollAccumulator >= OVERSCROLL_THRESHOLD) {
+                    isNavigating = true;
+                    window.location.href = nextPage.path;
+                }
+            }
+            // 2. User is scrolling UP at the top (Header visible)
+            else if (event.deltaY < 0 && atTop && currentIndex > 0) {
+                const prevPage = headerPages[currentIndex - 1];
+
+                // First time hitting the top: start the pause timer so user can read the header
+                if (boundaryDirection !== 'up') {
+                    boundaryDirection = 'up';
+                    boundaryReachedTime = now;
+                    overscrollAccumulator = 0;
+                    showNavHint(`Top reached — keep scrolling up for ${prevPage.label}`, 'up');
+                    return;
+                }
+
+                // Ignore momentum scroll events until the pause duration has passed
+                if (now - boundaryReachedTime < PAUSE_DURATION_MS) {
+                    return;
+                }
+
+                // Accumulate intentional extra upward scrolling
+                overscrollAccumulator += Math.abs(event.deltaY);
+                showNavHint(`Opening ${prevPage.label}...`, 'up');
+
+                if (overscrollAccumulator >= OVERSCROLL_THRESHOLD) {
+                    isNavigating = true;
+                    window.location.href = prevPage.path;
+                }
+            } else {
+                // User reversed direction
+                overscrollAccumulator = 0;
+            }
+        }, { passive: true });
     </script>
 </body>
 </html>

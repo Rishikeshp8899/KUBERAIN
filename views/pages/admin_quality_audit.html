@@ -1,7 +1,7 @@
 {{define "admin"}}
 
 <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
-    <!-- PAGE 5 CONTENT -->
+    <!-- PAGE CONTENT -->
     <main class="flex-1 min-w-0 space-y-6">
         <div class="flex items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800">
             <div>
@@ -17,130 +17,447 @@
                 <h3 class="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
                     <i class="fa-solid fa-clipboard-check text-sm"></i> Per-SME Quality Audits & Defect Comments
                 </h3>
-                <span class="text-[11px] text-slate-400 font-mono">Required before SME Escrow Payout</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-[11px] text-slate-400 font-mono hidden sm:inline">Required before SME Escrow Payout</span>
+                    
+                    <!-- DYNAMIC MODAL LOAD BUTTON FOR WORK PACKAGE 205 (OR DYNAMIC ID) -->
+                    <button type="button" onclick="loadQualityAuditsModal(205)" class="bg-blue-600 hover:bg-blue-500 text-white border border-blue-500/50 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-list-check text-[10px]"></i> See All Audits (WP-205)
+                    </button>
+
+                    <button type="button" onclick="openTableOverlay('quality-table-wrapper', 'Per-SME Quality Audits & Defect Comments')" class="bg-slate-900 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                        <i class="fa-solid fa-expand text-[10px] text-emerald-400"></i> Expand Overlay
+                    </button>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">Work Package</th>
-                            <th class="p-3">Assigned SME Vendor</th>
-                            <th class="p-3">Inspection Type</th>
-                            <th class="p-3">Status / Audit Result</th>
-                            <th class="p-3">Failure Comments / Remarks</th>
-                            <th class="p-3 text-center">Action / Payout Gate</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
-                        {{range .QualityInspections}}
-                        <tr class="hover:bg-slate-800/40">
-                            <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
-                            <td class="p-3">
-                                <span class="text-purple-400 font-bold">#{{.SupplierID}}</span> - <span class="text-slate-200">{{.SupplierName}}</span>
-                            </td>
-                            <td class="p-3 font-mono text-blue-400">{{.InspectionType}}</td>
-                            <td class="p-3">
-                                {{if .Passed}}
-                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Passed</span>
-                                {{else}}
-                                <span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Failed</span>
-                                {{end}}
-                            </td>
-                            <td class="p-3">
-                                {{if .Passed}}
-                                <span class="text-slate-500 italic">No defects recorded.</span>
-                                {{else}}
-                                <div class="bg-rose-950/30 border border-rose-800/50 p-2 rounded-lg text-rose-300 font-mono text-[11px]">
-                                    <i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> {{.Comments}}
-                                </div>
-                                {{end}}
-                            </td>
-                            <td class="p-3 text-center">
-                                {{if .Passed}}
-                                <span class="text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-check-circle"></i> Cleared for Payout</span>
-                                {{else}}
-                                <span class="text-rose-400 font-bold text-[11px]"><i class="fa-solid.fa-ban"></i> Payout Blocked</span>
-                                {{end}}
-                            </td>
-                        </tr>
-                        {{else}}
-                        <tr>
-                            <td colspan="6" class="p-6 text-center text-slate-500">No multi-SME quality inspections recorded yet.</td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                </table>
+            <div id="quality-table-wrapper" class="paginated-table-container" data-page-size="10">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Work Package</th>
+                                <th class="p-3">Assigned SME Vendor</th>
+                                <th class="p-3">Inspection Type</th>
+                                <th class="p-3">Status / Audit Result</th>
+                                <th class="p-3">Failure Comments / Remarks</th>
+                                <th class="p-3 text-center">Action / Payout Gate</th>
+                                <th class="p-3 text-center">Audit Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                            {{$hasInspections := false}}
+                            {{range .QualityInspections}}
+                            {{$hasInspections = true}}
+                            <tr class="hover:bg-slate-800/40 table-data-row">
+                                <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
+                                <td class="p-3">
+                                    <span class="text-purple-400 font-bold">#{{.SupplierID}}</span> - <span class="text-slate-200">{{.SupplierName}}</span>
+                                </td>
+                                <td class="p-3 font-mono text-blue-400">{{.InspectionType}}</td>
+                                <td class="p-3">
+                                    {{if .Passed}}
+                                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Passed</span>
+                                    {{else}}
+                                    <span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Failed</span>
+                                    {{end}}
+                                </td>
+                                <td class="p-3">
+                                    {{if .Passed}}
+                                    <span class="text-slate-500 italic">No defects recorded.</span>
+                                    {{else}}
+                                    <div class="bg-rose-950/30 border border-rose-800/50 p-2 rounded-lg text-rose-300 font-mono text-[11px]">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> {{.Comments}}
+                                    </div>
+                                    {{end}}
+                                </td>
+                                <td class="p-3 text-center">
+                                    {{if .Passed}}
+                                    <span class="text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-check-circle"></i> Cleared for Payout</span>
+                                    {{else}}
+                                    <span class="text-rose-400 font-bold text-[11px]"><i class="fa-solid fa-ban"></i> Payout Blocked</span>
+                                    {{end}}
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button type="button" onclick="loadQualityAuditsModal({{.WorkPackageID}})" class="bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all inline-flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-list-check"></i> See Audits
+                                    </button>
+                                </td>
+                            </tr>
+                            {{end}}
+                            {{if not $hasInspections}}
+                            <tr>
+                                <td colspan="7" class="p-6 text-center text-slate-500">No multi-SME quality inspections recorded yet.</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- PAGINATION BAR -->
+                <div class="pagination-controls bg-slate-950/80 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-2 rounded-xl"></div>
             </div>
         </div>
 
         <!-- MATERIAL TEST CERTIFICATES (MTC) BY SME -->
         <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-3">
-            <h3 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
-                <i class="fa-solid fa-file-circle-check text-sm"></i> Material Test Certificates (MTC) per SME
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">Work Package</th>
-                            <th class="p-3">SME Vendor</th>
-                            <th class="p-3">Heat Number</th>
-                            <th class="p-3">Material Grade</th>
-                            <th class="p-3">Mill Name</th>
-                            <th class="p-3">Verification</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
-                        {{range .MTCCertificates}}
-                        <tr class="hover:bg-slate-800/40">
-                            <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
-                            <td class="p-3 text-purple-300">#{{.SupplierID}} - {{.SupplierName}}</td>
-                            <td class="p-3 font-mono text-amber-400">{{.HeatNumber}}</td>
-                            <td class="p-3 font-bold text-slate-200">{{.MaterialGrade}}</td>
-                            <td class="p-3">{{.MillName}}</td>
-                            <td class="p-3">
-                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Verified: {{.VerifiedBy}}</span>
-                            </td>
-                        </tr>
-                        {{else}}
-                        <tr>
-                            <td colspan="6" class="p-4 text-center text-slate-500">No MTC quality certificates uploaded.</td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                </table>
+            <div class="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                <h3 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                    <i class="fa-solid fa-file-circle-check text-sm"></i> Material Test Certificates (MTC) per SME
+                </h3>
+                <button type="button" onclick="openTableOverlay('mtc-table-wrapper', 'Material Test Certificates (MTC) per SME')" class="bg-slate-900 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                    <i class="fa-solid fa-expand text-[10px] text-blue-400"></i> Expand Overlay
+                </button>
+            </div>
+
+            <div id="mtc-table-wrapper" class="paginated-table-container" data-page-size="10">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Work Package</th>
+                                <th class="p-3">SME Vendor</th>
+                                <th class="p-3">Heat Number</th>
+                                <th class="p-3">Material Grade</th>
+                                <th class="p-3">Mill Name</th>
+                                <th class="p-3">Verification</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                            {{$hasMtc := false}}
+                            {{range .MTCCertificates}}
+                            {{$hasMtc = true}}
+                            <tr class="hover:bg-slate-800/40 table-data-row">
+                                <td class="p-3 font-mono font-bold text-white">WP-#{{.WorkPackageID}}</td>
+                                <td class="p-3 text-purple-300">#{{.SupplierID}} - {{.SupplierName}}</td>
+                                <td class="p-3 font-mono text-amber-400">{{.HeatNumber}}</td>
+                                <td class="p-3 font-bold text-slate-200">{{.MaterialGrade}}</td>
+                                <td class="p-3">{{.MillName}}</td>
+                                <td class="p-3">
+                                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Verified: {{.VerifiedBy}}</span>
+                                </td>
+                            </tr>
+                            {{end}}
+                            {{if not $hasMtc}}
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-slate-500">No MTC quality certificates uploaded.</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- PAGINATION BAR -->
+                <div class="pagination-controls bg-slate-950/80 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-2 rounded-xl"></div>
             </div>
         </div>
 
         <!-- INTERCEPTED DIRECT CONTACT LOG -->
         <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 space-y-4">
-            <h3 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
-                <i class="fa-solid fa-triangle-exclamation text-sm"></i> Intercepted Direct Contact Log (Disintermediation Shield)
-            </h3>
-            <div class="space-y-3">
-                {{range .FlaggedLogs}}
-                <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl space-y-2">
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="font-bold text-rose-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Flag Reason: {{.FlagReason}}
-                        </span>
-                        <span class="text-slate-500 font-mono text-[11px]">Package ID: #{{.WorkPackageID}}</span>
+            <div class="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                <h3 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-sm"></i> Intercepted Direct Contact Log (Disintermediation Shield)
+                </h3>
+                <button type="button" onclick="openTableOverlay('flagged-table-wrapper', 'Intercepted Direct Contact Log')" class="bg-slate-900 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                    <i class="fa-solid fa-expand text-[10px] text-rose-400"></i> Expand Overlay
+                </button>
+            </div>
+
+            <div id="flagged-table-wrapper" class="paginated-table-container space-y-3" data-page-size="10">
+                <div class="space-y-3 paginated-items-container">
+                    {{$hasLogs := false}}
+                    {{range .FlaggedLogs}}
+                    {{$hasLogs = true}}
+                    <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl space-y-2 table-data-row">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-rose-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle text-[8px]"></i> Flag Reason: {{.FlagReason}}
+                            </span>
+                            <span class="text-slate-500 font-mono text-[11px]">Package ID: #{{.WorkPackageID}}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-mono bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                            "{{.Message}}"
+                        </p>
+                        <div class="text-[10px] text-slate-400 flex justify-between items-center pt-1">
+                            <span>Sender: <strong class="text-slate-200">{{.SenderRole}} (#{{.SenderID}})</strong></span>
+                            <span class="text-slate-500 font-mono">{{.CreatedAt}}</span>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-300 font-mono bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                        "{{.Message}}"
-                    </p>
-                    <div class="text-[10px] text-slate-400 flex justify-between items-center pt-1">
-                        <span>Sender: <strong class="text-slate-200">{{.SenderRole}} (#{{.SenderID}})</strong></span>
-                        <span class="text-slate-500 font-mono">{{.CreatedAt}}</span>
-                    </div>
+                    {{end}}
+                    {{if not $hasLogs}}
+                    <p class="text-xs text-slate-500 text-center py-4 table-data-row">No direct contact violations detected.</p>
+                    {{end}}
                 </div>
-                {{else}}
-                <p class="text-xs text-slate-500 text-center py-4">No direct contact violations detected.</p>
-                {{end}}
+                <!-- PAGINATION BAR -->
+                <div class="pagination-controls bg-slate-950/80 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-2 rounded-xl"></div>
             </div>
         </div>
     </main>
 </div>
+
+<!-- FULL-SCREEN TABLE OVERLAY MODAL -->
+<div id="table-overlay-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+    <div class="bg-industrial-900 border border-slate-700 rounded-2xl w-full max-w-7xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-table text-blue-400"></i>
+                <h3 id="overlay-modal-title" class="text-sm font-black uppercase tracking-wider text-white">Table View</h3>
+                <span class="text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded">10 Rows / Page</span>
+            </div>
+            <button type="button" onclick="closeTableOverlay()" class="bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i> Close Overlay
+            </button>
+        </div>
+        <!-- Modal Body -->
+        <div id="overlay-modal-body" class="p-6 overflow-y-auto flex-1"></div>
+    </div>
+</div>
+
+<script>
+    // Asynchronously fetch and populate quality inspections into the full-screen modal
+    async function loadQualityAuditsModal(workPackageId) {
+        const modal = document.getElementById('table-overlay-modal');
+        const modalTitle = document.getElementById('overlay-modal-title');
+        const modalBody = document.getElementById('overlay-modal-body');
+
+        if (!modal) return;
+
+        modalTitle.textContent = `Quality Inspection History - Work Package #${workPackageId}`;
+        modalBody.innerHTML = '<div class="text-center py-12 text-slate-400 font-mono"><i class="fa-solid fa-spinner fa-spin text-xl text-blue-400 mb-2"></i><p>Loading audit inspection records...</p></div>';
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        try {
+            const response = await fetch(`/admin/work/quality/${workPackageId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'include' // 🔑 Crucial for passing session cookies in fetch requests
+            });
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error(`Server returned non-JSON response. Check admin authentication session.`);
+            }
+
+            const data = await response.json();
+            console.log("[DEBUG] Fetched Audit Data for WP-" + workPackageId, data);
+
+            if (!data.success || !data.quality_inspections || data.quality_inspections.length === 0) {
+                modalBody.innerHTML = `<div class="text-center py-12 text-slate-500 font-mono">No inspection audits recorded yet for Work Package #${workPackageId}</div>`;
+                return;
+            }
+
+            let rowsHtml = '';
+            data.quality_inspections.forEach(audit => {
+                const statusBadge = audit.passed 
+                    ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Passed</span>'
+                    : '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Failed</span>';
+                
+                const commentsBlock = audit.passed
+                    ? '<span class="text-slate-500 italic">No defects recorded.</span>'
+                    : `<div class="bg-rose-950/30 border border-rose-800/50 p-2 rounded-lg text-rose-300 font-mono text-[11px]"><i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> ${audit.comments}</div>`;
+
+                const payoutGate = audit.passed
+                    ? '<span class="text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-check-circle"></i> Cleared for Payout</span>'
+                    : '<span class="text-rose-400 font-bold text-[11px]"><i class="fa-solid fa-ban"></i> Payout Blocked</span>';
+
+                const reportLink = audit.report_file_path 
+                    ? `<a href="/${audit.report_file_path}" target="_blank" class="text-blue-400 hover:underline font-mono text-[10px]"><i class="fa-solid fa-file-pdf"></i> View Report</a>`
+                    : '<span class="text-slate-500 text-[10px]">No file attached</span>';
+
+                rowsHtml += `
+                    <tr class="hover:bg-slate-800/40 table-data-row">
+                        <td class="p-3 font-mono font-bold text-white">WP-#${audit.work_package_id}</td>
+                        <td class="p-3"><span class="text-purple-400 font-bold">#${audit.supplier_id}</span> - <span class="text-slate-200">${audit.supplier_name || 'Unassigned SME'}</span></td>
+                        <td class="p-3 font-mono text-blue-400">${audit.inspection_type}</td>
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3">${commentsBlock}</td>
+                        <td class="p-3 text-center">${payoutGate}</td>
+                        <td class="p-3 text-center">${reportLink}</td>
+                        <td class="p-3 text-center font-mono text-slate-400 text-[10px]">${audit.inspected_at}</td>
+                    </tr>
+                `;
+            });
+
+            modalBody.innerHTML = `
+                <div class="paginated-table-container" data-page-size="10">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">Work Package</th>
+                                    <th class="p-3">Assigned SME Vendor</th>
+                                    <th class="p-3">Inspection Type</th>
+                                    <th class="p-3">Status / Audit Result</th>
+                                    <th class="p-3">Failure Comments / Remarks</th>
+                                    <th class="p-3 text-center">Action / Payout Gate</th>
+                                    <th class="p-3 text-center">Report Document</th>
+                                    <th class="p-3 text-center">Inspected At</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-controls bg-slate-950/80 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-2 rounded-xl"></div>
+                </div>
+            `;
+
+            initPaginatedTable(modalBody.querySelector('.paginated-table-container'));
+
+        } catch (error) {
+            console.error('[ERROR] Failed to load quality audits:', error);
+            modalBody.innerHTML = `<div class="text-center py-12 text-rose-400 font-mono">Error: ${error.message}</div>`;
+        }
+    }
+
+    // Pagination helper function
+    function initPaginatedTable(container) {
+        if (!container) return;
+        const pageSize = parseInt(container.getAttribute('data-page-size') || '10', 10);
+        const rows = Array.from(container.querySelectorAll('.table-data-row'));
+        const controlsContainer = container.querySelector('.pagination-controls');
+
+        if (!controlsContainer) return;
+
+        if (rows.length === 0) {
+            controlsContainer.style.display = 'none';
+            return;
+        }
+
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / pageSize);
+
+        function renderPage(page) {
+            currentPage = Math.max(1, Math.min(page, totalPages));
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+
+            rows.forEach((row, idx) => {
+                row.style.display = (idx >= start && idx < end) ? '' : 'none';
+            });
+
+            renderControls();
+        }
+
+        function renderControls() {
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, rows.length);
+
+            const maxVisibleButtons = 10;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+            let endPage = startPage + maxVisibleButtons - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+            }
+
+            let buttonsHtml = '';
+
+            const prevDisabled = currentPage === 1;
+            buttonsHtml += `
+                <button type="button" ${prevDisabled ? 'disabled' : ''} data-page="${currentPage - 1}"
+                    class="px-3 py-1.5 rounded-lg font-bold border transition-all flex items-center gap-1 ${
+                        prevDisabled
+                            ? 'bg-slate-900/50 text-slate-600 border-slate-800 cursor-not-allowed'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 cursor-pointer'
+                    }">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Previous
+                </button>
+            `;
+
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentPage;
+                buttonsHtml += `
+                    <button type="button" data-page="${i}"
+                        class="w-8 h-8 rounded-lg font-mono font-bold border transition-all cursor-pointer ${
+                            isActive
+                                ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                                : 'bg-slate-800/70 hover:bg-slate-700 text-slate-300 border-slate-700'
+                        }">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            const nextDisabled = currentPage === totalPages;
+            buttonsHtml += `
+                <button type="button" ${nextDisabled ? 'disabled' : ''} data-page="${currentPage + 1}"
+                    class="px-3 py-1.5 rounded-lg font-bold border transition-all flex items-center gap-1 ${
+                        nextDisabled
+                            ? 'bg-slate-900/50 text-slate-600 border-slate-800 cursor-not-allowed'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 cursor-pointer'
+                    }">
+                    Next <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+            `;
+
+            controlsContainer.innerHTML = `
+                <div class="text-slate-400 font-mono">
+                    Showing <span class="text-white font-bold">${startItem}</span>–<span class="text-white font-bold">${endItem}</span> of <span class="text-white font-bold">${rows.length}</span> entries
+                </div>
+                <div class="flex items-center flex-wrap gap-1.5">
+                    ${buttonsHtml}
+                </div>
+            `;
+
+            controlsContainer.querySelectorAll('button[data-page]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!btn.disabled) {
+                        renderPage(parseInt(btn.getAttribute('data-page'), 10));
+                    }
+                });
+            });
+        }
+
+        renderPage(1);
+    }
+
+    // Generic table overlay opener for static containers
+    function openTableOverlay(wrapperId, title) {
+        const sourceWrapper = document.getElementById(wrapperId);
+        const modal = document.getElementById('table-overlay-modal');
+        const modalTitle = document.getElementById('overlay-modal-title');
+        const modalBody = document.getElementById('overlay-modal-body');
+
+        if (!sourceWrapper || !modal) return;
+
+        modalTitle.textContent = title;
+        modalBody.innerHTML = '';
+
+        const clonedWrapper = sourceWrapper.cloneNode(true);
+        clonedWrapper.id = wrapperId + '-overlay-clone';
+        modalBody.appendChild(clonedWrapper);
+
+        initPaginatedTable(clonedWrapper);
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close Overlay Modal
+    function closeTableOverlay() {
+        const modal = document.getElementById('table-overlay-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeTableOverlay();
+    });
+    document.getElementById('table-overlay-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'table-overlay-modal') closeTableOverlay();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.paginated-table-container').forEach(initPaginatedTable);
+    });
+</script>
 
 {{end}}

@@ -6,14 +6,17 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"go-mvc-app/config"
 	"go-mvc-app/middleware"
 	"go-mvc-app/models"
 	"go-mvc-app/utility"
 	"html/template"
+	"io"
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -722,76 +725,102 @@ func AdminQualityAuditHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[SUCCESS] [AdminQualityAuditHandler] Request completed successfully")
 }
 
-// HandleCreateAudit processes POST requests to log a new quality or compliance audit
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : HandleCreateAudit                                                            ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Patil (KUBERAIN INDUSTRY)                                          ║
+║ 🎯 WHAT IT DOES   : Parses multipart form data, handles uploaded audit reports, validates IDs,     ║
+║                     and saves the quality inspection record to SQLite.                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
 func HandleCreateAudit(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	log.Println("[DEBUG] [HandleCreateAudit] Processing new quality audit form submission...")
+
+	// 1. Parse multipart form (max 10MB memory allocation for file uploads)
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		log.Printf("[ERROR] [HandleCreateAudit] Failed to parse multipart form: %v", err)
+		http.Error(w, "Bad Request: Unable to parse form data", http.StatusBadRequest)
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Invalid form submission", http.StatusBadRequest)
+	// 2. Parse Work Package ID
+	wpIDStr := r.FormValue("work_package_id")
+	workPackageID, err := strconv.Atoi(wpIDStr)
+	if err != nil || workPackageID <= 0 {
+		log.Printf("[ERROR] [HandleCreateAudit] Invalid or missing work_package_id: %q", wpIDStr)
+		http.Error(w, "Invalid Work Package ID", http.StatusBadRequest)
 		return
 	}
 
-	wpID, _ := strconv.Atoi(r.FormValue("work_package_id"))
-	supplierID, _ := strconv.Atoi(r.FormValue("supplier_id"))
-	passed := r.FormValue("passed") == "1"
+	// 3. Parse Supplier ID
+	supplierIDStr := r.FormValue("supplier_id")
+	supplierID, err := strconv.Atoi(supplierIDStr)
+	if err != nil || supplierID <= 0 {
+		log.Printf("[ERROR] [HandleCreateAudit] Invalid or missing supplier_id: %q", supplierIDStr)
+		http.Error(w, "Invalid Supplier ID", http.StatusBadRequest)
+		return
+	}
 
+	// 4. Resolve Inspection Type (Checks custom input first, then falls back to dropdown selection)
 	inspectionType := r.FormValue("inspection_type")
 	if inspectionType == "" {
 		inspectionType = r.FormValue("inspection_type_select")
 	}
+	if inspectionType == "" || inspectionType == "custom" {
+		inspectionType = "General Quality Inspection"
+	}
 
+	// 5. Handle File Upload (Optional MTC / Audit Report Document)
+	reportFilePath := ""
+	file, header, err := r.FormFile("audit_report_file")
+	if err == nil && header != nil {
+		defer file.Close()
+
+		// Ensure upload directory exists (e.g., ./storage/reports/)
+		uploadDir := "./storage/reports/"
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err == nil {
+			dstPath := filepath.Join(uploadDir, fmt.Sprintf("wp_%d_%s", workPackageID, header.Filename))
+			dst, createErr := os.Create(dstPath)
+			if createErr == nil {
+				defer dst.Close()
+				if _, copyErr := io.Copy(dst, file); copyErr == nil {
+					reportFilePath = dstPath
+					log.Printf("[SUCCESS] [HandleCreateAudit] Successfully uploaded audit report to %s", dstPath)
+				}
+			}
+		}
+	} else {
+		// Fallback if manual path was provided instead of file upload
+		reportFilePath = r.FormValue("report_file_path")
+	}
+
+	// 6. Construct Model Struct
 	qi := models.QualityInspection{
-		WorkPackageID:    wpID,
+		WorkPackageID:    workPackageID,
 		SupplierID:       supplierID,
 		InspectionType:   inspectionType,
-		Passed:           passed,
-		Comments:         r.FormValue("comments"),
+		Passed:           r.FormValue("passed") == "1" || r.FormValue("passed") == "true",
 		MeasuredValues:   r.FormValue("measured_values"),
 		ToleranceAllowed: r.FormValue("tolerance_allowed"),
-		ReportFilePath:   r.FormValue("report_file_path"),
+		ReportFilePath:   reportFilePath,
+		Comments:         r.FormValue("comments"),
 	}
 
-	_, err := models.CreateQualityInspection(qi)
+	log.Printf("[DEBUG] [HandleCreateAudit] Saving Inspection: WP=%d, Supplier=%d, Type=%q, Passed=%t",
+		qi.WorkPackageID, qi.SupplierID, qi.InspectionType, qi.Passed)
+
+	// 7. Save via DAO layer
+	newID, err := models.CreateQualityInspection(qi)
 	if err != nil {
 		log.Printf("[ERROR] [HandleCreateAudit] Failed to save audit: %v", err)
-		http.Error(w, "Database insertion error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error: Failed to save quality inspection", http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("[SUCCESS] [HandleCreateAudit] Successfully saved quality audit ID=%d", newID)
+
+	// 8. Redirect back to the audit review page
 	http.Redirect(w, r, "/admin/compliance", http.StatusSeeOther)
-}
-
-// HandleGetWorkPackagesAPI returns filtered work packages (current/completed) with search and pagination
-func HandleGetWorkPackagesAPI(w http.ResponseWriter, r *http.Request) {
-	status := r.URL.Query().Get("status") // 'current' or 'completed'
-	search := r.URL.Query().Get("search")
-	pageStr := r.URL.Query().Get("page")
-
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	// Fetch filtered packages from model layer
-	packages, totalPages, err := models.GetFilteredWorkPackages(status, search, page, 10)
-	if err != nil {
-		log.Printf("[ERROR] [HandleGetWorkPackagesAPI] Query failed: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	response := map[string]interface{}{
-		"work_packages": packages,
-		"current_page":  page,
-		"total_pages":   totalPages,
-		"status":        status,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
 }
 
 func GetAddAuditFormHandler(w http.ResponseWriter, r *http.Request) {
@@ -1263,6 +1292,9 @@ func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
 	if len(scoredSMEs) > 10 {
 		scoredSMEs = scoredSMEs[:10]
 	}
+	if rfq.DrawingFilePath != "" {
+		rfq.DrawingFiles = strings.Split(rfq.DrawingFilePath, ",")
+	}
 	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Ranked top %d SMEs using Cosine Similarity.", len(scoredSMEs))
 
 	// Step 6: Construct View Data Context
@@ -1372,4 +1404,171 @@ func AdminRFQDetailAndMatchScreenshotHandler(w http.ResponseWriter, r *http.Requ
 
 	renderAdminView(w, "admin_rfq_screenshot_details.html", data)
 	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Completed request for RFQ ID=%d", rfqID)
+}
+
+// DownloadUploadedFilePOST securely handles file downloads from the static directory.
+func DownloadUploadedFilePOST(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[INFO] [DownloadUploadedFilePOST] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
+
+	if r.Method != http.MethodPost {
+		log.Printf("[WARN] [DownloadUploadedFilePOST] Invalid HTTP method: %s", r.Method)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestedPath string
+	contentType := r.Header.Get("Content-Type")
+	log.Printf("[DEBUG] [DownloadUploadedFilePOST] Content-Type header: '%s'", contentType)
+
+	if strings.Contains(contentType, "application/json") {
+		var req models.DownloadRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			log.Printf("[ERROR] [DownloadUploadedFilePOST] JSON decode error: %v", err)
+			http.Error(w, "Bad Request: Invalid JSON", http.StatusBadRequest)
+			return
+		}
+		requestedPath = req.FilePath
+		log.Printf("[DEBUG] [DownloadUploadedFilePOST] Extracted JSON file_path: '%s'", requestedPath)
+	} else {
+		requestedPath = r.FormValue("file_path")
+		log.Printf("[DEBUG] [DownloadUploadedFilePOST] Extracted Form file_path: '%s'", requestedPath)
+	}
+
+	requestedPath = strings.TrimSpace(requestedPath)
+	if requestedPath == "" {
+		log.Printf("[WARN] [DownloadUploadedFilePOST] Empty file_path received after trimming.")
+		http.Error(w, "Bad Request: file_path is required", http.StatusBadRequest)
+		return
+	}
+
+	// Clean all leading slashes and whitespace robustly (handles single or double slashes like '//static/...')
+	cleanInput := strings.TrimLeft(requestedPath, "/")
+	log.Printf("[DEBUG] [DownloadUploadedFilePOST] Cleaned input path: '%s'", cleanInput)
+
+	// Automatically map paths whether they include "static/" or start directly with "uploads/" / "drawings/"
+	var targetPath string
+	if strings.HasPrefix(cleanInput, "static/") {
+		targetPath = filepath.Clean(cleanInput)
+		log.Printf("[DEBUG] [DownloadUploadedFilePOST] Matched 'static/' prefix -> targetPath: '%s'", targetPath)
+	} else {
+		// Fallback: prepend static/ if it doesn't already start with it
+		targetPath = filepath.Clean(filepath.Join("static", cleanInput))
+		log.Printf("[DEBUG] [DownloadUploadedFilePOST] Prepend static fallback -> targetPath: '%s'", targetPath)
+	}
+
+	// Absolute path security check to prevent directory traversal (e.g., ../../etc/passwd)
+	absStatic, err := filepath.Abs("static")
+	if err != nil {
+		log.Printf("[ERROR] [DownloadUploadedFilePOST] Failed to resolve absolute path for 'static': %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	absTarget, err := filepath.Abs(targetPath)
+	if err != nil {
+		log.Printf("[ERROR] [DownloadUploadedFilePOST] Failed to resolve absolute path for target '%s': %v", targetPath, err)
+		http.Error(w, "Bad Request: Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("[DEBUG] [DownloadUploadedFilePOST] Security check paths -> absStatic: '%s' | absTarget: '%s'", absStatic, absTarget)
+
+	// Strictly verify that the target file resides inside the absolute "static" directory path
+	if !strings.HasPrefix(absTarget, absStatic) {
+		log.Printf("[WARN] [DownloadUploadedFilePOST] Blocked path traversal attempt! Requested: '%s' | Resolved: '%s' | Allowed Base: '%s'", requestedPath, absTarget, absStatic)
+		http.Error(w, "Forbidden: Access denied outside static directory", http.StatusForbidden)
+		return
+	}
+
+	// Verify file existence on disk
+	info, err := os.Stat(absTarget)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("[WARN] [DownloadUploadedFilePOST] File does not exist on disk: '%s'", absTarget)
+			http.Error(w, "Not Found: File does not exist", http.StatusNotFound)
+			return
+		}
+		log.Printf("[ERROR] [DownloadUploadedFilePOST] os.Stat error for '%s': %v", absTarget, err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if info.IsDir() {
+		log.Printf("[WARN] [DownloadUploadedFilePOST] Target path is a directory, not a file: '%s'", absTarget)
+		http.Error(w, "Bad Request: Target is a directory", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("[DEBUG] [DownloadUploadedFilePOST] File verified on disk -> Size: %d bytes, ModTime: %v", info.Size(), info.ModTime())
+
+	// Force browser file download preserving original filename and spaces
+	fileName := filepath.Base(absTarget)
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	log.Printf("[SUCCESS] [DownloadUploadedFilePOST] Streaming file '%s' as '%s' (%d bytes)...", absTarget, fileName, info.Size())
+	http.ServeFile(w, r, absTarget)
+}
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🛠️ FUNCTION       : ViewAllPreviousAudits                                                        ║
+║ 👨‍💻 DEVELOPER      : Rishikesh Patil (KUBERAIN INDUSTRY)                                          ║
+║ 🎯 WHAT IT DOES   : Handles HTTP GET requests and returns all historical quality audits as JSON. ║
+║ 🏛️ ARCHITECTURE   : Fetches aggregated audit trail data from model DAO layer, sets JSON headers,   ║
+║                     and streams encoded JSON payload directly to client.                         ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+*/
+func ViewAllPreviousAudits(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		log.Printf("[WARN] [ViewAllPreviousAudits] Invalid HTTP method: %s", r.Method)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("[DEBUG] [ViewAllPreviousAudits] API Request received from IP: %s | Method: %s", r.RemoteAddr, r.Method)
+
+	// Inside your HTTP handler function:
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Printf("[ERROR] Invalid or missing ID path parameter %q: %v", idStr, err)
+		http.Error(w, "Invalid ID parameter", http.StatusBadRequest)
+		return
+	}
+
+	// 1. Fetch all previous quality audits / inspections via Model DAO
+	audits, err := models.GetAllQualityInspectionsByWorkPackage(id)
+	if err != nil {
+		log.Printf("[ERROR] [ViewAllPreviousAudits] Failed to retrieve quality inspection audits: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Internal Server Error: Unable to fetch previous audits",
+		})
+		return
+	}
+
+	log.Printf("[INFO] [ViewAllPreviousAudits] Retrieved %d inspection audit records successfully", len(audits))
+
+	// 2. Prepare JSON Response Payload
+	responsePayload := map[string]interface{}{
+		"success":             true,
+		"title":               "Previous Quality Audits & Payout Shield | Kuberain Industry",
+		"quality_inspections": audits,
+	}
+
+	// 3. Set Content-Type header to application/json and write status OK
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	// 4. Encode and send JSON response
+	if err := json.NewEncoder(w).Encode(responsePayload); err != nil {
+		log.Printf("[ERROR] [ViewAllPreviousAudits] Failed to encode JSON response: %v", err)
+		return
+	}
+
+	log.Printf("[SUCCESS] [ViewAllPreviousAudits] Successfully processed and returned JSON audit history response")
 }

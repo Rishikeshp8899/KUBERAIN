@@ -1,25 +1,186 @@
 {{define "content"}}
-<!-- Hero Carousel -->
-<div class="relative rounded-2xl overflow-hidden shadow-2xl mb-8 bg-industrial-900 h-[380px]">
-    <div class="absolute inset-0 flex items-center bg-cover bg-center" style="background-image: linear-gradient(rgba(11, 25, 44, 0.9), rgba(11, 25, 44, 0.7)), url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80');">
-        <div class="p-8 sm:p-12 max-w-2xl text-white">
-            <span class="bg-blue-600 text-xs uppercase px-3 py-1 rounded-full font-bold tracking-wider">Enterprise B2B Manufacturing</span>
-            <h1 class="text-3xl sm:text-4xl font-black mt-4 mb-3 tracking-tight">Precision Valves & Pipes at Scale</h1>
-            <p class="text-slate-300 text-sm mb-6 leading-relaxed">Connecting major corporate buyers with vetted micro-machining SME clusters across India for unmatched pricing and superior quality.</p>
-            <a href="/products" class="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-bold text-sm tracking-wide transition shadow-lg inline-block">Explore Technical Catalog</a>
+
+<!-- ==================== 1. HIGH-IMPACT HERO SECTION ==================== -->
+<div class="relative rounded-2xl overflow-hidden shadow-2xl mb-10 bg-industrial-900">
+    <div class="bg-cover bg-center" style="background-image: linear-gradient(105deg, rgba(11, 25, 44, 0.96) 0%, rgba(11, 25, 44, 0.85) 55%, rgba(30, 62, 98, 0.7) 100%), url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=80');">
+        <div class="p-8 sm:p-12 lg:p-14 max-w-3xl text-white">
+            <div class="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-400/30 text-blue-300 text-xs uppercase px-3.5 py-1.5 rounded-full font-bold tracking-wider mb-5">
+                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                ISO 9001:2015 &bull; API &bull; ASME Compliant Sourcing
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-4">
+                Industrial <span class="text-blue-400">Valves, Pipes</span> &amp; Precision <span class="text-blue-400">CNC Machining</span>
+            </h1>
+            
+            <p class="text-slate-300 text-sm sm:text-base mb-8 leading-relaxed max-w-2xl">
+                Source high-pressure valves, seamless/ERW pipes, and custom-machined components directly from 500+ audited Indian SME manufacturing clusters—with zero supply-chain bottlenecks and 100% mill test traceability.
+            </p>
+            
+            <!-- Dual Action CTAs -->
+            <div class="flex flex-wrap items-center gap-4">
+                <a href="/rfq" class="bg-blue-600 hover:bg-blue-500 text-white px-7 py-3.5 rounded-xl font-bold text-sm tracking-wide transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice"></i> Upload BOM / Request Quote
+                </a>
+                <a href="/products" class="bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600 px-6 py-3.5 rounded-xl font-bold text-sm tracking-wide transition flex items-center gap-2">
+                    Explore Catalog <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust & Capability Metrics Bar -->
+    <div class="bg-industrial-800/90 border-t border-slate-700/80 px-6 sm:px-12 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
+        <div>
+            <p class="text-xl sm:text-2xl font-black text-blue-400">500+</p>
+            <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">Audited SME Workshops</p>
+        </div>
+        <div>
+            <p class="text-xl sm:text-2xl font-black text-emerald-400">±0.005 mm</p>
+            <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">CNC Machining Tolerance</p>
+        </div>
+        <div>
+            <p class="text-xl sm:text-2xl font-black text-blue-400">100%</p>
+            <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">EN 10204 3.1 MTC Certified</p>
+        </div>
+        <div>
+            <p class="text-xl sm:text-2xl font-black text-amber-400">24 Hrs</p>
+            <p class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold">Technical Quote Turnaround</p>
         </div>
     </div>
 </div>
 
-<!-- 500+ SME Banner -->
-<div class="relative rounded-2xl overflow-hidden shadow-xl mb-10 bg-industrial-900 border border-slate-800 p-8 sm:p-10 text-white">
-    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs uppercase px-3 py-1 rounded-full font-bold tracking-wider">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-[10px] mr-1"></i> Pan-India Capacity
-    </span>
-    <h2 class="text-3xl font-black mt-4 mb-3">Powered by <span class="text-blue-400">500+ SME Workshops</span></h2>
-    <p class="text-slate-300 text-sm leading-relaxed mb-6">
-        Any order volume, any specialized product specification. We review technical drawings and execute seamless parallel production across our nationwide network.
-    </p>
-    <a href="/rfq" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider inline-block">Start Procurement Quote</a>
+<!-- ==================== 2. CORE PRODUCT & MACHINING VERTICALS ==================== -->
+<div class="mb-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+        <div>
+            <span class="text-blue-600 font-bold text-xs uppercase tracking-widest">What We Supply &amp; Manufacture</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-industrial-900 mt-1">Core Industrial Divisions</h2>
+        </div>
+        <a href="/products" class="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider flex items-center gap-1">
+            View Full Specification Matrix <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Card 1: Industrial Valves -->
+        <div class="group bg-slate-50 hover:bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-xl mb-5 transition">
+                    <i class="fa-solid fa-faucet-drip"></i>
+                </div>
+                <h3 class="text-lg font-black text-industrial-900 mb-2">Industrial Valves</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                    Zero-leakage flow control engineered for oil &amp; gas, chemical, power, and water infrastructure projects.
+                </p>
+                <ul class="space-y-2 text-xs text-slate-700 font-medium mb-6">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Ball, Gate, Globe &amp; Check Valves</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Butterfly &amp; High-Pressure Control Valves</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Class 150# to 2500# (WCB, SS304/316, Duplex)</li>
+                </ul>
+            </div>
+            <a href="/products?category=valves" class="w-full text-center py-2.5 rounded-xl bg-slate-200/70 group-hover:bg-industrial-900 text-industrial-900 group-hover:text-white font-bold text-xs uppercase tracking-wider transition">
+                Browse Valves
+            </a>
+        </div>
+
+        <!-- Card 2: Pipes & Fittings -->
+        <div class="group bg-slate-50 hover:bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-xl mb-5 transition">
+                    <i class="fa-solid fa-grip-lines"></i>
+                </div>
+                <h3 class="text-lg font-black text-industrial-900 mb-2">Pipes, Tubes &amp; Flanges</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                    Heavy-duty seamless and welded piping systems with full hydro-testing and third-party inspection readiness.
+                </p>
+                <ul class="space-y-2 text-xs text-slate-700 font-medium mb-6">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Seamless &amp; ERW Carbon/Alloy Steel Pipes</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> ASTM A106 Gr.B, API 5L, SS304L/316L</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Butt-Weld Fittings, Flanges &amp; Forged Fittings</li>
+                </ul>
+            </div>
+            <a href="/products?category=pipes" class="w-full text-center py-2.5 rounded-xl bg-slate-200/70 group-hover:bg-industrial-900 text-industrial-900 group-hover:text-white font-bold text-xs uppercase tracking-wider transition">
+                Browse Pipes &amp; Fittings
+            </a>
+        </div>
+
+        <!-- Card 3: Custom CNC & VMC Machining -->
+        <div class="group bg-slate-50 hover:bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-xl mb-5 transition">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <h3 class="text-lg font-black text-industrial-900 mb-2">Custom CNC &amp; VMC Machining</h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                    Build-to-print precision components machined across our Rajkot, Thane, and Pune tooling hubs.
+                </p>
+                <ul class="space-y-2 text-xs text-slate-700 font-medium mb-6">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Valve Bodies, Bonnets, Stems &amp; Trunnions</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Multi-Axis CNC Turning, VMC &amp; Boring</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-check text-blue-600 text-[10px]"></i> Prototype Batches to 50,000+ Unit Runs</li>
+                </ul>
+            </div>
+            <a href="/rfq" class="w-full text-center py-2.5 rounded-xl bg-slate-200/70 group-hover:bg-industrial-900 text-industrial-900 group-hover:text-white font-bold text-xs uppercase tracking-wider transition">
+                Submit CAD / Drawing
+            </a>
+        </div>
+
+    </div>
 </div>
+
+<!-- ==================== 3. HOW PROCUREMENT WORKS (BUYER CONFIDENCE) ==================== -->
+<div class="bg-slate-50 rounded-2xl p-6 sm:p-8 border border-slate-200 mb-12">
+    <div class="text-center max-w-2xl mx-auto mb-8">
+        <span class="text-blue-600 font-bold text-xs uppercase tracking-widest">Streamlined B2B Execution</span>
+        <h2 class="text-2xl font-black text-industrial-900 mt-1">Why Procurement Teams Choose Kuberain</h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-industrial-900 text-white font-black text-xs flex items-center justify-center mb-3">01</div>
+            <h4 class="font-bold text-sm text-industrial-900 mb-1">Single-Vendor Consolidation</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">Stop chasing 15 separate vendors. Manage valves, piping, and custom machined parts under one PO.</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-industrial-900 text-white font-black text-xs flex items-center justify-center mb-3">02</div>
+            <h4 class="font-bold text-sm text-industrial-900 mb-1">Parallel SME Production</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">Large orders are split across vetted specialist workshops, cutting lead times by up to 40%.</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-industrial-900 text-white font-black text-xs flex items-center justify-center mb-3">03</div>
+            <h4 class="font-bold text-sm text-industrial-900 mb-1">3-Stage QC &amp; NDT Testing</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">Raw material PMI, in-process CMM dimensional checks, and hydro/pneumatic testing before dispatch.</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-industrial-900 text-white font-black text-xs flex items-center justify-center mb-3">04</div>
+            <h4 class="font-bold text-sm text-industrial-900 mb-1">Factory-Direct Pricing</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">Direct cluster sourcing eliminates multi-tier distributor markups while guaranteeing SLA delivery.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 4. 500+ SME CAPACITY & DIRECT RFQ BANNER ==================== -->
+<div class="relative rounded-2xl overflow-hidden shadow-xl bg-industrial-900 border border-slate-800 p-8 sm:p-10 text-white flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+    <div class="max-w-2xl">
+        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs uppercase px-3 py-1 rounded-full font-bold tracking-wider">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-[10px] mr-1"></i> Pan-India Capacity &bull; Ready to Dispatch
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-black mt-4 mb-3">Have a Bill of Materials or CAD Drawing?</h2>
+        <p class="text-slate-300 text-sm leading-relaxed">
+            Whether you need standard API/ASME valves and pipes or custom-machined alloys (Inconel, Duplex, SS316, EN8/EN24), our engineering desk reviews your specs and delivers a competitive quote within 24 hours.
+        </p>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto shrink-0">
+        <a href="/rfq" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-7 py-3.5 rounded-xl text-xs uppercase tracking-wider text-center shadow-lg transition">
+            Start Procurement Quote
+        </a>
+        <a href="/compliance" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-7 py-3 rounded-xl text-xs uppercase tracking-wider text-center transition">
+            View QA &amp; Certifications
+        </a>
+    </div>
+</div>
+
 {{end}}

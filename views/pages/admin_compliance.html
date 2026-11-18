@@ -1,10 +1,10 @@
 {{define "admin"}}
 
 <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
-    <!-- PAGE 5 CONTENT: COMPLIANCE & DISINTERMEDIATION SHIELD -->
+    <!-- PAGE CONTENT -->
     <main class="flex-1 min-w-0 space-y-6">
         
-        <!-- HEADER BANNER (Removed 'See Previous Audits' button) -->
+        <!-- HEADER BANNER -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-industrial-800 p-5 rounded-2xl border border-slate-800 gap-4">
             <div>
                 <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
@@ -13,7 +13,6 @@
                 <p class="text-xs text-slate-400 mt-1">Audit Material Test Certificates (MTC) and inspect flagged communication logs.</p>
             </div>
             <div class="flex items-center gap-3">
-                <!-- ADD AUDIT BUTTON (Redirects to Audit Form Page) -->
                 <a href="/admin/audit-form/add" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-950/40">
                     <i class="fa-solid fa-plus-circle"></i> Add Audit
                 </a>
@@ -25,25 +24,23 @@
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
                 
-                <!-- STATUS FILTER -->
                 <label for="statusFilter" class="text-xs font-bold text-slate-300 uppercase tracking-wider whitespace-nowrap">Status:</label>
                 <select id="statusFilter" onchange="handleStatusChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none font-mono">
                     <option value="current" selected>Current</option>
                     <option value="completed">Completed</option>
                 </select>
 
-                <!-- SEARCH INPUT -->
                 <div class="relative flex-1 sm:w-64">
                     <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Search projects / work packages..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none" />
                     <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
                 </div>
             </div>
             <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[11px] px-3 py-1 rounded-xl font-mono">
-                Tables: work_packages, communication_logs, mtc_certificates
+                Tables: work_packages, communication_logs, mtc_certificates, quality_inspections
             </span>
         </div>
 
-        <!-- DYNAMIC WORK PACKAGES / PROJECTS TABLE WITH "SEE ALL PREVIOUS AUDITS" -->
+        <!-- DYNAMIC WORK PACKAGES TABLE -->
         <div class="bg-industrial-800 border border-slate-800 rounded-2xl overflow-hidden shadow-xl p-5 space-y-4">
             <h3 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-list-check text-sm"></i> Project Work Packages & Audit Management
@@ -69,11 +66,10 @@
                     </tbody>
                 </table>
             </div>
-            <!-- PAGINATION -->
             <div id="paginationContainer" class="flex justify-center items-center gap-2 pt-2"></div>
         </div>
 
-        <!-- INTERCEPTED DIRECT CONTACT LOG (FLAGGED LOGS) -->
+        <!-- INTERCEPTED DIRECT CONTACT LOG -->
         <div class="bg-industrial-800 p-5 rounded-2xl border border-slate-800 space-y-4">
             <h3 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-2 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-triangle-exclamation text-sm"></i> Intercepted Direct Contact Log
@@ -145,17 +141,30 @@
     </main>
 </div>
 
-<!-- MODAL: SEE PREVIOUS AUDITS LOG -->
-<div id="previousAuditsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Project Audit History Log
-            </h3>
-            <button onclick="closePreviousAuditsModal()" class="text-slate-400 hover:text-white text-xs"><i class="fa-solid fa-xmark text-base"></i></button>
+<!-- MODAL: PREVIOUS AUDITS & ESCROW PAYOUT SHIELD HISTORY -->
+<div id="previousAuditsModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-industrial-900 border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+                <h3 id="modalTitleHeading" class="text-sm font-black uppercase tracking-wider text-white">Project Audit History & Payout Shield</h3>
+                <span class="text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded">Escrow Gate</span>
+            </div>
+            <button type="button" onclick="closePreviousAuditsModal()" class="bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i> Close
+            </button>
         </div>
-        <div class="max-h-96 overflow-y-auto space-y-2 pr-1" id="previousAuditsListContainer">
-            <p class="text-xs text-slate-500 text-center py-6">Select a work package to view audit history.</p>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto flex-1 space-y-4">
+            <div id="previousAuditsListContainer">
+                <div class="text-center py-12 text-slate-400 font-mono">
+                    <i class="fa-solid fa-spinner fa-spin text-xl text-blue-400 mb-2"></i>
+                    <p>Loading audit inspection records...</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -164,7 +173,7 @@
 let currentStatus = 'current';
 let currentSearch = '';
 
-// Fetch work packages via API with status, search, and pagination
+// Fetch work packages via API
 async function fetchWorkPackages(page = 1) {
     const tbody = document.getElementById('workPackagesTableBody');
     tbody.innerHTML = `
@@ -177,9 +186,10 @@ async function fetchWorkPackages(page = 1) {
     `;
 
     try {
-        const response = await fetch(`/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`);
+        const response = await fetch(`/admin/work-packages?status=${encodeURIComponent(currentStatus)}&search=${encodeURIComponent(currentSearch)}&page=${page}&limit=10`, {
+            credentials: 'include'
+        });
         const data = await response.json();
-        console.log("API data", data);
         renderWorkPackagesTable(data.work_packages || data || []);
         renderPagination(data);
     } catch (error) {
@@ -195,7 +205,7 @@ async function fetchWorkPackages(page = 1) {
     }
 }
 
-// Render work packages into table rows with "See All Previous Audits" button
+// Render work packages into table rows
 function renderWorkPackagesTable(packages) {
     const tbody = document.getElementById('workPackagesTableBody');
     
@@ -225,8 +235,8 @@ function renderWorkPackagesTable(packages) {
                 </td>
                 <td class="p-3 font-mono text-[11px] text-slate-400">${createdAt}</td>
                 <td class="p-3 text-right">
-                    <button type="button" onclick="viewPreviousAuditsForPackage(${wpId})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] px-3 py-1.5 rounded-xl transition inline-flex items-center gap-1.5 border border-slate-600 shadow">
-                        <i class="fa-solid fa-history"></i> See All Previous Audits
+                    <button type="button" onclick="viewPreviousAuditsForPackage(${wpId})" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl transition inline-flex items-center gap-1.5 border border-blue-500/50 shadow-lg shadow-blue-600/20 cursor-pointer">
+                        <i class="fa-solid fa-list-check"></i> See All Previous Audits
                     </button>
                 </td>
             </tr>
@@ -270,51 +280,116 @@ function handleSearchInput(event) {
 // Modal controls
 function openPreviousAuditsModal() {
     document.getElementById('previousAuditsModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closePreviousAuditsModal() {
     document.getElementById('previousAuditsModal').classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
-// Fetch and display audits for a specific work package when button is clicked
+// Fetch and display audits for a specific work package matching exact API response format
 async function viewPreviousAuditsForPackage(wpId) {
     openPreviousAuditsModal();
     const container = document.getElementById('previousAuditsListContainer');
+    document.getElementById('modalTitleHeading').textContent = `Quality Inspection History - Work Package #${wpId}`;
+    
     container.innerHTML = `
-        <div class="text-center py-6 text-slate-500">
-            <i class="fa-solid fa-spinner fa-spin text-xl text-rose-500 mb-2"></i>
-            <p class="text-xs">Loading audit history for WP-#${wpId}...</p>
+        <div class="text-center py-12 text-slate-400 font-mono">
+            <i class="fa-solid fa-spinner fa-spin text-xl text-blue-400 mb-2"></i>
+            <p>Loading audit inspection records for WP-#${wpId}...</p>
         </div>
     `;
 
     try {
-        const response = await fetch(`/api/v1/audits?work_package_id=${wpId}`);
-        const data = await response.json();
-        const audits = data.audits || data || [];
+        const response = await fetch(`/admin/work/quality/${wpId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'include'
+        });
 
-        if (audits.length === 0) {
-            container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No historical audit records found for Work Package #${wpId}.</p>`;
+        const data = await response.json();
+        console.log("[DEBUG] Audit API Response:", data);
+
+        const inspections = data.quality_inspections || data.audits || [];
+
+        if (!inspections || inspections.length === 0) {
+            container.innerHTML = `<div class="text-center py-12 text-slate-500 font-mono text-xs">No multi-SME quality inspections recorded yet for Work Package #${wpId}.</div>`;
             return;
         }
 
-        container.innerHTML = audits.map(audit => `
-            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                <div>
-                    <span class="font-mono text-rose-400 font-bold">WP-#${audit.work_package_id || audit.WorkPackageID}</span>
-                    <span class="text-slate-200 font-bold ml-2">${audit.inspection_type || audit.InspectionType}</span>
-                    <p class="text-[10px] text-slate-400 font-mono mt-1">Measured: ${audit.measured_values || 'N/A'} | Tolerance: ${audit.tolerance_allowed || 'N/A'}</p>
-                </div>
-                <div class="text-right">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${audit.passed ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">
-                        ${audit.passed ? 'PASSED' : 'FAILED'}
-                    </span>
-                    <p class="text-[9px] text-slate-500 font-mono mt-1">${audit.inspected_at || audit.InspectedAt || ''}</p>
-                </div>
+        let rowsHtml = '';
+        inspections.forEach(audit => {
+            const isPassed = audit.passed !== undefined ? audit.passed : audit.Passed;
+            const supplierId = audit.supplier_id || audit.SupplierID || 0;
+            const supplierName = audit.supplier_name || audit.SupplierName || 'Unassigned SME';
+            const inspectionType = audit.inspection_type || audit.InspectionType || 'General Audit';
+            const comments = audit.comments || audit.Comments || 'No comments provided.';
+            const measuredValues = audit.measured_values || audit.MeasuredValues || 'N/A';
+            const toleranceAllowed = audit.tolerance_allowed || audit.ToleranceAllowed || 'N/A';
+            const reportPath = audit.report_file_path || audit.ReportFilePath || '';
+            const inspectedAt = audit.inspected_at || audit.InspectedAt || 'N/A';
+
+            const statusBadge = isPassed 
+                ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Passed</span>'
+                : '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">Failed</span>';
+
+            const commentsBlock = isPassed
+                ? '<span class="text-slate-500 italic">No defects recorded.</span>'
+                : `<div class="bg-rose-950/30 border border-rose-800/50 p-2 rounded-lg text-rose-300 font-mono text-[11px]"><i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> ${comments}</div>`;
+
+            const payoutGate = isPassed
+                ? '<span class="text-emerald-400 font-bold text-[11px]"><i class="fa-solid fa-check-circle"></i> Cleared for Payout</span>'
+                : '<span class="text-rose-400 font-bold text-[11px]"><i class="fa-solid fa-ban"></i> Payout Blocked</span>';
+
+            const reportLink = reportPath 
+                ? `<a href="/${reportPath}" target="_blank" class="text-blue-400 hover:underline font-mono text-[10px]"><i class="fa-solid fa-file-pdf"></i> View Report</a>`
+                : '<span class="text-slate-500 text-[10px]">No file attached</span>';
+
+            rowsHtml += `
+                <tr class="hover:bg-slate-800/40">
+                    <td class="p-3 font-mono font-bold text-white">WP-#${wpId}</td>
+                    <td class="p-3"><span class="text-purple-400 font-bold">#${supplierId}</span> - <span class="text-slate-200">${supplierName}</span></td>
+                    <td class="p-3 font-mono text-blue-400">${inspectionType}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3">${commentsBlock}</td>
+                    <td class="p-3 font-mono text-slate-300">Measured: ${measuredValues}<br><span class="text-[10px] text-slate-500">Tol: ${toleranceAllowed}</span></td>
+                    <td class="p-3 text-center">${reportLink}</td>
+                    <td class="p-3 text-center font-bold">${payoutGate}</td>
+                    <td class="p-3 text-center font-mono text-slate-400 text-[10px]">${inspectedAt}</td>
+                </tr>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Work Package</th>
+                            <th class="p-3">Assigned SME Vendor</th>
+                            <th class="p-3">Inspection Type</th>
+                            <th class="p-3">Status / Result</th>
+                            <th class="p-3">Failure Comments / Remarks</th>
+                            <th class="p-3">Metrics</th>
+                            <th class="p-3 text-center">Report Doc</th>
+                            <th class="p-3 text-center">Payout Gate</th>
+                            <th class="p-3 text-center">Inspected At</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium text-slate-300">
+                        ${rowsHtml}
+                    </tbody>
+                </table>
             </div>
-        `).join('');
+        `;
+
     } catch (err) {
         console.error("Error fetching audit history:", err);
-        container.innerHTML = `<p class="text-xs text-rose-500 text-center py-6">Failed to load audit history records.</p>`;
+        container.innerHTML = `<div class="text-center py-12 text-rose-400 font-mono text-xs">Failed to load audit history records. Please check your network connection.</div>`;
     }
 }
 

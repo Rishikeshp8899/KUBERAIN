@@ -146,6 +146,8 @@ func main() {
 	// Renders the form to add a new quality audit
 	mux.HandleFunc("/admin/audit-form/add", middleware.RequireAdminAuth(controllers.GetAddAuditFormHandler))
 
+	mux.HandleFunc("/admin/work/quality/{id}", middleware.RequireAdminAuth(controllers.ViewAllPreviousAudits))
+
 	// ==========================================
 	// ADMIN PROTECTED OPERATIONS - DISPATCH & LOGISTICS
 	// ==========================================
@@ -155,6 +157,9 @@ func main() {
 
 	// Renders the dispatch tracking page for a specific project ID
 	mux.HandleFunc("/admin/dispatch/{id}", middleware.RequireAdminAuth(controllers.RenderDispatchPerProjectPage))
+
+	// Go 1.22+ standard http.ServeMux
+	mux.HandleFunc("/admin/download", middleware.RequireAdminAuth(controllers.DownloadUploadedFilePOST))
 
 	// ==========================================
 	// STATIC & VIEW ASSETS

@@ -335,3 +335,22 @@ type RFQComprehensiveDetails struct {
 	AuditLogs        []AuditLog
 	DrawingRevisions []DrawingRevision
 }
+
+type DownloadRequest struct {
+	FilePath string `json:"file_path"`
+}
+
+type QualityInspectionsDetails struct {
+	ID               int    `json:"id"`
+	WorkPackageID    int    `json:"work_package_id"`
+	WorkPackageTitle string `json:""`
+	SupplierID       int    `json:"supplier_id"`
+	SupplierName     string `json:"supplier_name"`
+	InspectionType   string `json:"inspection_type"`
+	Passed           bool   `json:"passed"`
+	Comments         string `json:"comments"`
+	MeasuredValues   string `json:"measured_values"`
+	ToleranceAllowed string `json:"tolerance_allowed"`
+	ReportFilePath   string `json:"report_file_path"`
+	InspectedAt      string `json:"inspected_at"`
+}
