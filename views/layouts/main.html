@@ -75,13 +75,13 @@
                 <a href="/about" class="nav-link {{if eq .CurrentPage "about"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">About Us</a>
                 <a href="/compliance" class="nav-link {{if eq .CurrentPage "compliance"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Quality & Compliance</a>
                 <a href="/sme-network" class="nav-link {{if eq .CurrentPage "sme-network"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">SME Hubs</a>
-                <a href="/smes-onboarding" class="nav-link {{if eq .CurrentPage "smes-onboarding"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Work with us</a>
-            </nav>
+                <!-- <a href="/smes-onboarding" class="nav-link {{if eq .CurrentPage "smes-onboarding"}}text-blue-400 border-b-2 border-blue-500{{else}}text-slate-300 hover:text-white border-b-2 border-transparent{{end}} pb-1 transition">Work with us</a> -->
+            </nav> 
 
             <!-- Action CTA -->
             <div>
                 <a href="/rfq" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg transition hidden sm:inline-block">
-                    Request RFQ
+                    ORDER NOW
                 </a>
             </div>
         </div>
@@ -94,10 +94,10 @@
             <a href="/about" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">About Us</a>
             <a href="/compliance" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Quality & Compliance</a>
             <a href="/sme-network" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">SME Network / Hubs</a>
-            <a href="/smes-onboarding" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Work with us (SME Onboarding)</a>
-            <div class="pt-2">
+            <!-- <a href="/smes-onboarding" class="block text-slate-200 hover:text-blue-400 font-semibold text-xs py-1.5 border-b border-slate-700/50">Work with us (SME Onboarding)</a> -->
+            <div class="pt-2"> 
                 <a href="/rfq" class="w-full text-center block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shadow transition">
-                    Request RFQ
+                    ORDER NOW
                 </a>
             </div>
         </div>
@@ -130,8 +130,9 @@
                     <li><a href="/services" class="hover:text-white transition">Services & Network</a></li>
                     <li><a href="/about" class="hover:text-white transition">About Us</a></li>
                     <li><a href="/compliance" class="hover:text-white transition">Quality & Compliance</a></li>
-                    <li><a href="/sme-network" class="hover:text-white transition">SME Network Hubs</a></li>
-                    <li><a href="/rfq" class="hover:text-white transition">Request RFQ</a></li>
+                    <li><a href="/sme-network" class="hover:text-white transition">SME Network Hubs</a></li> 
+                   <li><a href="/smes-onboarding" class="hover:text-white transition">Work with Us</a></li> 
+                    <li><a href="/rfq" class="hover:text-white transition">ORDER NOW</a></li>
                 </ul>
             </div>
             <div>
@@ -195,7 +196,7 @@
             { path: "/about", label: "About Us" },
             { path: "/compliance", label: "Quality & Compliance" },
             { path: "/sme-network", label: "SME Hubs" },
-            { path: "/smes-onboarding", label: "Work with us" }
+            // { path: "/smes-onboarding", label: "Work with us" }
         ];
 
         let isNavigating = false;

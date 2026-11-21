@@ -273,37 +273,41 @@
             {{end}}
         </div>
 
-        <!-- SECTION: TOP 10 COSINE SIMILARITY MATCHED SME VENDORS -->
+        <!-- SECTION: ASSIGNED SME VENDORS -->
         <div class="bg-industrial-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 mt-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
                 <div>
                     <h3 class="text-base font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-industry text-purple-400"></i> Top 10 Matched SME Vendors (Cosine Similarity)
+                        <i class="fa-solid fa-industry text-purple-400"></i> Assigned SMEs
                     </h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Ranked by semantic text similarity between RFQ requirements and SME capabilities summary.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">SME manufacturing partners currently assigned to this RFQ and its work packages.</p>
                 </div>
                 <span class="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs px-3 py-1 rounded-xl font-mono font-bold">
-                    Top {{len .Details.MatchedSuppliers}} SMEs
+                    {{len .Details.AssignedSMEs}} Assigned SMEs
                 </span>
             </div>
 
-            {{if .Details.MatchedSuppliers}}
+            {{if .Details.AssignedSMEs}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {{range .Details.MatchedSuppliers}}
+                {{range .Details.AssignedSMEs}}
                 <div class="bg-industrial-800/70 p-5 rounded-xl border border-slate-800 space-y-3 hover:border-slate-700 transition-all">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="text-[10px] font-mono text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">SME ID #{{.ID}}</span>
+                            {{if .AssignmentStatus}}
                             <span class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
-                                Match: {{.SimilarityPercentage}}%
+                                {{.AssignmentStatus}}
                             </span>
+                            {{end}}
                             {{if .IsVerified}}
                             <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
                                 <i class="fa-solid fa-check-circle text-[9px]"></i> Verified
                             </span>
                             {{end}}
                         </div>
+                        {{if .Rating}}
                         <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 shrink-0">★ {{.Rating}} / 5.0</span>
+                        {{end}}
                     </div>
 
                     <div>
@@ -335,7 +339,7 @@
             {{else}}
             <div class="bg-industrial-800/50 p-8 rounded-xl text-center text-slate-500 space-y-2 border border-slate-800">
                 <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500"></i>
-                <p class="text-xs font-bold text-slate-300">No verified SME vendors found for similarity matching.</p>
+                <p class="text-xs font-bold text-slate-300">No assigned SMEs found for this RFQ.</p>
             </div>
             {{end}}
         </div>

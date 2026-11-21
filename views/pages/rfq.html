@@ -3,7 +3,7 @@
 {{if .Submitted}}
 <!-- SUCCESS BANNER -->
 <div class="bg-emerald-50 border-2 border-emerald-500 text-emerald-900 p-6 rounded-2xl mb-8 flex items-center space-x-4 shadow-md">
-    <div class="bg-emerald-500 text-white     sp-3 rounded-xl flex-shrink-0">
+    <div class="bg-emerald-500 text-white p-3 rounded-xl flex-shrink-0">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
         </svg>
@@ -84,11 +84,12 @@
                 <option value="Seamless & Welded Pipes">Seamless Pipes</option>
                 <option value="Flanges & Fittings">Flanges & Fittings</option>
                 <option value="Custom CNC Machining">CNC Machining</option>
+                <option value="Industrial 3D Printing">Industrial 3D Printing</option>
             </select>
         </div>
         <div>
             <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Material Specification</label>
-            <input type="text" name="material" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. SS316, ASTM A216 WCB">
+            <input type="text" name="material" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. SS316, ASTM A216 WCB, PA12">
         </div>
         <div>
             <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Quantity</label>
@@ -118,31 +119,30 @@
     </div>
 
     <!-- CAD / BLUEPRINT FILE UPLOAD -->
-   <div>
-    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
-        Attach Drawings / CAD Specs (Select Multiple Files)
-    </label>
-    <input 
-        type="file" 
-        name="drawings" 
-        multiple 
-        accept=".pdf,.dwg,.dxf,.step,.stp,.zip,.png,.jpg" 
-        class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-    >
-</div>
+    <div>
+        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">
+            Attach Drawings / CAD Specs (Select Multiple Files)
+        </label>
+        <input 
+            type="file" 
+            name="drawings" 
+            multiple 
+            accept=".pdf,.dwg,.dxf,.step,.stp,.stl,.obj,.3mf,.zip,.png,.jpg" 
+            class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+        >
+    </div>
 
-<!-- REQUIREMENTS TEXTAREA -->
-<div>
-    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Technical Requirements / BOQ Details</label>
-    <textarea name="requirements" rows="4" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Specify size dimensions, pressure ratings, wall schedule, testing standards (Hydro, Radiography)..."></textarea>
-</div>
+    <!-- REQUIREMENTS TEXTAREA -->
+    <div>
+        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Technical Requirements / BOQ Details</label>
+        <textarea name="requirements" rows="4" required class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Specify size dimensions, pressure ratings, wall schedule, 3D printing tolerances/finish, testing standards (Hydro, Radiography)..."></textarea>
+    </div>
 
-<div class="flex justify-center pt-2">
-    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-10 py-3.5 rounded-xl text-sm uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2">
-        Submit Enterprise RFQ
-    </button>
-</div>
-
+    <div class="flex justify-center pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-10 py-3.5 rounded-xl text-sm uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2">
+            Submit Enterprise RFQ
+        </button>
+    </div>
 
 </form>
 

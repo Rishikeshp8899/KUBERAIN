@@ -1,133 +1,535 @@
-{{define "content"}}
-<div class=" text-slate-800 min-h-screen py-10 px-4 relative">
-        <!-- PAGE HEADER -->
-        <div class="bg-industrial-900 text-white p-8 rounded-2xl mb-8 border border-slate-800 text-center">
-             <span class="bg-blue-600 text-xs font-bold uppercase px-3 py-1 rounded-full">Direct Procurement Portal</span>
-            <h2 class="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
-                 SME Manufacturer Onboarding Portal
-            </h2>
-            <p class="text-slate-300 text-sm">Register your enterprise workshop, technical capabilities, and shop-floor machine inventory into the Richim Valve network.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SME Partner Onboarding | KUBERAIN INDUSTRY - Enterprise Valve & Pipe Solutions</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        industrial: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Smooth Tooltip Styling */
+        .tooltip-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tooltip-box {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 135%;
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            width: 240px;
+            background-color: #0f172a;
+            color: #f8fafc;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            line-height: 1.45;
+            font-weight: 500;
+            z-index: 50;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+            border: 1px solid #334155;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .tooltip-box::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #0f172a transparent transparent transparent;
+        }
+        .tooltip-trigger:hover .tooltip-box,
+        .tooltip-trigger:focus-within .tooltip-box {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- TOP BRAND NAVBAR -->
+    <nav class="bg-industrial-950 text-white border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                 <!-- Brand Logo -->
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shadow-md">
+                    <img src="/static/images/logo-header.svg" alt="Kuberain Industry - Engineering & AI" class="h-12 w-auto">
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight leading-none text-white">KUBERAIN INDUSTRY</h1>
+                    <p class="text-[11px] text-cyan-400 font-semibold tracking-wider uppercase mt-0.5">Enterprise Valve & Pipe Solutions</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+                <span class="hidden md:inline-flex items-center gap-1.5 text-slate-300 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Active Enterprise Tenders Open
+                </span>
+                <a href="#onboarding-form" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-lg transition-all">
+                    Register Workshop
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto py-8 px-4 relative">
+        
+        <!-- HERO / VALUE PROPOSITION BANNER -->
+        <div class="bg-gradient-to-br from-industrial-950 via-industrial-900 to-slate-900 text-white p-8 md:p-10 rounded-3xl mb-8 border border-slate-800 shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-3xl">
+                <span class="bg-blue-600/20 text-blue-300 border border-blue-500/30 text-xs font-bold uppercase px-3 py-1 rounded-full tracking-wider">
+                    Official SME Vendor & Sub-Contracting Network
+                </span>
+                <h2 class="text-3xl md:text-4xl font-black text-white mt-4 mb-3 tracking-tight leading-tight">
+                    Grow Your Workshop with Assured Enterprise Industrial Orders
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                    <strong class="text-white">KUBERAIN INDUSTRY</strong> secures high-volume EPC, Oil & Gas, Chemical, and Heavy Infrastructure contracts from major industrial giants—and partners with verified <strong class="text-cyan-400">SME Manufacturers</strong> like you to execute precision production. No middlemen, transparent specs, and steady recurring POs.
+                </p>
+
+                <!-- 3-PILLAR VALUE PROPS -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-800/80 text-xs">
+                    <div class="flex items-start gap-2.5 pt-3">
+                        <i class="fa-solid fa-industry text-cyan-400 text-base mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-white">Direct Tier-1 Orders</p>
+                            <p class="text-slate-400 mt-0.5">Work on large enterprise projects without heavy sales overhead.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 pt-3">
+                        <i class="fa-solid fa-gears text-blue-400 text-base mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-white">Capability-Matched RFQs</p>
+                            <p class="text-slate-400 mt-0.5">Receive projects tailored strictly to your machines & tolerances.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 pt-3">
+                        <i class="fa-solid fa-handshake text-emerald-400 text-base mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-white">Long-Term Scaling</p>
+                            <p class="text-slate-400 mt-0.5">Build a verified track record for repeat national & export orders.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <form id="smeRegisterForm" onsubmit="submitSMERegistration(event)" class="space-y-8">
+        <!-- TARGET SME DOMAINS WE ARE LOOKING FOR -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                    <h3 class="text-base font-black text-slate-900 tracking-tight">SME Manufacturing Partners We Are Actively Onboarding</h3>
+                    <p class="text-xs text-slate-500">We are currently expanding our vendor network across these 5 core industrial specializations:</p>
+                </div>
+                <span class="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full self-start sm:self-auto">
+                    Hover any <i class="fa-solid fa-circle-info mx-0.5"></i> icon in form for help
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 hover:border-blue-400 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-2.5 font-bold">
+                        <i class="fa-solid fa-faucet-drip"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900">Industrial Valves</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Ball, Gate, Globe, Check, Butterfly, Control valves & precision valve bodies/trim.</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 hover:border-blue-400 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center mb-2.5 font-bold">
+                        <i class="fa-solid fa-grip-lines"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900">Pipes & Tubes</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Seamless, ERW, SS/CS/Alloy steel piping, heavy-wall spools & custom pipe fabrication.</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 hover:border-blue-400 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center mb-2.5 font-bold">
+                        <i class="fa-regular fa-circle-dot"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900">Flanging (Flanges)</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Weld Neck, Slip-On, Blind, Socket Weld, Spectacle Blinds (ASME/ANSI/DIN standards).</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 hover:border-blue-400 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center mb-2.5 font-bold">
+                        <i class="fa-solid fa-code-branch"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900">Pipe Fittings</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Elbows, Tees, Reducers, Couplings, Unions, Stub Ends & high-pressure forged fittings.</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 hover:border-blue-400 transition-all">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mb-2.5 font-bold">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900">Industrial 3D Printing</h4>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Metal/Polymer Additive Manufacturing (DMLS, SLS, FDM), rapid prototyping & complex tooling.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN ONBOARDING FORM CARD -->
+        <form id="smeRegisterForm" onsubmit="submitSMERegistration(event)" class="bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-sm space-y-8">
             
             <!-- SECTION 1: COMPANY & LEGAL PROFILE -->
             <div class="space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 border-l-2 border-blue-600 pl-3">1. Enterprise & Legal Information</h3>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 border-l-4 border-blue-600 pl-3">
+                        1. Enterprise & Legal Information
+                    </h3>
+                    <span class="text-[11px] text-slate-400 font-medium">* Required Fields</span>
+                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                    <!-- Company Name -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Company Name</label>
-                        <input type="text" name="company_name" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="e.g., Apex Valve Precision Works">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Company Name <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Enter your official registered business/workshop name exactly as printed on your GST certificate and tax invoices.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="company_name" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="e.g., Apex Valve & Flange Works">
                     </div>
+
+                    <!-- Contact Email -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Contact Email</label>
-                        <input type="email" name="contact_email" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="contact@apexvalves.in">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Contact Email <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Primary official email where Kuberain Industry will send RFQs (Request for Quotes), CAD drawings, and Purchase Orders.</span>
+                            </span>
+                        </label>
+                        <input type="email" name="contact_email" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="rfq@apexvalves.in">
                     </div>
+
+                    <!-- City -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">City</label>
-                        <input type="text" name="city" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Thane">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            City / Industrial Hub <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">City or MIDC/GIDC industrial zone where your manufacturing unit is located. Helps us optimize logistics and freight costs.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="city" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="e.g., Pune / Ahmedabad / Thane">
                     </div>
+
+                    <!-- State -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">State</label>
-                        <input type="text" name="state" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Maharashtra">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            State <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">State of operation for regional supply-chain mapping and IGST/CGST billing compliance.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="state" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="e.g., Maharashtra">
                     </div>
+
+                    <!-- Phone Number -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Phone Number</label>
-                        <input type="text" name="phone" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="+91 98765 43210">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Phone / WhatsApp Number <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Direct mobile number of the Production Head, Plant Manager, or Business Owner for urgent technical discussions.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="phone" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="+91 98765 43210">
                     </div>
+
+                    <!-- GSTIN Number -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">GSTIN Number</label>
-                        <input type="text" name="gst_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="27AABCA1234F1Z5">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            GSTIN Number <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Your 15-character Goods & Services Tax Identification Number. Mandatory for enterprise B2B vendor onboarding.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="gst_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-mono placeholder:text-slate-400" placeholder="27AABCA1234F1Z5">
                     </div>
+
+                    <!-- Udyam / MSME Code -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Udyam / MSME Registration Code</label>
-                        <input type="text" name="msme_reg_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="UDYAM-MH-03-0012345">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Udyam / MSME Registration Code <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Your official Government MSME/Udyam registration number. Enables priority MSME payment terms and compliance verification.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="msme_reg_number" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-mono placeholder:text-slate-400" placeholder="UDYAM-MH-03-0012345">
                     </div>
+
+                    <!-- ISO Standard -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">ISO Certification Standard</label>
-                        <input type="text" name="iso_standard" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="ISO 9001:2015">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            ISO / Quality Certification Standard
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">List active quality/industry certifications (e.g., ISO 9001:2015, API 6D, IBR, PED, ASME). Crucial for heavy oil & gas orders.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="iso_standard" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400" placeholder="ISO 9001:2015, API 6D, IBR">
                     </div>
+
+                    <!-- Plant Area -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Plant Area (Sq. Ft)</label>
-                        <input type="number" name="plant_area_sq_ft" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="12500">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Plant Area (Sq. Ft) <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Total covered shop-floor and storage area in square feet. Helps us gauge your capacity to handle large-batch pipe/valve assembly.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="plant_area_sq_ft" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-mono placeholder:text-slate-400" placeholder="12500">
                     </div>
+
+                    <!-- Worker Count -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Worker / Technician Count</label>
-                        <input type="number" name="worker_count" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-mono placeholder:text-slate-400" placeholder="45">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Worker / Technician Count <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Total skilled operators, CNC machinists, certified welders, 3D print engineers, and QA/QC inspectors on your shop floor.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="worker_count" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white font-mono placeholder:text-slate-400" placeholder="45">
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-slate-700 font-bold mb-1 text-xs">Capabilities Summary</label>
-                    <textarea name="capabilities_summary" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400" placeholder="Describe core machining specialization (e.g., 5-Axis CNC Milling, SS316 Valve Bodies)"></textarea>
+                <!-- CRITICAL CAPABILITIES SUMMARY WITH DETAILED EXPLANATION -->
+                <div class="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 md:p-5 mt-4 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label class="flex items-center gap-1.5 text-slate-900 font-extrabold text-xs md:text-sm">
+                            <i class="fa-solid fa-star text-amber-500"></i>
+                            Capabilities Summary <span class="text-rose-600">*</span>
+                            <span class="tooltip-trigger text-slate-600 hover:text-blue-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Our procurement team uses this exact text to search and filter SMEs when a new industrial order arrives. Be specific!</span>
+                            </span>
+                        </label>
+                        <span class="bg-amber-200 text-amber-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-md tracking-wider">
+                            Very Important • Used for Project Filtering
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        <strong>Why this matters:</strong> When <strong>KUBERAIN INDUSTRY</strong> receives a large project order from an enterprise client, our procurement engineers filter and shortlist SMEs primarily using keywords in your <strong>Capabilities Summary</strong>. Clearly mention:
+                    </p>
+                    <ul class="text-[11px] text-slate-700 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside bg-white/80 p-3 rounded-xl border border-amber-200/80">
+                        <li><strong>Core Products:</strong> Valves (Ball/Gate/Globe), Pipes, Flanges, Fittings, or Industrial 3D Printing.</li>
+                        <li><strong>Standards & Testing:</strong> ASME B16.5, API 600, Hydro-testing, NDT, X-Ray, CMM inspection.</li>
+                        <li><strong>Materials & Grades:</strong> SS304, SS316L, Duplex, Super Duplex, WCB, Inconel, Alloy Steel, Nylon/Metal 3D powders.</li>
+                        <li><strong>Special Strengths:</strong> Heavy forging, CNC turning, custom valve trim, or rapid 3D prototyping.</li>
+                    </ul>
+
+                    <textarea name="capabilities_summary" rows="3" required class="w-full bg-white border border-amber-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400 shadow-inner" placeholder="Example: Specializing in CNC machining of SS316 & WCB Ball/Gate Valve bodies, ASME B16.5 Weld-Neck Flanges up to 24-inch, Butt-Weld Pipe Fittings, and DMLS Metal 3D Printed valve prototypes with in-house hydro-testing up to 100 bar."></textarea>
                 </div>
 
-                <div class="flex items-center gap-3 pt-2">
-                    <input type="checkbox" id="nda_signed" name="nda_signed" value="true" class="w-4 h-4 bg-slate-50 border-slate-300 rounded text-blue-600 focus:ring-blue-500">
-                    <label for="nda_signed" class="text-xs text-slate-700 font-medium cursor-pointer">I agree and digitally sign the Richim Valve Master Platform NDA.</label>
+                <!-- NDA CHECKBOX -->
+                <div class="flex items-start sm:items-center gap-3 pt-2">
+                    <input type="checkbox" id="nda_signed" name="nda_signed" value="true" required class="w-4 h-4 mt-0.5 sm:mt-0 bg-slate-50 border-slate-300 rounded text-blue-600 focus:ring-blue-500">
+                    <label for="nda_signed" class="text-xs text-slate-700 font-medium cursor-pointer flex items-center gap-1.5">
+                        <span>I agree and digitally sign the <strong>KUBERAIN INDUSTRY</strong> Master Vendor Non-Disclosure Agreement (NDA).</span>
+                        <span class="tooltip-trigger text-slate-400 hover:text-blue-600 cursor-help" tabindex="0">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span class="tooltip-box">Protects confidential client CAD drawings, 3D STEP files, BOQs, and technical specs shared with you for quoting.</span>
+                        </span>
+                    </label>
                 </div>
             </div>
 
             <!-- SECTION 2: CAPABILITY MATRIX -->
-            <div class="space-y-4 pt-4 border-t border-slate-100">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-purple-600 border-l-2 border-purple-600 pl-3">2. Primary Machining & Manufacturing Capability</h3>
+            <div class="space-y-4 pt-6 border-t border-slate-200">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-purple-600 border-l-4 border-purple-600 pl-3">
+                    2. Primary Manufacturing & Technical Capability
+                </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+                    <!-- Category -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Category</label>
-                        <input type="text" name="category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="CNC Machining">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Primary SME Category <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Select your core specialization from Valves, Pipes, Flanging, Pipe Fittings, or Industrial 3D Printing.</span>
+                            </span>
+                        </label>
+                        <select name="category" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white font-medium">
+                            <option value="">-- Select Core Specialization --</option>
+                            <option value="Industrial Valves & Valve Components">Industrial Valves & Valve Components</option>
+                            <option value="Pipes, Tubes & Pipe Spool Fabrication">Pipes, Tubes & Pipe Spool Fabrication</option>
+                            <option value="Flanging (Industrial Flanges)">Flanging (Industrial Flanges)</option>
+                            <option value="Pipe Fittings (Forged / Butt-Weld)">Pipe Fittings (Forged / Butt-Weld)</option>
+                            <option value="Industrial 3D Printing / Additive Mfg">Industrial 3D Printing / Additive Mfg</option>
+                            <option value="Multi-Category (Valves, Flanges & Fittings)">Multi-Category (Valves, Flanges & Fittings)</option>
+                        </select>
                     </div>
+
+                    <!-- Machining / Process Type -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Machining Type</label>
-                        <input type="text" name="machining_type" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="5-Axis Milling / VMC">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Process / Machining Type
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Specify your main production processes (e.g., CNC Turning, VMC 5-Axis, Forging, Orbital Welding, DMLS/SLS 3D Printing).</span>
+                            </span>
+                        </label>
+                        <input type="text" name="machining_type" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white placeholder:text-slate-400" placeholder="CNC Turning, VMC, Forging / DMLS 3D">
                     </div>
+
+                    <!-- Max Tolerance -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Max Tolerance Threshold</label>
-                        <input type="text" name="max_tolerance" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="+/- 0.005mm">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Max Tolerance Threshold
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Tightest dimensional accuracy your machines reliably hold (e.g., +/- 0.005mm for valve seats/stems, +/- 0.1mm for 3D prints).</span>
+                            </span>
+                        </label>
+                        <input type="text" name="max_tolerance" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white placeholder:text-slate-400" placeholder="+/- 0.005mm">
                     </div>
+
+                    <!-- Max Component Dimension -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Max Component Dimension (LxWxH)</label>
-                        <input type="text" name="max_component_dim" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="800x600x500mm">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Max Component Size / Pipe NB
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Largest part dimensions (LxWxH in mm) or maximum Nominal Bore (NB) pipe/flange diameter you can machine or print.</span>
+                            </span>
+                        </label>
+                        <input type="text" name="max_component_dim" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white placeholder:text-slate-400" placeholder="Up to 24-inch NB / 800x600x500mm">
                     </div>
+
+                    <!-- Materials Handled -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Materials Handled</label>
-                        <input type="text" name="materials_handled" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 placeholder:text-slate-400" placeholder="SS316, Duplex, Inconel">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Materials / Alloys Handled
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">List metals, alloys, or polymers you work with regularly (e.g., SS304, SS316, WCB, Duplex, Inconel, Hastelloy, PEEK, Titanium).</span>
+                            </span>
+                        </label>
+                        <input type="text" name="materials_handled" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white placeholder:text-slate-400" placeholder="SS316, WCB, Duplex, Inconel, Alloy Steel">
                     </div>
+
+                    <!-- Monthly Capacity -->
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Monthly Capacity (Units)</label>
-                        <input type="number" name="capacity_per_month" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 font-mono placeholder:text-slate-400" placeholder="2500">
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Monthly Production Capacity (Units)
+                            <span class="tooltip-trigger text-slate-400 hover:text-purple-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Estimated average number of finished valves, flanges, fittings, or 3D-printed parts your plant can deliver per month.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="capacity_per_month" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-purple-600 focus:bg-white font-mono placeholder:text-slate-400" placeholder="2500">
                     </div>
                 </div>
             </div>
 
             <!-- SECTION 3: SHOP-FLOOR MACHINE FLEET -->
-            <div class="space-y-4 pt-4 border-t border-slate-100">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-600 border-l-2 border-emerald-600 pl-3">3. Shop-Floor Machine Fleet Entry</h3>
-                    <button type="button" onclick="addMachineRow()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+            <div class="space-y-4 pt-6 border-t border-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-600 border-l-4 border-emerald-600 pl-3">
+                        3. Shop-Floor Machine & 3D Printer Fleet
+                    </h3>
+                    <button type="button" onclick="addMachineRow()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-plus text-[10px]"></i> Add Another Machine
                     </button>
                 </div>
                 
                 <div id="machine-fleet-container" class="space-y-4">
-                    <div class="machine-row bg-slate-50 border border-slate-200 rounded-xl p-4 relative space-y-3">
+                    <div class="machine-row bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-5 relative space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <!-- Machine Name -->
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Machine Name / Model</label>
-                                <input type="text" name="machine_name[]" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Haas VF-4 4-Axis VMC">
+                                <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                                    Machine / Printer Name & Model <span class="text-rose-500">*</span>
+                                    <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span class="tooltip-box">Enter exact brand, model, and axis/capacity (e.g., Haas VF-4 VMC, Jyoti CNC Lathe, EOS M290 Metal 3D Printer).</span>
+                                    </span>
+                                </label>
+                                <input type="text" name="machine_name[]" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="e.g., Haas VF-4 4-Axis VMC / EOS M290 3D Printer">
                             </div>
+
+                            <!-- Last Calibration -->
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Last Calibration Date</label>
+                                <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                                    Last Calibration Date
+                                    <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span class="tooltip-box">Date when this machine's spindle, laser, or measuring axes were last calibrated. Required for ISO/API audits.</span>
+                                    </span>
+                                </label>
                                 <input type="date" name="last_calibration[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                             </div>
+
+                            <!-- Next Service Due -->
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Next Service Due</label>
+                                <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                                    Next Service / Calibration Due
+                                    <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span class="tooltip-box">Scheduled date for next preventive maintenance or third-party calibration check.</span>
+                                    </span>
+                                </label>
                                 <input type="date" name="next_service_due[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                             </div>
+
+                            <!-- Audit Notes -->
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Audit Notes / Condition</label>
-                                <input type="text" name="notes[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Spindle precision verified">
+                                <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                                    Audit Notes / Technical Condition
+                                    <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span class="tooltip-box">Mention chuck size, bed travel, build volume, or recent accuracy checks (e.g., "Spindle runout < 3 microns").</span>
+                                    </span>
+                                </label>
+                                <input type="text" name="notes[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Spindle precision verified, 500mm chuck">
                             </div>
                         </div>
                     </div>
@@ -135,18 +537,26 @@
             </div>
 
             <!-- SUBMIT BUTTON -->
-            <div class="pt-6 border-t border-slate-100 flex items-center justify-center">
-                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 flex items-center gap-2">
+            <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-[11px] text-slate-500 text-center sm:text-left">
+                    Our vendor audit team reviews all applications within <strong>24–48 business hours</strong>.
+                </p>
+                <button type="submit" id="submitBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Submit Registration for Audit
                 </button>
             </div>
 
         </form>
 
-   
+        <!-- FOOTER -->
+        <footer class="mt-10 text-center text-xs text-slate-500 pb-6">
+            <p class="font-bold text-slate-700">KUBERAIN INDUSTRY — Enterprise Valve & Pipe Solutions</p>
+            <p class="mt-1">Connecting Tier-1 Industrial Demand with Precision SME Manufacturing Excellence.</p>
+        </footer>
+    </div>
 
     <!-- SUCCESS POPUP MODAL -->
-    <div id="successModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div id="successModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white border border-emerald-200 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
             <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors text-lg font-bold">
                 <i class="fa-solid fa-xmark"></i>
@@ -155,8 +565,8 @@
                 <i class="fa-solid fa-circle-check"></i>
             </div>
             <div class="space-y-2">
-                <h3 class="text-lg font-black text-slate-900 tracking-tight">Registration Saved Successfully!</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Your SME workshop profile and machine fleet records have been securely stored in the database.</p>
+                <h3 class="text-lg font-black text-slate-900 tracking-tight">Welcome to Kuberain Industry!</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Your SME workshop profile, capabilities summary, and machine fleet records have been submitted for vendor audit.</p>
             </div>
             <a href="/" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase py-3 rounded-xl transition-all inline-block text-center shadow-md shadow-emerald-600/20">
                 Continue to Home
@@ -165,7 +575,7 @@
     </div>
 
     <!-- FAILURE POPUP MODAL -->
-    <div id="failureModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div id="failureModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white border border-rose-200 w-full max-w-md rounded-2xl p-6 text-center space-y-5 shadow-2xl relative">
             <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors text-lg font-bold">
                 <i class="fa-solid fa-xmark"></i>
@@ -188,29 +598,53 @@
         function addMachineRow() {
             const container = document.getElementById('machine-fleet-container');
             const row = document.createElement('div');
-            row.className = "machine-row bg-slate-50 border border-slate-200 rounded-xl p-4 relative space-y-3";
+            row.className = "machine-row bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-5 relative space-y-3";
             row.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span class="text-[11px] font-bold text-emerald-600 uppercase font-mono">Additional Machine Unit</span>
-                    <button type="button" onclick="this.closest('.machine-row').remove()" class="text-rose-600 hover:text-rose-700 text-xs font-bold">
+                <div class="flex justify-between items-center border-b border-slate-200/70 pb-2">
+                    <span class="text-[11px] font-bold text-emerald-600 uppercase font-mono">Additional Machine / 3D Printer Unit</span>
+                    <button type="button" onclick="this.closest('.machine-row').remove()" class="text-rose-600 hover:text-rose-700 text-xs font-bold flex items-center gap-1">
                         <i class="fa-solid fa-trash"></i> Remove
                     </button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Machine Name / Model</label>
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Machine / Printer Name & Model <span class="text-rose-500">*</span>
+                            <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Enter exact brand, model, and axis/capacity (e.g., Mazak Variaxis i-700, Stratasys F900).</span>
+                            </span>
+                        </label>
                         <input type="text" name="machine_name[]" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Mazak Variaxis i-700">
                     </div>
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Last Calibration Date</label>
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Last Calibration Date
+                            <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Date when this machine's spindle, laser, or measuring axes were last calibrated.</span>
+                            </span>
+                        </label>
                         <input type="date" name="last_calibration[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Next Service Due</label>
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Next Service / Calibration Due
+                            <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Scheduled date for next preventive maintenance or third-party calibration check.</span>
+                            </span>
+                        </label>
                         <input type="date" name="next_service_due[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Audit Notes / Condition</label>
+                        <label class="flex items-center gap-1.5 text-slate-700 font-bold mb-1.5">
+                            Audit Notes / Technical Condition
+                            <span class="tooltip-trigger text-slate-400 hover:text-emerald-600 cursor-help" tabindex="0">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span class="tooltip-box">Mention chuck size, bed travel, build volume, or recent accuracy checks.</span>
+                            </span>
+                        </label>
                         <input type="text" name="notes[]" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-emerald-600 placeholder:text-slate-400" placeholder="Linear scale checked">
                     </div>
                 </div>
@@ -227,8 +661,6 @@
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
-            console.log("Submitting SME Registration Form...");
-            console.log("Form Data:", Object.fromEntries(formData.entries()));
 
             try {
                 const response = await fetch('/suppliers/register', {
@@ -264,5 +696,5 @@
             document.getElementById('failureModal').classList.remove('flex');
         }
     </script>
-</div>
-{{end}}
+</body>
+</html>

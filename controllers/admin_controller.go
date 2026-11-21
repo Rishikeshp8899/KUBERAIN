@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func renderAdminView(w http.ResponseWriter, pageFile string, data interface{}) {
@@ -212,7 +213,7 @@ func AdminUpdatePaymentStatusHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
 }
 
-// AdminDispatchHandler handles GET /admin/dispatch
+// AdminDispatchHandler handles GET /admin/work/packages
 func AdminDispatchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -402,7 +403,7 @@ func AdminWorkPackageDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	details, err := models.GetWorkPackageCompleteDetails(wpID)
 	if err != nil {
 		log.Printf("[ERROR] [AdminWorkPackageDetailsHandler] Failed to load details: %v", err)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 	log.Printf("[SUCCESS] [AdminWorkPackageDetailsHandler] Successfully retrieved details for Work Package ID: %d", wpID)
@@ -1022,7 +1023,7 @@ func RenderWorkPackageDetailsPage(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
 	if len(pathParts) == 0 {
 		log.Printf("[WARN] [RenderWorkPackageDetailsPage] Invalid URL path structure: %s", r.URL.Path)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -1030,7 +1031,7 @@ func RenderWorkPackageDetailsPage(w http.ResponseWriter, r *http.Request) {
 	wpID, err := strconv.Atoi(idStr)
 	if err != nil || wpID <= 0 {
 		log.Printf("[WARN] [RenderWorkPackageDetailsPage] Invalid work package ID format: %s", idStr)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -1040,7 +1041,7 @@ func RenderWorkPackageDetailsPage(w http.ResponseWriter, r *http.Request) {
 	wpDetails, err := models.GetWorkPackageDetailsByID(wpID)
 	if err != nil {
 		log.Printf("[ERROR] [RenderWorkPackageDetailsPage] Work package not found for ID %d: %v", wpID, err)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -1058,7 +1059,7 @@ func RenderWorkPackageDetailsPage(w http.ResponseWriter, r *http.Request) {
 func RenderDispatchPerProjectPage(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
 	if len(parts) == 0 {
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -1066,14 +1067,14 @@ func RenderDispatchPerProjectPage(w http.ResponseWriter, r *http.Request) {
 	wpID, err := strconv.Atoi(idStr)
 	if err != nil || wpID <= 0 {
 		log.Printf("[WARN] [RenderDispatchPage] Invalid dispatch work package ID: %s", idStr)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
 	dispatchData, err := models.GetDispatchDetailsByID(wpID)
 	if err != nil {
 		log.Printf("[ERROR] [RenderDispatchPage] Dispatch record not found for ID %d", wpID)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -1314,56 +1315,68 @@ func AdminRFQDetailAndMatchHandler(w http.ResponseWriter, r *http.Request) {
 
 // AdminRFQDetailAndMatchScreenshotHandler handles GET /admin/rfqs/detail
 func AdminRFQDetailAndMatchScreenshotHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
 	log.Printf("[INFO] [AdminRFQDetailAndMatchScreenshotHandler] Incoming request: Method=%s, RemoteAddr=%s, URI=%s", r.Method, r.RemoteAddr, r.RequestURI)
 
 	if r.Method != http.MethodGet {
-
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Method not allowed: Method=%s, URI=%s", r.Method, r.RequestURI)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
 	}
 
 	adminEmail := config.GetAdminEmail(r)
 	if adminEmail == "" {
-		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Unauthorized access attempt.")
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Unauthorized access attempt from RemoteAddr=%s, URI=%s", r.RemoteAddr, r.RequestURI)
 		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 		return
 	}
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Authenticated admin=%q", adminEmail)
 
 	rfqIDStr := r.PathValue("id")
 	if rfqIDStr == "" {
-		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Missing 'id' parameter.")
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] Missing 'id' path parameter for URI=%s", r.RequestURI)
 		http.Error(w, "Bad Request: Missing RFQ ID", http.StatusBadRequest)
 		return
 	}
 
 	rfqID, err := strconv.Atoi(rfqIDStr)
 	if err != nil || rfqID <= 0 {
-		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] Invalid RFQ ID: '%s'", rfqIDStr)
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] Invalid RFQ ID: raw=%q, err=%v", rfqIDStr, err)
 		http.Error(w, "Invalid RFQ ID", http.StatusBadRequest)
 		return
 	}
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Parsed valid rfq_id=%d", rfqID)
 
 	// 1. Fetch RFQ
 	rfq, err := models.GetRFQByID(rfqID)
 	if err != nil {
-		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] RFQ ID %d not found: %v", rfqID, err)
+		log.Printf("[ERROR] [AdminRFQDetailAndMatchScreenshotHandler] RFQ ID=%d not found or query failed: %v", rfqID, err)
 		http.Error(w, "RFQ Not Found", http.StatusNotFound)
 		return
 	}
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Loaded RFQ ID=%d code=%q company=%q category=%q material=%q",
+		rfqID, rfq.RFQCode, rfq.CompanyName, rfq.Category, rfq.Material)
 
 	// 2. Compute Cosine Similarity for Top 10 SME Matches
 	allSuppliers, err := models.GetAllVerifiedSuppliers()
 	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] GetAllVerifiedSuppliers failed for RFQ ID=%d: %v (defaulting to empty slice)", rfqID, err)
 		allSuppliers = []models.Supplier{}
+	} else {
+		log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Fetched %d verified suppliers for similarity scoring (RFQ ID=%d)", len(allSuppliers), rfqID)
 	}
 
 	rfqQueryText := rfq.Requirements + " " + rfq.Category + " " + rfq.Material
-	var scoredSMEs []models.SupplierMatchDTO
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Similarity query text for RFQ ID=%d: len=%d", rfqID, len(rfqQueryText))
 
+	var scoredSMEs []models.SupplierMatchDTO
 	for _, sup := range allSuppliers {
 		score := utility.ComputeCosineSimilarity(rfqQueryText, sup.CapabilitiesSummary)
+		pct := int(math.Round(score * 100))
 		scoredSMEs = append(scoredSMEs, models.SupplierMatchDTO{
 			Supplier:             sup,
 			SimilarityScore:      score,
-			SimilarityPercentage: int(math.Round(score * 100)),
+			SimilarityPercentage: pct,
 		})
 	}
 
@@ -1374,15 +1387,41 @@ func AdminRFQDetailAndMatchScreenshotHandler(w http.ResponseWriter, r *http.Requ
 		return scoredSMEs[i].SimilarityScore > scoredSMEs[j].SimilarityScore
 	})
 
+	totalScored := len(scoredSMEs)
 	if len(scoredSMEs) > 10 {
 		scoredSMEs = scoredSMEs[:10]
 	}
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Cosine similarity complete for RFQ ID=%d: total_scored=%d, top_selected=%d",
+		rfqID, totalScored, len(scoredSMEs))
 
 	// 3. Fetch Assigned SMEs, Converted Work Packages, Payment History & Audit Logs
-	assignedSMEs, _ := models.GetAssignedSMEsForRFQ(rfqID)
-	workPackages, _ := models.GetWorkPackagesByRFQID(rfqID)
-	payments, _ := models.GetPaymentsForRFQ(rfqID)
-	auditLogs, _ := models.GetAuditLogsForRFQ(rfqID)
+	assignedSMEs, err := models.GetAssignedSMEsForRFQ(rfqID)
+	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] GetAssignedSMEsForRFQ failed for RFQ ID=%d: %v", rfqID, err)
+	} else {
+		log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Fetched %d assigned SMEs for RFQ ID=%d", len(assignedSMEs), rfqID)
+	}
+
+	workPackages, err := models.GetWorkPackagesByRFQID(rfqID)
+	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] GetWorkPackagesByRFQID failed for RFQ ID=%d: %v", rfqID, err)
+	} else {
+		log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Fetched %d work packages for RFQ ID=%d", len(workPackages), rfqID)
+	}
+
+	payments, err := models.GetPaymentsForRFQ(rfqID)
+	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] GetPaymentsForRFQ failed for RFQ ID=%d: %v", rfqID, err)
+	} else {
+		log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Fetched %d payment records for RFQ ID=%d", len(payments), rfqID)
+	}
+
+	auditLogs, err := models.GetAuditLogsForRFQ(rfqID)
+	if err != nil {
+		log.Printf("[WARN] [AdminRFQDetailAndMatchScreenshotHandler] GetAuditLogsForRFQ failed for RFQ ID=%d: %v", rfqID, err)
+	} else {
+		log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Fetched %d audit logs for RFQ ID=%d", len(auditLogs), rfqID)
+	}
 
 	// 4. Construct Comprehensive Context
 	detailsData := models.RFQComprehensiveDetails{
@@ -1402,8 +1441,9 @@ func AdminRFQDetailAndMatchScreenshotHandler(w http.ResponseWriter, r *http.Requ
 		"Details":    detailsData,
 	}
 
+	log.Printf("[DEBUG] [AdminRFQDetailAndMatchScreenshotHandler] Rendering template 'admin_rfq_screenshot_details.html' for RFQ ID=%d", rfqID)
 	renderAdminView(w, "admin_rfq_screenshot_details.html", data)
-	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchHandler] Completed request for RFQ ID=%d", rfqID)
+	log.Printf("[SUCCESS] [AdminRFQDetailAndMatchScreenshotHandler] Completed request for RFQ ID=%d (elapsed=%v)", rfqID, time.Since(start))
 }
 
 // DownloadUploadedFilePOST securely handles file downloads from the static directory.

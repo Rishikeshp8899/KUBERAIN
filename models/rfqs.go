@@ -143,24 +143,53 @@ func GetRFQByID(rfqID int) (RFQ, error) {
 
 // GetAssignedSMEsForRFQ retrieves suppliers assigned to work packages linked to this RFQ
 func GetAssignedSMEsForRFQ(rfqID int) ([]AssignedSMEDTO, error) {
+	start := time.Now()
+	log.Printf("[DEBUG] [GetAssignedSMEsForRFQ] Starting query for rfq_id=%d", rfqID)
+
 	var list []AssignedSMEDTO
-	query := `SELECT s.id, s.company_name, s.city, s.state, s.contact_email, s.phone, 
-              s.gst_number, s.msme_reg_number, s.is_verified, s.iso_standard, s.plant_area_sq_ft, 
-              s.worker_count, s.rating, s.capabilities_summary, s.nda_signed, s.created_at,
-              wps.assignment_status, wps.assigned_at
-              FROM work_package_suppliers wps
-              JOIN work_packages wp ON wps.work_package_id = wp.id
-              JOIN suppliers s ON wps.supplier_id = s.id
-              WHERE wp.rfq_id = ?`
+	query := `SELECT
+    s.id,
+    s.company_name,
+    s.city,
+    s.state,
+    s.contact_email,
+    s.phone,
+    s.gst_number,
+    s.msme_reg_number,
+    s.is_verified,
+    s.iso_standard,
+    s.plant_area_sq_ft,
+    s.worker_count,
+    s.rating,
+    s.capabilities_summary,
+    s.nda_signed,
+    s.created_at,
+    wps.assignment_status,
+    wps.assigned_at
+FROM rfqs r
+LEFT JOIN work_packages wp
+    ON r.id = wp.rfq_id
+LEFT JOIN work_package_suppliers wps
+    ON wp.id = wps.work_package_id
+LEFT JOIN suppliers s
+    ON wps.supplier_id = s.id
+WHERE r.id = ?
+  AND s.id IS NOT NULL`
 
 	rows, err := database.DB.Query(query, rfqID)
 	if err != nil {
-		log.Printf("[ERROR] [GetAssignedSMEsForRFQ] Query failed: %v", err)
+		log.Printf("[ERROR] [GetAssignedSMEsForRFQ] Query failed for rfq_id=%d: %v (elapsed=%v)", rfqID, err, time.Since(start))
 		return list, err
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Printf("[WARN] [GetAssignedSMEsForRFQ] Failed to close rows for rfq_id=%d: %v", rfqID, closeErr)
+		}
+	}()
 
+	rowNum := 0
 	for rows.Next() {
+		rowNum++
 		var dto AssignedSMEDTO
 		err := rows.Scan(
 			&dto.ID, &dto.CompanyName, &dto.City, &dto.State, &dto.ContactEmail, &dto.Phone,
@@ -169,31 +198,80 @@ func GetAssignedSMEsForRFQ(rfqID int) ([]AssignedSMEDTO, error) {
 			&dto.AssignmentStatus, &dto.AssignedAt,
 		)
 		if err != nil {
-			log.Printf("[WARN] [GetAssignedSMEsForRFQ] Row scan error: %v", err)
+			log.Printf("[WARN] [GetAssignedSMEsForRFQ] Row scan error at row=%d for rfq_id=%d: %v", rowNum, rfqID, err)
 			continue
 		}
+
+		log.Printf("[DEBUG] [GetAssignedSMEsForRFQ] Scanned row=%d for rfq_id=%d: supplier_id=%d company=%q status=%q rating=%.2f verified=%v",
+			rowNum, rfqID, dto.ID, dto.CompanyName, dto.AssignmentStatus, dto.Rating, dto.IsVerified)
 		list = append(list, dto)
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("[ERROR] [GetAssignedSMEsForRFQ] Row iteration error for rfq_id=%d: %v (elapsed=%v)", rfqID, err, time.Since(start))
+		return list, err
+	}
+
+	log.Printf("[DEBUG] [GetAssignedSMEsForRFQ] Completed for rfq_id=%d: rows_read=%d assigned_smes=%d (elapsed=%v)",
+		rfqID, rowNum, len(list), time.Since(start))
+
+	// Prints struct field names + values for every item in the slice
+	log.Printf("[DEBUG] [GetAssignedSMEsForRFQ] list=%+v", list)
 	return list, nil
 }
 
 // GetWorkPackagesByRFQID retrieves converted work packages for this RFQ
 func GetWorkPackagesByRFQID(rfqID int) ([]WorkPackage, error) {
+	start := time.Now()
+	log.Printf("[DEBUG][GetWorkPackagesByRFQID] Fetching work packages for rfq_id=%d", rfqID)
+
 	var wps []WorkPackage
 	query := `SELECT id, rfq_id, title, redacted_spec, redacted_drawing_path, budget_usd, target_date, escrow_status, status, created_at 
               FROM work_packages WHERE rfq_id = ?`
+
 	rows, err := database.DB.Query(query, rfqID)
 	if err != nil {
+		log.Printf("[ERROR][GetWorkPackagesByRFQID] Query failed for rfq_id=%d: %v (elapsed=%v)", rfqID, err, time.Since(start))
 		return wps, err
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var wp WorkPackage
-		if err := rows.Scan(&wp.ID, &wp.RFQID, &wp.Title, &wp.RedactedSpec, &wp.RedactedDrawingPath, &wp.BudgetUSD, &wp.TargetDate, &wp.EscrowStatus, &wp.Status, &wp.CreatedAt); err == nil {
-			wps = append(wps, wp)
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Printf("[WARN][GetWorkPackagesByRFQID] Failed to close rows for rfq_id=%d: %v", rfqID, closeErr)
 		}
+	}()
+
+	rowIdx := 0
+	for rows.Next() {
+		rowIdx++
+		var wp WorkPackage
+		err := rows.Scan(
+			&wp.ID,
+			&wp.RFQID,
+			&wp.Title,
+			&wp.RedactedSpec,
+			&wp.RedactedDrawingPath,
+			&wp.BudgetUSD,
+			&wp.TargetDate,
+			&wp.EscrowStatus,
+			&wp.Status,
+			&wp.CreatedAt,
+		)
+		if err != nil {
+			log.Printf("[ERROR][GetWorkPackagesByRFQID] Row scan failed at row=%d for rfq_id=%d: %v", rowIdx, rfqID, err)
+			continue
+		}
+
+		log.Printf("[DEBUG][GetWorkPackagesByRFQID] Scanned row=%d: wp_id=%d title=%q status=%q escrow_status=%q budget_usd=%.2f",
+			rowIdx, wp.ID, wp.Title, wp.Status, wp.EscrowStatus, wp.BudgetUSD)
+		wps = append(wps, wp)
 	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("[ERROR][GetWorkPackagesByRFQID] Row iteration error for rfq_id=%d: %v (elapsed=%v)", rfqID, err, time.Since(start))
+		return wps, err
+	}
+
+	log.Printf("[DEBUG][GetWorkPackagesByRFQID] Completed for rfq_id=%d: total_found=%d (elapsed=%v)", rfqID, len(wps), time.Since(start))
 	return wps, nil
 }
 

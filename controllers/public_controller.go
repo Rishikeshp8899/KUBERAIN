@@ -242,15 +242,16 @@ func PublicSMEOnboarding(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[INFO] [RenderSMERegistrationPage] Rendering supplier registration HTML page...")
+	tmpl, err := template.ParseFiles("views/pages/supplier_onboarding.html")
 
-	isSubmitted := r.URL.Query().Get("submitted") == "true"
-
-	data := PageData{
-		Title:       "SME Manufacturer Onboarding Portal",
-		CurrentPage: "smes-onboarding",
-		Submitted:   isSubmitted,
+	if err != nil {
+		http.Error(w, "Failed to load onboarding page: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
-	renderTemplate(w, "supplier_onboarding.html", data)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := tmpl.Execute(w, nil); err != nil {
+		http.Error(w, "Failed to render page: "+err.Error(), http.StatusInternalServerError)
+	}
 
 }
 
@@ -448,7 +449,7 @@ func SmeNwtworkHandler(w http.ResponseWriter, r *http.Request) {
 func RenderDispatchPage(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimSpace(r.URL.Path), "/")
 	if len(parts) == 0 {
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
@@ -456,14 +457,14 @@ func RenderDispatchPage(w http.ResponseWriter, r *http.Request) {
 	wpID, err := strconv.Atoi(idStr)
 	if err != nil || wpID <= 0 {
 		log.Printf("[WARN] [RenderDispatchPage] Invalid dispatch work package ID: %s", idStr)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 
 	dispatchData, err := models.GetDispatchDetailsByID(wpID)
 	if err != nil {
 		log.Printf("[ERROR] [RenderDispatchPage] Dispatch record not found for ID %d", wpID)
-		http.Redirect(w, r, "/admin/dispatch", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/work/packages", http.StatusSeeOther)
 		return
 	}
 

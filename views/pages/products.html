@@ -5,9 +5,8 @@
     }
     .cad-grid-bg {
         background-size: 28px 28px;
-        background-image: 
-            linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     }
     .product-card.active-card {
         border-color: #2563eb;
@@ -29,19 +28,19 @@
 
 <!-- Three.js Import Map -->
 <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
     }
+}
 </script>
 
 <!-- PAGE HEADER -->
 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
     <div>
-        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Industrial 3D CAD & Bulk Supply Catalog</h2>
-        <p class="text-slate-500 text-sm mt-1">Interactive 3D model inspection & high-quantity bulk procurement across core industrial categories.</p>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Industrial 3D CAD &amp; Bulk Supply Catalog</h2>
+        <p class="text-slate-500 text-sm mt-1">Interactive 3D model inspection &amp; high-quantity bulk procurement across core industrial categories.</p>
     </div>
     <div class="flex items-center gap-3">
         <span class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-bold border border-blue-200 flex items-center gap-1.5 shadow-sm">
@@ -50,8 +49,8 @@
     </div>
 </div>
 
-<!-- CATEGORY NAVIGATION TABS (Replacing Sidebar) -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<!-- CATEGORY NAVIGATION TABS -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
     <button type="button" onclick="filterCategory('valves')" data-cat-btn="valves" class="cat-tab-btn active p-4 rounded-2xl bg-white border border-slate-200 text-left transition shadow-sm hover:border-blue-400 flex items-center justify-between cursor-pointer group">
         <div>
             <span class="text-[10px] font-mono text-blue-600 font-bold block uppercase tracking-wider">01 Category</span>
@@ -61,6 +60,7 @@
             <i class="fa-solid fa-ring text-sm"></i>
         </div>
     </button>
+
     <button type="button" onclick="filterCategory('pipes')" data-cat-btn="pipes" class="cat-tab-btn p-4 rounded-2xl bg-white border border-slate-200 text-left transition shadow-sm hover:border-emerald-400 flex items-center justify-between cursor-pointer group">
         <div>
             <span class="text-[10px] font-mono text-emerald-600 font-bold block uppercase tracking-wider">02 Category</span>
@@ -70,6 +70,7 @@
             <i class="fa-solid fa-lines-leaning text-sm"></i>
         </div>
     </button>
+
     <button type="button" onclick="filterCategory('fittings')" data-cat-btn="fittings" class="cat-tab-btn p-4 rounded-2xl bg-white border border-slate-200 text-left transition shadow-sm hover:border-amber-400 flex items-center justify-between cursor-pointer group">
         <div>
             <span class="text-[10px] font-mono text-amber-600 font-bold block uppercase tracking-wider">03 Category</span>
@@ -79,6 +80,7 @@
             <i class="fa-solid fa-circle-notch text-sm"></i>
         </div>
     </button>
+
     <button type="button" onclick="filterCategory('cnc')" data-cat-btn="cnc" class="cat-tab-btn p-4 rounded-2xl bg-white border border-slate-200 text-left transition shadow-sm hover:border-purple-400 flex items-center justify-between cursor-pointer group">
         <div>
             <span class="text-[10px] font-mono text-purple-600 font-bold block uppercase tracking-wider">04 Category</span>
@@ -88,11 +90,20 @@
             <i class="fa-solid fa-gear text-sm"></i>
         </div>
     </button>
+
+    <button type="button" onclick="filterCategory('printing3d')" data-cat-btn="printing3d" class="cat-tab-btn p-4 rounded-2xl bg-white border border-slate-200 text-left transition shadow-sm hover:border-cyan-400 flex items-center justify-between cursor-pointer group col-span-2 sm:col-span-1">
+        <div>
+            <span class="text-[10px] font-mono text-cyan-600 font-bold block uppercase tracking-wider">05 Category</span>
+            <span class="font-extrabold text-sm text-slate-900 group-hover:text-cyan-600 transition">Industrial 3D Printing</span>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group text-sm"></i>
+        </div>
+    </button>
 </div>
 
 <!-- FULL-WIDTH CONTENT AREA -->
 <div class="space-y-6">
-
     <!-- INTERACTIVE 3D CAD VIEWPORT SECTION -->
     <div class="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
         <!-- Viewport Top Toolbar -->
@@ -114,15 +125,15 @@
             </div>
         </div>
 
-        <!-- SUB-SELECTOR BAR (Dynamically updates based on active category) -->
+        <!-- SUB-SELECTOR BAR -->
         <div id="sub-selector-bar" class="px-5 py-2.5 bg-slate-900/95 border-b border-slate-800/80 flex items-center gap-2 overflow-x-auto">
-            <!-- Dynamically populated via script -->
+            <!-- Populated dynamically via script -->
         </div>
 
         <!-- 3D Canvas Container -->
         <div id="canvas-container" class="relative w-full h-[400px] sm:h-[460px] cad-grid-bg cursor-grab active:cursor-grabbing">
             <div class="absolute bottom-4 left-4 pointer-events-none bg-slate-900/90 backdrop-blur-md border border-slate-700/80 px-3.5 py-1.5 rounded-xl text-xs font-mono text-slate-300 flex items-center gap-3 shadow-lg">
-                <span><i class="fa-solid fa-computer-mouse text-blue-400 mr-1.5"></i> Drag: Rotate 360°</span>
+                <span><i class="fa-solid fa-computer-mouse text-blue-400 mr-1.5"></i>Drag: Rotate 360°</span>
                 <span>•</span>
                 <span>Scroll: Zoom</span>
             </div>
@@ -134,8 +145,7 @@
     </div>
 
     <!-- DYNAMIC PRODUCT CATALOG CONTAINERS -->
-
-    <!-- 1. VALVES CONTAINER (Includes all 10 valve types grid) -->
+    <!-- 1. VALVES CONTAINER -->
     <div id="container-valves" class="category-content-block space-y-4">
         <div class="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div>
@@ -146,7 +156,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="valveGridContainer">
-            <!-- Ball Valve -->
             <div onclick="selectProduct('ball')" data-prod-key="ball" class="product-card active-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -163,7 +172,6 @@
                 </div>
             </div>
 
-            <!-- Gate Valve -->
             <div onclick="selectProduct('gate')" data-prod-key="gate" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -180,7 +188,6 @@
                 </div>
             </div>
 
-            <!-- Globe Valve -->
             <div onclick="selectProduct('globe')" data-prod-key="globe" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -197,7 +204,6 @@
                 </div>
             </div>
 
-            <!-- Butterfly Valve -->
             <div onclick="selectProduct('butterfly')" data-prod-key="butterfly" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -206,7 +212,7 @@
                     </div>
                     <h4 class="font-extrabold text-lg text-slate-900 group-hover:text-blue-600 transition">4. Butterfly Valve</h4>
                     <p class="text-xs font-bold text-blue-700 mt-0.5">Isolation &amp; Throttling</p>
-                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Rotating circular disc mounted on a rod; lightweight &amp; cost-effective for large pipe diameters (2" to 48"+).</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Rotating circular disc mounted on a rod; lightweight &amp; cost-effective for large pipe diameters (2&quot; to 48&quot;+).</p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
                     <span class="text-emerald-700 font-bold">MOQ: 30 Units</span>
@@ -214,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- Check Valve -->
             <div onclick="selectProduct('check')" data-prod-key="check" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -231,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- Plug Valve -->
             <div onclick="selectProduct('plug')" data-prod-key="plug" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -248,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- Needle Valve -->
             <div onclick="selectProduct('needle')" data-prod-key="needle" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -265,7 +268,6 @@
                 </div>
             </div>
 
-            <!-- Diaphragm Valve -->
             <div onclick="selectProduct('diaphragm')" data-prod-key="diaphragm" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -282,7 +284,6 @@
                 </div>
             </div>
 
-            <!-- Pinch Valve -->
             <div onclick="selectProduct('pinch')" data-prod-key="pinch" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -291,7 +292,7 @@
                     </div>
                     <h4 class="font-extrabold text-lg text-slate-900 group-hover:text-blue-600 transition">9. Pinch Valve</h4>
                     <p class="text-xs font-bold text-emerald-700 mt-0.5">Slurry Isolation</p>
-                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Pinches heavy-duty rubber sleeve shut for obstruction-free flow in mining slurries and wastewater sludge.</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Pinches heavy-duty rubber sleeves shut for obstruction-free flow in mining slurries and wastewater sludge.</p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
                     <span class="text-emerald-700 font-bold">MOQ: 15 Units</span>
@@ -299,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- Pressure Relief Valve -->
             <div onclick="selectProduct('prv')" data-prod-key="prv" class="product-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-blue-400 group flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -308,7 +308,7 @@
                     </div>
                     <h4 class="font-extrabold text-lg text-slate-900 group-hover:text-blue-600 transition">10. Safety Relief (PRV/PSV)</h4>
                     <p class="text-xs font-bold text-rose-700 mt-0.5">Overpressure Protection</p>
-                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Spring-loaded failsafe valve opening at set pressure to prevent vessel rupture (ASME Sec. VIII).</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Spring-loaded fail-safe valve opening at set pressure to prevent vessel rupture (ASME Sec. VIII).</p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
                     <span class="text-emerald-700 font-bold">MOQ: 20 Units</span>
@@ -337,7 +337,7 @@
                     </div>
                     <h4 class="font-extrabold text-lg text-slate-900 group-hover:text-emerald-600 transition">Seamless Carbon Steel Pipes</h4>
                     <p class="text-xs font-bold text-emerald-700 mt-0.5">High-Pressure &amp; High-Temp Service</p>
-                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Manufactured without seams to safely withstand extreme pressure. Sizes 1/2" to 48" OD, Schedule 10 to XXS.</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Manufactured without seams to safely withstand extreme pressure. Sizes 1/2&quot; to 48&quot; OD, Schedule 10 to XXS.</p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
                     <span class="text-emerald-700 font-bold">Supply: 5,000 Tons/Mo</span>
@@ -413,7 +413,7 @@
                 <h3 class="font-extrabold text-xl text-slate-900">Custom CNC Precision Machining</h3>
                 <p class="text-xs text-slate-500 mt-0.5">Multi-axis CNC turning, milling, and precision component fabrication for complex industrial geometry.</p>
             </div>
-            <span class="bg-purple-50 text-purple-700 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-purple-200 font-mono">±0.005 mm Tolerance</span>
+            <span class="bg-purple-50 text-purple-700 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-purple-200 font-mono">&plusmn;0.005mm Tolerance</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -428,7 +428,7 @@
                     <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">CMM inspected custom milled valve bodies, flanges, and high-tolerance aerospace/oilfield parts.</p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
-                    <span class="text-emerald-700 font-bold">MOQ: Custom / Batches</span>
+                    <span class="text-emerald-700 font-bold">MOQ: Custom/Batches</span>
                     <span class="text-purple-600 font-bold group-hover:underline">Inspect 3D &rarr;</span>
                 </div>
             </div>
@@ -450,465 +450,495 @@
         </div>
     </div>
 
+    <!-- 5. INDUSTRIAL 3D PRINTING CONTAINER -->
+    <div id="container-printing3d" class="category-content-block hidden space-y-4">
+        <div class="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div>
+                <h3 class="font-extrabold text-xl text-slate-900">Industrial 3D Printing &amp; Additive Manufacturing</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Direct metal laser sintering (DMLS), SLS polymers, and rapid tooling for complex internal channels and jigs.</p>
+            </div>
+            <span class="bg-cyan-50 text-cyan-700 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-cyan-200 font-mono">DMLS / SLS / SLA</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div onclick="selectProduct('printing3d')" data-prod-key="printing3d" class="product-card active-card bg-white border border-slate-200 rounded-2xl p-5 transition-all cursor-pointer hover:border-cyan-400 group flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded bg-cyan-100 text-cyan-800 font-mono text-[11px] font-bold">Metal DMLS</span>
+                        <span class="text-xs font-mono font-bold text-slate-400 group-hover:text-cyan-600"><i class="fa-solid fa-cube"></i> 3D CAD</span>
+                    </div>
+                    <h4 class="font-extrabold text-lg text-slate-900 group-hover:text-cyan-600 transition">Additive Metal &amp; Lattice Parts</h4>
+                    <p class="text-xs font-bold text-cyan-700 mt-0.5">Material: 316L, Ti6Al4V, AlSi10Mg, PA12</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">Layer-by-layer additive manufacturing for conformal cooling manifolds, lightweight brackets, and intricate geometries impossible via subtractive machining.</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                    <span class="text-emerald-700 font-bold">MOQ: 1 Unit / Batch</span>
+                    <span class="text-cyan-600 font-bold group-hover:underline">Inspect 3D &rarr;</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded bg-slate-200 text-slate-700 font-mono text-[11px] font-bold">Rapid Tooling</span>
+                    </div>
+                    <h4 class="font-extrabold text-lg text-slate-900">Custom Jigs, Fixtures &amp; Functional Prototypes</h4>
+                    <p class="text-xs font-bold text-slate-600 mt-0.5">Heat-Treated &amp; Stress-Relieved</p>
+                    <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">High-strength polymer and metal fixtures for assembly lines, inspection gauges, and functional pre-production validation.</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                    <span class="text-slate-700 font-bold">48–72 Hr Lead Time</span>
+                    <span>CAD / STEP Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- THREE.JS 3D ENGINE & DYNAMIC INTERACTION SCRIPT -->
 <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    const PRODUCT_METADATA = {
-        seamless_pipes: { code: 'CODE: PIPE-SEAM-01', label: 'SEAMLESS STEEL PIPES (ASTM A106 / API 5L)' },
-        fittings: { code: 'CODE: FIT-BW-03', label: 'ASME B16.9 BUTTWELD ELBOW & TEE' },
-        cnc: { code: 'CODE: CNC-VMC-04', label: '5-AXIS CNC PRECISION MACHINED PART' },
-        ball: { code: 'CODE: VLV-BALL-01', label: 'BALL VALVE (90° QUARTER-TURN LEVER)' },
-        gate: { code: 'CODE: VLV-GATE-02', label: 'WEDGE GATE VALVE (RISING STEM)' },
-        globe: { code: 'CODE: VLV-GLOBE-03', label: 'GLOBE CONTROL VALVE (S-BODY)' },
-        butterfly: { code: 'CODE: VLV-BFLY-04', label: 'WAFER BUTTERFLY VALVE (DISC ROTOR)' },
-        check: { code: 'CODE: VLV-CHK-05', label: 'SWING CHECK VALVE (NON-RETURN)' },
-        plug: { code: 'CODE: VLV-PLUG-06', label: 'TAPERED PLUG VALVE (WRENCH HEAD)' },
-        needle: { code: 'CODE: VLV-NDL-07', label: 'INSTRUMENTATION NEEDLE VALVE' },
-        diaphragm: { code: 'CODE: VLV-DIA-08', label: 'WEIR DIAPHRAGM VALVE' },
-        pinch: { code: 'CODE: VLV-PNCH-09', label: 'INDUSTRIAL SLEEVE PINCH VALVE' },
-        prv: { code: 'CODE: VLV-PRV-10', label: 'PRESSURE RELIEF / SAFETY VALVE (PRV)' }
-    };
+const PRODUCT_METADATA = {
+    seamless_pipes: { code: 'CODE: PIPE-SEAM-01', label: 'SEAMLESS STEEL PIPES (ASTM A106 / API 5L)' },
+    fittings:       { code: 'CODE: FIT-BW-03',    label: 'ASME B16.9 BUTTWELD ELBOW & TEE' },
+    cnc:            { code: 'CODE: CNC-VMC-04',   label: '5-AXIS CNC PRECISION MACHINED PART' },
+    printing3d:     { code: 'CODE: 3DP-DMLS-05',  label: 'INDUSTRIAL 3D PRINTED LATTICE COMPONENT' },
+    ball:           { code: 'CODE: VLV-BALL-01',  label: 'BALL VALVE (90° QUARTER-TURN LEVER)' },
+    gate:           { code: 'CODE: VLV-GATE-02',  label: 'WEDGE GATE VALVE (RISING STEM)' },
+    globe:          { code: 'CODE: VLV-GLOBE-03', label: 'GLOBE CONTROL VALVE (S-BODY)' },
+    butterfly:      { code: 'CODE: VLV-BFLY-04',  label: 'WAFER BUTTERFLY VALVE (DISC ROTOR)' },
+    check:          { code: 'CODE: VLV-CHK-05',   label: 'SWING CHECK VALVE (NON-RETURN)' },
+    plug:           { code: 'CODE: VLV-PLUG-06',  label: 'TAPERED PLUG VALVE (WRENCH HEAD)' },
+    needle:         { code: 'CODE: VLV-NDL-07',   label: 'INSTRUMENTATION NEEDLE VALVE' },
+    diaphragm:      { code: 'CODE: VLV-DIA-08',   label: 'WEIR DIAPHRAGM VALVE' },
+    pinch:          { code: 'CODE: VLV-PNCH-09',  label: 'INDUSTRIAL SLEEVE PINCH VALVE' },
+    prv:            { code: 'CODE: VLV-PRV-10',   label: 'PRESSURE RELIEF / SAFETY VALVE (PRV)' }
+};
 
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
+const VALVE_SUB_ITEMS = [
+    { key: 'ball',      name: '1. Ball' },
+    { key: 'gate',      name: '2. Gate' },
+    { key: 'globe',     name: '3. Globe' },
+    { key: 'butterfly', name: '4. Butterfly' },
+    { key: 'check',     name: '5. Check' },
+    { key: 'plug',      name: '6. Plug' },
+    { key: 'needle',    name: '7. Needle' },
+    { key: 'diaphragm', name: '8. Diaphragm' },
+    { key: 'pinch',     name: '9. Pinch' },
+    { key: 'prv',       name: '10. Relief (PRV)' }
+];
 
-    const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(4.2, 3.0, 5.0);
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+camera.position.set(4.2, 3.0, 5.0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
-    container.appendChild(renderer.domElement);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+container.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.minDistance = 2.4;
-    controls.maxDistance = 12;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.8;
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 2.4;
+controls.maxDistance = 12;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.8;
 
-    // Studio Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.3);
-    keyLight.position.set(6, 8, 6);
-    scene.add(keyLight);
+// Studio Lighting
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.3);
+keyLight.position.set(6, 8, 6);
+scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x3b82f6, 1.4);
-    rimLight.position.set(-6, 3, -5);
-    scene.add(rimLight);
+const rimLight = new THREE.DirectionalLight(0x3b82f6, 1.4);
+rimLight.position.set(-6, 3, -5);
+scene.add(rimLight);
 
-    const fillLight = new THREE.DirectionalLight(0xf59e0b, 0.9);
-    fillLight.position.set(-4, -3, 5);
-    scene.add(fillLight);
+const fillLight = new THREE.DirectionalLight(0xf59e0b, 0.9);
+fillLight.position.set(-4, -3, 5);
+scene.add(fillLight);
 
-    const gridHelper = new THREE.GridHelper(10, 20, 0x334155, 0x1e293b);
-    gridHelper.position.y = -1.55;
-    scene.add(gridHelper);
+const gridHelper = new THREE.GridHelper(10, 20, 0x334155, 0x1e293b);
+gridHelper.position.y = -1.55;
+scene.add(gridHelper);
 
-    // Materials
-    const steelMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.85, roughness: 0.24 });
-    const darkCastMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.75, roughness: 0.4 });
-    const brassMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.88, roughness: 0.22 });
-    const crimsonMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, metalness: 0.65, roughness: 0.3 });
-    const rubberMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.15, roughness: 0.85 });
+// Materials
+const steelMat    = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.85, roughness: 0.24 });
+const darkCastMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.75, roughness: 0.40 });
+const brassMat    = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.88, roughness: 0.22 });
+const crimsonMat  = new THREE.MeshStandardMaterial({ color: 0xe11d48, metalness: 0.65, roughness: 0.30 });
+const rubberMat   = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.15, roughness: 0.85 });
+const cyanAlloyMat= new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.78, roughness: 0.28 });
 
-    let currentGroup = new THREE.Group();
+let currentGroup = new THREE.Group();
+scene.add(currentGroup);
+let isWireframe = false;
+let activeCategory = 'valves';
+let activeProdKey = 'ball';
+
+function applyWireframeState(group, state) {
+    group.traverse((child) => {
+        if (child.isMesh && child.material) {
+            child.material.wireframe = state;
+        }
+    });
+}
+
+function addFlanges(group, span = 1.4, radius = 1.15) {
+    [-span, span].forEach(xPos => {
+        const flangeGeo = new THREE.CylinderGeometry(radius, radius, 0.2, 32);
+        flangeGeo.rotateZ(Math.PI / 2);
+        const flange = new THREE.Mesh(flangeGeo, steelMat);
+        flange.position.x = xPos;
+        group.add(flange);
+
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const boltGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.32, 6);
+            boltGeo.rotateZ(Math.PI / 2);
+            const bolt = new THREE.Mesh(boltGeo, brassMat);
+            bolt.position.set(xPos, Math.sin(angle) * (radius * 0.78), Math.cos(angle) * (radius * 0.78));
+            group.add(bolt);
+        }
+    });
+}
+
+function addHandwheel(group, yPos, radius = 0.8, mat = crimsonMat) {
+    const wheelTorus = new THREE.TorusGeometry(radius, 0.075, 16, 36);
+    wheelTorus.rotateX(Math.PI / 2);
+    const wheel = new THREE.Mesh(wheelTorus, mat);
+    wheel.position.y = yPos;
+    group.add(wheel);
+
+    for (let i = 0; i < 4; i++) {
+        const spokeGeo = new THREE.CylinderGeometry(0.035, 0.035, radius * 2, 12);
+        spokeGeo.rotateZ(Math.PI / 2);
+        spokeGeo.rotateY((i / 4) * Math.PI);
+        const spoke = new THREE.Mesh(spokeGeo, mat);
+        spoke.position.y = yPos;
+        group.add(spoke);
+    }
+}
+
+function createSeamlessPipesModel() {
+    const group = new THREE.Group();
+    const pipeSpecs = [
+        { rOut: 0.55, rIn: 0.43, len: 3.6, x: 0,    y: 0.4,   mat: steelMat },
+        { rOut: 0.42, rIn: 0.32, len: 3.8, x: -0.7, y: -0.45, mat: darkCastMat },
+        { rOut: 0.42, rIn: 0.32, len: 3.4, x: 0.7,  y: -0.45, mat: steelMat }
+    ];
+    pipeSpecs.forEach(p => {
+        const shape = new THREE.Shape();
+        shape.absarc(0, 0, p.rOut, 0, Math.PI * 2, false);
+        const hole = new THREE.Path();
+        hole.absarc(0, 0, p.rIn, 0, Math.PI * 2, true);
+        shape.holes.push(hole);
+
+        const pipeGeo = new THREE.ExtrudeGeometry(shape, {
+            depth: p.len, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.02, bevelThickness: 0.03
+        });
+        pipeGeo.translate(0, 0, -p.len / 2);
+        const mesh = new THREE.Mesh(pipeGeo, p.mat);
+        mesh.position.set(p.x, p.y, 0);
+        group.add(mesh);
+
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(p.rOut + 0.015, 0.022, 12, 32), brassMat);
+        ring.position.set(p.x, p.y, p.len / 2 - 0.2);
+        group.add(ring);
+    });
+    group.rotation.y = Math.PI / 6;
+    return group;
+}
+
+function createFittingsModel() {
+    const group = new THREE.Group();
+    const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-1.3, -0.8, 0),
+        new THREE.Vector3(-0.4, -0.8, 0),
+        new THREE.Vector3(0.4,  -0.3, 0),
+        new THREE.Vector3(0.8,   0.5, 0),
+        new THREE.Vector3(0.8,   1.3, 0)
+    ]);
+    group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.62, 32, false), darkCastMat));
+
+    const end1Geo = new THREE.CylinderGeometry(0.65, 0.62, 0.25, 32);
+    end1Geo.rotateZ(Math.PI / 2);
+    const end1 = new THREE.Mesh(end1Geo, steelMat);
+    end1.position.set(-1.35, -0.8, 0);
+    group.add(end1);
+
+    const end2 = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.65, 0.25, 32), steelMat);
+    end2.position.set(0.8, 1.35, 0);
+    group.add(end2);
+
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.67, 0.07, 16, 32), brassMat);
+    collar.position.set(0.25, -0.45, 0);
+    collar.rotation.z = -Math.PI / 4;
+    group.add(collar);
+    return group;
+}
+
+function createCNCModel() {
+    const group = new THREE.Group();
+    const baseDisc = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 0.3, 48), steelMat);
+    baseDisc.position.y = -0.7;
+    group.add(baseDisc);
+
+    for (let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2;
+        const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.32, 0.22), brassMat);
+        tooth.position.set(Math.cos(angle) * 1.42, -0.7, Math.sin(angle) * 1.42);
+        tooth.rotation.y = -angle;
+        group.add(tooth);
+    }
+
+    const step1 = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.5, 48), darkCastMat);
+    step1.position.y = -0.3;
+    group.add(step1);
+
+    const step2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.8, 48), steelMat);
+    step2.position.y = 0.35;
+    group.add(step2);
+
+    const topCollar = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.09, 16, 36), crimsonMat);
+    topCollar.rotation.x = Math.PI / 2;
+    topCollar.position.y = 0.78;
+    group.add(topCollar);
+    return group;
+}
+
+function create3DPrintingModel() {
+    const group = new THREE.Group();
+
+    // Base build plate
+    const buildPlate = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.16, 2.6), darkCastMat);
+    buildPlate.position.y = -1.1;
+    group.add(buildPlate);
+
+    // Printed cylindrical bracket housing
+    const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.9, 32), cyanAlloyMat);
+    housing.position.y = -0.5;
+    group.add(housing);
+
+    // 3D lattice / truss struts rising to top ring
+    const topRing = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.12, 16, 36), steelMat);
+    topRing.rotation.x = Math.PI / 2;
+    topRing.position.y = 0.85;
+    group.add(topRing);
+
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.15, 12), brassMat);
+        strut.position.set(Math.cos(angle) * 0.78, 0.35, Math.sin(angle) * 0.78);
+        strut.rotation.z = -Math.cos(angle) * 0.16;
+        strut.rotation.x = Math.sin(angle) * 0.16;
+        group.add(strut);
+    }
+
+    // Center additive core
+    const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.45, 1), crimsonMat);
+    core.position.y = 0.25;
+    group.add(core);
+
+    return group;
+}
+
+function createValveModel(type) {
+    const group = new THREE.Group();
+    const bodyGeo = new THREE.CylinderGeometry(0.95, 0.95, 2.4, 32);
+    bodyGeo.rotateZ(Math.PI / 2);
+    group.add(new THREE.Mesh(bodyGeo, darkCastMat));
+    addFlanges(group, 1.35, 1.15);
+
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.35, 20), steelMat);
+    stem.position.y = 1.25;
+    group.add(stem);
+
+    if (type === 'ball') {
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.82, 32, 32), steelMat);
+        group.add(ball);
+        const lever = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 0.22), crimsonMat);
+        lever.position.set(0.5, 1.95, 0);
+        group.add(lever);
+    } else if (type === 'gate') {
+        const wedge = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.2, 4), steelMat);
+        wedge.rotation.y = Math.PI / 4;
+        group.add(wedge);
+        addHandwheel(group, 1.95, 0.85, crimsonMat);
+    } else if (type === 'globe') {
+        const chamber = new THREE.Mesh(new THREE.SphereGeometry(0.92, 28, 28), darkCastMat);
+        chamber.position.y = 0.2;
+        group.add(chamber);
+        addHandwheel(group, 1.95, 0.75, brassMat);
+    } else if (type === 'butterfly') {
+        const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.1, 32), brassMat);
+        disc.rotation.z = 0.35;
+        group.add(disc);
+        const lever = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.1, 0.2), crimsonMat);
+        lever.position.set(0.35, 1.9, 0);
+        group.add(lever);
+    } else if (type === 'check') {
+        const flap = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.1, 1.1), brassMat);
+        flap.position.set(0.1, 0.1, 0);
+        flap.rotation.z = -0.45;
+        group.add(flap);
+    } else if (type === 'plug') {
+        const plug = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.45, 1.6, 24), brassMat);
+        group.add(plug);
+        const wrench = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.12, 0.22), darkCastMat);
+        wrench.position.set(0.4, 1.9, 0);
+        group.add(wrench);
+    } else if (type === 'needle') {
+        const needle = new THREE.Mesh(new THREE.ConeGeometry(0.25, 1.3, 20), brassMat);
+        needle.rotation.x = Math.PI;
+        needle.position.y = 0.3;
+        group.add(needle);
+        addHandwheel(group, 1.95, 0.5, crimsonMat);
+    } else if (type === 'diaphragm') {
+        const dia = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.25, 32), rubberMat);
+        dia.position.y = 0.65;
+        group.add(dia);
+        addHandwheel(group, 1.95, 0.75, crimsonMat);
+    } else if (type === 'pinch') {
+        const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 2.2, 24), rubberMat);
+        sleeve.rotation.z = Math.PI / 2;
+        group.add(sleeve);
+        addHandwheel(group, 1.95, 0.75, brassMat);
+    } else if (type === 'prv') {
+        const spring = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.1, 20), brassMat);
+        spring.position.y = 1.45;
+        group.add(spring);
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.45, 24), crimsonMat);
+        cap.position.y = 2.15;
+        group.add(cap);
+    }
+    return group;
+}
+
+function buildModelForKey(key) {
+    if (key === 'seamless_pipes') return createSeamlessPipesModel();
+    if (key === 'fittings')       return createFittingsModel();
+    if (key === 'cnc')            return createCNCModel();
+    if (key === 'printing3d')     return create3DPrintingModel();
+    return createValveModel(key);
+}
+
+function renderSubSelectorBar() {
+    const bar = document.getElementById('sub-selector-bar');
+    if (activeCategory === 'valves') {
+        bar.classList.remove('hidden');
+        bar.innerHTML = VALVE_SUB_ITEMS.map(item => `
+            <button type="button" onclick="selectProduct('${item.key}')" data-sub-key="${item.key}"
+                class="valve-sub-btn ${activeProdKey === item.key ? 'active' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'} border px-3 py-1 rounded-lg text-[11px] font-mono whitespace-nowrap transition cursor-pointer">
+                ${item.name}
+            </button>
+        `).join('');
+    } else {
+        bar.classList.add('hidden');
+    }
+}
+
+function syncActiveCards(key) {
+    document.querySelectorAll('.product-card').forEach(card => {
+        if (card.dataset.prodKey === key) {
+            card.classList.add('active-card');
+        } else {
+            card.classList.remove('active-card');
+        }
+    });
+    document.querySelectorAll('.valve-sub-btn').forEach(btn => {
+        if (btn.dataset.subKey === key) {
+            btn.classList.add('active');
+            btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        } else {
+            btn.classList.remove('active');
+            btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        }
+    });
+}
+
+window.selectProduct = function(key) {
+    activeProdKey = key;
+    const meta = PRODUCT_METADATA[key] || { code: 'CODE: IND-3D', label: 'INDUSTRIAL 3D CAD MODEL' };
+    document.getElementById('viewport-part-code').textContent = meta.code;
+    document.getElementById('viewport-active-label').textContent = meta.label;
+
+    scene.remove(currentGroup);
+    currentGroup = buildModelForKey(key);
+    applyWireframeState(currentGroup, isWireframe);
     scene.add(currentGroup);
-    let isWireframe = false;
-    let activeCategory = 'valves';
 
-    function applyWireframeState(group, state) {
-        group.traverse((child) => {
-            if (child.isMesh && child.material) {
-                child.material.wireframe = state;
-            }
-        });
-    }
+    syncActiveCards(key);
+};
 
-    function addFlanges(group, span = 1.4, radius = 1.15) {
-        [-span, span].forEach(xPos => {
-            const flangeGeo = new THREE.CylinderGeometry(radius, radius, 0.2, 32);
-            flangeGeo.rotateZ(Math.PI / 2);
-            const flange = new THREE.Mesh(flangeGeo, steelMat);
-            flange.position.x = xPos;
-            group.add(flange);
+window.filterCategory = function(category) {
+    activeCategory = category;
 
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                const boltGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.32, 6);
-                boltGeo.rotateZ(Math.PI / 2);
-                const bolt = new THREE.Mesh(boltGeo, brassMat);
-                bolt.position.set(xPos, Math.sin(angle) * (radius * 0.78), Math.cos(angle) * (radius * 0.78));
-                group.add(bolt);
-            }
-        });
-    }
-
-    function addHandwheel(group, yPos, radius = 0.8, mat = crimsonMat) {
-        const wheelTorus = new THREE.TorusGeometry(radius, 0.075, 16, 36);
-        wheelTorus.rotateX(Math.PI / 2);
-        const wheel = new THREE.Mesh(wheelTorus, mat);
-        wheel.position.y = yPos;
-        group.add(wheel);
-
-        for (let i = 0; i < 4; i++) {
-            const spokeGeo = new THREE.CylinderGeometry(0.035, 0.035, radius * 2, 12);
-            spokeGeo.rotateZ(Math.PI / 2);
-            spokeGeo.rotateY((i / 4) * Math.PI);
-            const spoke = new THREE.Mesh(spokeGeo, mat);
-            spoke.position.y = yPos;
-            group.add(spoke);
-        }
-    }
-
-    // 3D Model Generators for Pipes, Fittings, CNC, and Valves
-    function createSeamlessPipesModel() {
-        const group = new THREE.Group();
-        const pipeSpecs = [
-            { rOut: 0.55, rIn: 0.43, len: 3.6, x: 0, y: 0.4, mat: steelMat },
-            { rOut: 0.42, rIn: 0.32, len: 3.8, x: -0.7, y: -0.45, mat: darkCastMat },
-            { rOut: 0.42, rIn: 0.32, len: 3.4, x: 0.7, y: -0.45, mat: steelMat }
-        ];
-
-        pipeSpecs.forEach(p => {
-            const shape = new THREE.Shape();
-            shape.absarc(0, 0, p.rOut, 0, Math.PI * 2, false);
-            const hole = new THREE.Path();
-            hole.absarc(0, 0, p.rIn, 0, Math.PI * 2, true);
-            shape.holes.push(hole);
-
-            const pipeGeo = new THREE.ExtrudeGeometry(shape, { depth: p.len, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.02, bevelThickness: 0.03 });
-            pipeGeo.translate(0, 0, -p.len / 2);
-            const mesh = new THREE.Mesh(pipeGeo, p.mat);
-            mesh.position.set(p.x, p.y, 0);
-            group.add(mesh);
-
-            const ring = new THREE.Mesh(new THREE.TorusGeometry(p.rOut + 0.015, 0.022, 12, 32), brassMat);
-            ring.position.set(p.x, p.y, p.len / 2 - 0.2);
-            group.add(ring);
-        });
-        group.rotation.y = Math.PI / 6;
-        return group;
-    }
-
-    function createFittingsModel() {
-        const group = new THREE.Group();
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-1.3, -0.8, 0),
-            new THREE.Vector3(-0.4, -0.8, 0),
-            new THREE.Vector3(0.4, -0.3, 0),
-            new THREE.Vector3(0.8, 0.5, 0),
-            new THREE.Vector3(0.8, 1.3, 0)
-        ]);
-        group.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.62, 32, false), darkCastMat));
-
-        const end1Geo = new THREE.CylinderGeometry(0.65, 0.62, 0.25, 32);
-        end1Geo.rotateZ(Math.PI / 2);
-        const end1 = new THREE.Mesh(end1Geo, steelMat);
-        end1.position.set(-1.35, -0.8, 0);
-        group.add(end1);
-
-        const end2 = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.65, 0.25, 32), steelMat);
-        end2.position.set(0.8, 1.35, 0);
-        group.add(end2);
-
-        const collar = new THREE.Mesh(new THREE.TorusGeometry(0.67, 0.07, 16, 32), brassMat);
-        collar.position.set(0.25, -0.45, 0);
-        collar.rotation.z = -Math.PI / 4;
-        group.add(collar);
-        return group;
-    }
-
-    function createCNCModel() {
-        const group = new THREE.Group();
-        const baseDisc = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 0.3, 48), steelMat);
-        baseDisc.position.y = -0.7;
-        group.add(baseDisc);
-
-        for (let i = 0; i < 16; i++) {
-            const angle = (i / 16) * Math.PI * 2;
-            const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.32, 0.22), brassMat);
-            tooth.position.set(Math.cos(angle) * 1.42, -0.7, Math.sin(angle) * 1.42);
-            tooth.rotation.y = -angle;
-            group.add(tooth);
-        }
-
-        const step1 = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.5, 48), darkCastMat);
-        step1.position.y = -0.3;
-        group.add(step1);
-
-        const step2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.8, 48), steelMat);
-        step2.position.y = 0.35;
-        group.add(step2);
-
-        const topCollar = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.09, 16, 36), crimsonMat);
-        topCollar.rotation.x = Math.PI / 2;
-        topCollar.position.y = 0.78;
-        group.add(topCollar);
-        return group;
-    }
-
-    function createModelByKey(key) {
-        const group = new THREE.Group();
-        if (key === 'seamless_pipes') return createSeamlessPipesModel();
-        if (key === 'fittings') return createFittingsModel();
-        if (key === 'cnc') return createCNCModel();
-
-        if (key === 'ball') {
-            const pipe = new THREE.CylinderGeometry(0.62, 0.62, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            group.add(new THREE.Mesh(new THREE.SphereGeometry(0.95, 32, 32), darkCastMat));
-            addFlanges(group, 1.4, 1.12);
-            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.42, 0.65, 24), steelMat);
-            neck.position.y = 0.95;
-            group.add(neck);
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.4, 16), brassMat);
-            stem.position.y = 1.35;
-            group.add(stem);
-            const lever = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.1, 0.22), crimsonMat);
-            lever.position.set(0.65, 1.52, 0);
-            group.add(lever);
-        } else if (key === 'gate') {
-            const pipe = new THREE.CylinderGeometry(0.6, 0.6, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            addFlanges(group, 1.4, 1.12);
-            const gateChest = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.55, 1.25), darkCastMat);
-            gateChest.position.y = 0.35;
-            group.add(gateChest);
-            const bonnetFlange = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.18, 1.45), steelMat);
-            bonnetFlange.position.y = 1.12;
-            group.add(bonnetFlange);
-            const yoke = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.45, 0.85, 24), steelMat);
-            yoke.position.y = 1.55;
-            group.add(yoke);
-            const risingStem = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.35, 16), brassMat);
-            risingStem.position.y = 2.15;
-            group.add(risingStem);
-            addHandwheel(group, 2.35, 0.85, crimsonMat);
-        } else if (key === 'globe') {
-            const pipe = new THREE.CylinderGeometry(0.58, 0.58, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            addFlanges(group, 1.4, 1.1);
-            const globeBelly = new THREE.Mesh(new THREE.SphereGeometry(1.05, 32, 24), darkCastMat);
-            globeBelly.scale.set(1.15, 0.92, 1.0);
-            group.add(globeBelly);
-            const bonnet = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.62, 0.75, 24), steelMat);
-            bonnet.position.y = 1.0;
-            group.add(bonnet);
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.8, 16), brassMat);
-            stem.position.y = 1.65;
-            group.add(stem);
-            addHandwheel(group, 2.0, 0.8, crimsonMat);
-        } else if (key === 'butterfly') {
-            const waferBody = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.24, 20, 48), darkCastMat);
-            waferBody.rotation.y = Math.PI / 2;
-            group.add(waferBody);
-            const discGeo = new THREE.CylinderGeometry(0.95, 0.95, 0.08, 36);
-            discGeo.rotateZ(Math.PI / 2);
-            const disc = new THREE.Mesh(discGeo, steelMat);
-            disc.rotation.y = 0.45;
-            group.add(disc);
-            const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 2.8, 16), brassMat);
-            shaft.position.y = 0.25;
-            group.add(shaft);
-            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.7, 20), steelMat);
-            neck.position.y = 1.45;
-            group.add(neck);
-            const lever = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.1, 0.2), crimsonMat);
-            lever.position.set(0.5, 1.85, 0);
-            lever.rotation.y = 0.45;
-            group.add(lever);
-        } else if (key === 'check') {
-            const pipe = new THREE.CylinderGeometry(0.62, 0.62, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            addFlanges(group, 1.4, 1.12);
-            const bodyDome = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 1.1, 32), darkCastMat);
-            bodyDome.position.y = 0.25;
-            group.add(bodyDome);
-            const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.18, 32), steelMat);
-            cap.position.y = 0.85;
-            group.add(cap);
-        } else if (key === 'plug') {
-            const pipe = new THREE.CylinderGeometry(0.6, 0.6, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            addFlanges(group, 1.4, 1.12);
-            const taperedBody = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.95, 1.5, 32), darkCastMat);
-            taperedBody.position.y = 0.1;
-            group.add(taperedBody);
-            const squareStem = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.45, 0.36), brassMat);
-            squareStem.position.y = 1.2;
-            group.add(squareStem);
-            const wrenchBar = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.25), crimsonMat);
-            wrenchBar.position.set(0.55, 1.42, 0);
-            group.add(wrenchBar);
-        } else if (key === 'needle') {
-            const blockBody = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.95, 0.95), steelMat);
-            group.add(blockBody);
-            const hexBonnet = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 0.75, 6), brassMat);
-            hexBonnet.position.y = 0.82;
-            group.add(hexBonnet);
-            const tBar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 16), crimsonMat);
-            tBar.rotation.z = Math.PI / 2;
-            tBar.position.y = 1.8;
-            group.add(tBar);
-        } else if (key === 'diaphragm') {
-            const pipe = new THREE.CylinderGeometry(0.58, 0.58, 2.8, 32);
-            pipe.rotateZ(Math.PI / 2);
-            group.add(new THREE.Mesh(pipe, darkCastMat));
-            addFlanges(group, 1.4, 1.1);
-            const dome = new THREE.Mesh(new THREE.SphereGeometry(0.92, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), steelMat);
-            dome.position.y = 0.58;
-            group.add(dome);
-            addHandwheel(group, 1.95, 0.82, crimsonMat);
-        } else if (key === 'pinch') {
-            addFlanges(group, 1.45, 1.15);
-            const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.64, 0.64, 2.85, 32), rubberMat);
-            sleeve.rotation.z = Math.PI / 2;
-            group.add(sleeve);
-            const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.6, 1.9), darkCastMat);
-            group.add(bridge);
-            addHandwheel(group, 1.5, 0.85, crimsonMat);
-        } else if (key === 'prv') {
-            const bottomFlange = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.2, 32), steelMat);
-            bottomFlange.position.y = -1.2;
-            group.add(bottomFlange);
-            const centerBody = new THREE.Mesh(new THREE.SphereGeometry(0.85, 28, 28), darkCastMat);
-            centerBody.position.y = -0.1;
-            group.add(centerBody);
-            const sidePipe = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.2, 24), darkCastMat);
-            sidePipe.rotation.z = Math.PI / 2;
-            sidePipe.position.set(0.75, -0.1, 0);
-            group.add(sidePipe);
-            const springTower = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.55, 1.55, 24), steelMat);
-            springTower.position.y = 1.25;
-            group.add(springTower);
-        }
-        return group;
-    }
-
-    function render3DModel(key) {
-        scene.remove(currentGroup);
-        currentGroup = createModelByKey(key);
-        applyWireframeState(currentGroup, isWireframe);
-        scene.add(currentGroup);
-
-        const meta = PRODUCT_METADATA[key] || PRODUCT_METADATA.ball;
-        document.getElementById('viewport-part-code').textContent = meta.code;
-        document.getElementById('viewport-active-label').textContent = meta.label;
-    }
-
-    window.selectProduct = function(key) {
-        render3DModel(key);
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.classList.toggle('active-card', card.getAttribute('data-prod-key') === key);
-        });
-    };
-
-    window.filterCategory = function(cat) {
-        activeCategory = cat;
-
-        // Toggle Category Tab active state
-        document.querySelectorAll('.cat-tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-cat-btn') === cat);
-        });
-
-        // Toggle Content Containers
-        ['valves', 'pipes', 'fittings', 'cnc'].forEach(c => {
-            const el = document.getElementById(`container-${c}`);
-            if (el) el.classList.toggle('hidden', c !== cat);
-        });
-
-        // Update Sub-Selector Bar & Default 3D Model per category
-        const subBar = document.getElementById('sub-selector-bar');
-        subBar.innerHTML = '';
-
-        if (cat === 'valves') {
-            subBar.innerHTML = `
-                <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mr-2 whitespace-nowrap">Valve Design:</span>
-                <button type="button" onclick="selectProduct('ball')" class="valve-sub-btn active px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Ball</button>
-                <button type="button" onclick="selectProduct('gate')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Gate</button>
-                <button type="button" onclick="selectProduct('globe')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Globe</button>
-                <button type="button" onclick="selectProduct('butterfly')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Butterfly</button>
-                <button type="button" onclick="selectProduct('check')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Check</button>
-                <button type="button" onclick="selectProduct('plug')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Plug</button>
-                <button type="button" onclick="selectProduct('needle')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Needle</button>
-                <button type="button" onclick="selectProduct('diaphragm')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Diaphragm</button>
-                <button type="button" onclick="selectProduct('pinch')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Pinch</button>
-                <button type="button" onclick="selectProduct('prv')" class="valve-sub-btn px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">PRV</button>
-            `;
-            selectProduct('ball');
-        } else if (cat === 'pipes') {
-            subBar.innerHTML = `
-                <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mr-2 whitespace-nowrap">Pipe Grade:</span>
-                <button type="button" onclick="selectProduct('seamless_pipes')" class="valve-sub-btn active px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Seamless Steel Pipes (ASTM A106)</button>
-            `;
-            selectProduct('seamless_pipes');
-        } else if (cat === 'fittings') {
-            subBar.innerHTML = `
-                <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mr-2 whitespace-nowrap">Fitting Type:</span>
-                <button type="button" onclick="selectProduct('fittings')" class="valve-sub-btn active px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">Buttweld &amp; Socket Fittings (ASME B16.9)</button>
-            `;
-            selectProduct('fittings');
-        } else if (cat === 'cnc') {
-            subBar.innerHTML = `
-                <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mr-2 whitespace-nowrap">Machining:</span>
-                <button type="button" onclick="selectProduct('cnc')" class="valve-sub-btn active px-3 py-1 rounded-md text-xs font-bold border border-slate-700 text-slate-300">5-Axis Custom CNC Component</button>
-            `;
-            selectProduct('cnc');
-        }
-    };
-
-    window.toggleWireframe = function() {
-        isWireframe = !isWireframe;
-        applyWireframeState(currentGroup, isWireframe);
-        const btn = document.getElementById('wireframeBtn');
-        btn.classList.toggle('border-blue-500', isWireframe);
-        btn.classList.toggle('text-blue-400', isWireframe);
-    };
-
-    window.toggleAutoRotate = function() {
-        controls.autoRotate = !controls.autoRotate;
-        const btn = document.getElementById('rotateBtn');
-        btn.innerHTML = controls.autoRotate 
-            ? '<i class="fa-solid fa-rotate"></i> Auto-Rotate: ON' 
-            : '<i class="fa-solid fa-pause"></i> Auto-Rotate: OFF';
-        btn.classList.toggle('text-emerald-400', controls.autoRotate);
-        btn.classList.toggle('text-slate-400', !controls.autoRotate);
-    };
-
-    window.resetCamera = function() {
-        camera.position.set(4.2, 3.0, 5.0);
-        controls.target.set(0, 0, 0);
-        controls.update();
-    };
-
-    window.addEventListener('resize', () => {
-        if (!container) return;
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
+    document.querySelectorAll('.cat-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.catBtn === category);
     });
 
-    // Initialize default view (Valves)
-    filterCategory('valves');
+    document.querySelectorAll('.category-content-block').forEach(block => {
+        block.classList.toggle('hidden', block.id !== `container-${category}`);
+    });
 
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-    }
-    animate();
+    renderSubSelectorBar();
+
+    const defaultKeyMap = {
+        valves: 'ball',
+        pipes: 'seamless_pipes',
+        fittings: 'fittings',
+        cnc: 'cnc',
+        printing3d: 'printing3d'
+    };
+    window.selectProduct(defaultKeyMap[category] || 'ball');
+};
+
+window.toggleWireframe = function() {
+    isWireframe = !isWireframe;
+    applyWireframeState(currentGroup, isWireframe);
+    const btn = document.getElementById('wireframeBtn');
+    btn.classList.toggle('border-blue-500', isWireframe);
+    btn.classList.toggle('text-blue-400', isWireframe);
+};
+
+window.toggleAutoRotate = function() {
+    controls.autoRotate = !controls.autoRotate;
+    const btn = document.getElementById('rotateBtn');
+    btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Auto-Rotate: ${controls.autoRotate ? 'ON' : 'OFF'}`;
+    btn.classList.toggle('text-emerald-400', controls.autoRotate);
+    btn.classList.toggle('border-emerald-500/30', controls.autoRotate);
+    btn.classList.toggle('text-slate-400', !controls.autoRotate);
+    btn.classList.toggle('border-slate-700', !controls.autoRotate);
+};
+
+window.resetCamera = function() {
+    camera.position.set(4.2, 3.0, 5.0);
+    controls.target.set(0, 0, 0);
+    controls.update();
+};
+
+window.addEventListener('resize', () => {
+    if (!container.clientWidth || !container.clientHeight) return;
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+renderSubSelectorBar();
+window.selectProduct('ball');
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
 </script>
 {{end}}

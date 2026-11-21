@@ -153,10 +153,10 @@ func main() {
 	// ==========================================
 
 	// Manages overall dispatch and logistics operations
-	mux.HandleFunc("/admin/dispatch", middleware.RequireAdminAuth(controllers.AdminDispatchHandler))
+	mux.HandleFunc("/admin/work/packages", middleware.RequireAdminAuth(controllers.AdminDispatchHandler))
 
 	// Renders the dispatch tracking page for a specific project ID
-	mux.HandleFunc("/admin/dispatch/{id}", middleware.RequireAdminAuth(controllers.RenderDispatchPerProjectPage))
+	mux.HandleFunc("/admin/work/packages/{id}", middleware.RequireAdminAuth(controllers.RenderDispatchPerProjectPage))
 
 	// Go 1.22+ standard http.ServeMux
 	mux.HandleFunc("/admin/download", middleware.RequireAdminAuth(controllers.DownloadUploadedFilePOST))
